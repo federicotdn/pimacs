@@ -5,6 +5,7 @@ import (
 )
 
 type lispType int
+type lispInt int64
 
 const (
 	symbol lispType = iota
@@ -27,7 +28,7 @@ type lispCons struct {
 }
 
 type lispInteger struct {
-	value int64
+	value lispInt
 }
 
 type lispFloat struct {
@@ -94,7 +95,7 @@ func makeSymbol(name string) *lispSymbol {
 	}
 }
 
-func makeInteger(value int64) *lispInteger {
+func makeInteger(value lispInt) *lispInteger {
 	return &lispInteger{
 		value: value,
 	}
