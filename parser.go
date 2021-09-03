@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"unicode/utf8"
@@ -52,7 +51,24 @@ func (lc *lispCons) getType() lispType {
 }
 
 func (lc *lispCons) printObj() string {
-	return "(" + lc.car.printObj() + " . " + lc.cdr.printObj() + ")"
+	result := "(" + lc.car.printObj()
+	current := lc
+
+	for {
+		next, ok := current.cdr.(*lispCons)
+		if ok {
+			result += " " + next.car.printObj()
+			current = next
+		} else {
+			if current.cdr != lispNil {
+				result += " . " + current.cdr.printObj()
+			}
+
+			break
+		}
+	}
+
+	return result + ")"
 }
 
 func (li *lispInteger) getType() lispType {
@@ -82,7 +98,24 @@ func makeCons(car lispObject, cdr lispObject) *lispCons {
 	}
 }
 
+func makeList(objs ...lispObject) *lispCons {
+	if len(objs) == 0 {
+		return nil
+	}
+
+	tmp := makeCons(objs[0], lispNil)
+	val := tmp
+
+	for _, obj := range objs[1:] {
+		tmp.cdr = makeCons(obj, lispNil)
+		tmp = tmp.cdr.(*lispCons)
+	}
+
+	return val
+}
+
 var lispNil = makeSymbol("nil")
+var lispQuote = makeSymbol("quote")
 
 type readContext struct {
 	source string
@@ -108,8 +141,6 @@ func (ctx *readContext) currentString() (string, error) {
 
 func (ctx *readContext) advanceN(count int) {
 	ctx.i += count
-	println("advance:", count)
-	println("progress:", ctx.i, "/", len(ctx.runes))
 }
 
 func (ctx *readContext) advance() {
@@ -121,7 +152,7 @@ func readList(ctx *readContext) (lispObject, error) {
 	var tail lispObject = lispNil
 
 	for {
-		elt, c, err := read(ctx)
+		elt, c, err := read1(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -173,7 +204,7 @@ func readResult(obj lispObject, err error) (lispObject, rune, error) {
 	return obj, 0, err
 }
 
-func read(ctx *readContext) (lispObject, rune, error) {
+func read1(ctx *readContext) (lispObject, rune, error) {
 	var err error
 	var c rune
 
@@ -193,27 +224,35 @@ func read(ctx *readContext) (lispObject, rune, error) {
 			return nil, ')', nil
 		case c <= 040 || c == nbsp:
 			ctx.advance()
+		case c == ';':
+			for {
+				c, err = ctx.currentRune()
+				if err != nil {
+					return nil, 0, err
+				}
+				ctx.advance()
+
+				if c == '\n' {
+					break
+				}
+			}
+		case c == '\'':
+			ctx.advance()
+			obj, err := read0(ctx)
+			if err != nil {
+				return nil, 0, err
+			}
+
+			list := makeList(lispQuote, obj)
+			return list, 0, nil
 		default:
 			return readResult(readAtom(ctx))
 		}
 	}
 }
 
-func readFile(filename string) (lispObject, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	text := string(data)
-
-	ctx := readContext{
-		source: text,
-		runes:  []rune(text),
-		i:      0,
-	}
-
-	obj, c, err := read(&ctx)
+func read0(ctx *readContext) (lispObject, error) {
+	obj, c, err := read1(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -223,4 +262,14 @@ func readFile(filename string) (lispObject, error) {
 	}
 
 	return obj, nil
+}
+
+func readString(source string) (lispObject, error) {
+	ctx := readContext{
+		source: source,
+		runes:  []rune(source),
+		i:      0,
+	}
+
+	return read0(&ctx)
 }
