@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -34,6 +35,7 @@ func main() {
 			reader := bufio.NewReader(os.Stdin)
 			fmt.Print("> ")
 			source, _ := reader.ReadString('\n')
+			source = strings.TrimRight(source, "\r\n")
 
 			if source == "" {
 				break

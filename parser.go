@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
-	"unicode/utf8"
+	"strings"
 )
 
 type lispType int
@@ -30,7 +29,11 @@ type lispCons struct {
 }
 
 type lispInteger struct {
-	value int
+	value int64
+}
+
+type lispFloat struct {
+	value float64
 }
 
 type lispObject interface {
@@ -79,13 +82,21 @@ func (li *lispInteger) printObj() string {
 	return fmt.Sprint(li.value)
 }
 
+func (lf *lispFloat) getType() lispType {
+	return float
+}
+
+func (lf *lispFloat) printObj() string {
+	return fmt.Sprint(lf.value)
+}
+
 func makeSymbol(name string) *lispSymbol {
 	return &lispSymbol{
 		name: name,
 	}
 }
 
-func makeInteger(value int) *lispInteger {
+func makeInteger(value int64) *lispInteger {
 	return &lispInteger{
 		value: value,
 	}
@@ -98,15 +109,21 @@ func makeCons(car lispObject, cdr lispObject) *lispCons {
 	}
 }
 
-func makeList(objs ...lispObject) *lispCons {
-	if len(objs) == 0 {
-		return nil
-	}
+func setCdr(c lispObject, cdr lispObject) {
+	c.(*lispCons).cdr = cdr
+}
 
-	tmp := makeCons(objs[0], lispNil)
+func makeFloat(value float64) *lispFloat {
+	return &lispFloat{
+		value: value,
+	}
+}
+
+func makeList(obj lispObject, objs ...lispObject) *lispCons {
+	tmp := makeCons(obj, lispNil)
 	val := tmp
 
-	for _, obj := range objs[1:] {
+	for _, obj := range objs {
 		tmp.cdr = makeCons(obj, lispNil)
 		tmp = tmp.cdr.(*lispCons)
 	}
@@ -124,28 +141,22 @@ type readContext struct {
 	i      int
 }
 
-func (ctx *readContext) currentRune() (rune, error) {
-	if ctx.i >= len(ctx.runes) {
+func (ctx *readContext) read() (rune, error) {
+	if ctx.i == len(ctx.runes) {
 		return 0, fmt.Errorf("eof")
 	}
 
-	return ctx.runes[ctx.i], nil
+	r := ctx.runes[ctx.i]
+	ctx.i++
+	return r, nil
 }
 
-func (ctx *readContext) currentString() (string, error) {
-	if ctx.i >= len(ctx.runes) {
-		return "", fmt.Errorf("eof")
+func (ctx *readContext) unread() {
+	if ctx.i == 0 {
+		panic("nothing to unread")
 	}
 
-	return string(ctx.runes[ctx.i:]), nil
-}
-
-func (ctx *readContext) advanceN(count int) {
-	ctx.i += count
-}
-
-func (ctx *readContext) advance() {
-	ctx.advanceN(1)
+	ctx.i--
 }
 
 func readList(ctx *readContext) (lispObject, error) {
@@ -162,15 +173,32 @@ func readList(ctx *readContext) (lispObject, error) {
 			switch c {
 			case ')':
 				return val, nil
+			case '.':
+				if tail != lispNil {
+					obj, err := read0(ctx)
+					if err != nil {
+						return nil, err
+					}
+					setCdr(tail, obj)
+				} else {
+					val, err = read0(ctx)
+				}
+
+				_, c, _ = read1(ctx)
+				if c == ')' {
+					return val, nil
+				}
+
+				return nil, fmt.Errorf("'.' in wrong context")
 			default:
-				return nil, fmt.Errorf("invalid list ending: %v", c)
+				return nil, fmt.Errorf("invalid list ending: '%v'", string(c))
 			}
 		}
 
 		tmp := makeCons(elt, lispNil)
 
 		if tail != lispNil {
-			tail.(*lispCons).cdr = tmp
+			setCdr(tail, tmp)
 		} else {
 			val = tmp
 		}
@@ -179,26 +207,60 @@ func readList(ctx *readContext) (lispObject, error) {
 	}
 }
 
-func readAtom(ctx *readContext) (lispObject, error) {
-	val, err := ctx.currentString()
-	if err != nil {
-		return nil, err
+func stringToNumber(s string) (lispObject, error) {
+	nInt, err := strconv.ParseInt(s, 10, 64)
+	if err == nil {
+		return makeInteger(nInt), nil
 	}
 
-	integerRegexp := regexp.MustCompile(`[\d]+`)
-	loc := integerRegexp.FindStringIndex(val)
-	if loc != nil {
-		match := val[loc[0]:loc[1]]
-		value, err := strconv.Atoi(match)
+	nFloat, err := strconv.ParseFloat(s, 64)
+	if err == nil {
+		return makeFloat(nFloat), nil
+	}
+
+	return nil, fmt.Errorf("unknown number format")
+}
+
+func readAtom(c rune, ctx *readContext) (lispObject, error) {
+	var err error
+	quoted := false
+	buf := []rune{}
+
+	for {
+		if c == '\\' {
+			c, err = ctx.read()
+			if err != nil {
+				return nil, err
+			}
+
+			quoted = true
+		}
+
+		buf = append(buf, c)
+
+		c, err = ctx.read()
 		if err != nil {
 			return nil, err
 		}
 
-		ctx.advanceN(utf8.RuneCountInString(match))
-		return makeInteger(value), nil
+		special := strings.Contains("\"';()[]#`,", string(c))
+		if c <= 040 || c == nbsp || special {
+			break
+		}
 	}
 
-	return nil, fmt.Errorf("unknown atom format")
+	ctx.unread()
+	s := string(buf)
+
+	if !quoted {
+		num, err := stringToNumber(s)
+		if err == nil {
+			return num, nil
+		}
+	}
+
+	// uninterned
+	return makeSymbol(s), nil
 }
 
 func readResult(obj lispObject, err error) (lispObject, rune, error) {
@@ -210,7 +272,7 @@ func read1(ctx *readContext) (lispObject, rune, error) {
 	var c rune
 
 	for {
-		c, err = ctx.currentRune()
+		c, err = ctx.read()
 		if err != nil {
 			return nil, 0, err
 		}
@@ -218,27 +280,22 @@ func read1(ctx *readContext) (lispObject, rune, error) {
 		switch {
 		case c == '(':
 			// List
-			ctx.advance()
 			return readResult(readList(ctx))
 		case c == ')':
-			ctx.advance()
 			return nil, ')', nil
 		case c <= 040 || c == nbsp:
-			ctx.advance()
 		case c == ';':
 			for {
-				c, err = ctx.currentRune()
+				c, err = ctx.read()
 				if err != nil {
 					return nil, 0, err
 				}
-				ctx.advance()
 
 				if c == '\n' {
 					break
 				}
 			}
 		case c == '\'' || c == '`':
-			ctx.advance()
 			obj, err := read0(ctx)
 			if err != nil {
 				return nil, 0, err
@@ -251,8 +308,21 @@ func read1(ctx *readContext) (lispObject, rune, error) {
 
 			list := makeList(q, obj)
 			return list, 0, nil
+		case c == '.':
+			next, err := ctx.read()
+			if err != nil {
+				return nil, 0, err
+			}
+
+			ctx.unread()
+
+			special := strings.Contains("\"';([#?`,", string(next))
+			if next <= 040 || special {
+				return nil, c, nil
+			}
+			return readResult(readAtom(c, ctx))
 		default:
-			return readResult(readAtom(ctx))
+			return readResult(readAtom(c, ctx))
 		}
 	}
 }
@@ -264,7 +334,7 @@ func read0(ctx *readContext) (lispObject, error) {
 	}
 
 	if c != 0 {
-		return nil, fmt.Errorf("unexpected character: %v", string(c))
+		return nil, fmt.Errorf("unexpected character: '%v'", string(c))
 	}
 
 	return obj, nil
