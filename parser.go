@@ -116,6 +116,7 @@ func makeList(objs ...lispObject) *lispCons {
 
 var lispNil = makeSymbol("nil")
 var lispQuote = makeSymbol("quote")
+var lispBackQuote = makeSymbol("`")
 
 type readContext struct {
 	source string
@@ -236,14 +237,19 @@ func read1(ctx *readContext) (lispObject, rune, error) {
 					break
 				}
 			}
-		case c == '\'':
+		case c == '\'' || c == '`':
 			ctx.advance()
 			obj, err := read0(ctx)
 			if err != nil {
 				return nil, 0, err
 			}
 
-			list := makeList(lispQuote, obj)
+			q := lispQuote
+			if c == '`' {
+				q = lispBackQuote
+			}
+
+			list := makeList(q, obj)
 			return list, 0, nil
 		default:
 			return readResult(readAtom(ctx))
