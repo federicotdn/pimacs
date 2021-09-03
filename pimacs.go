@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/federicotdn/pimacs/elisp"
 	"os"
 	"strings"
-	"github.com/federicotdn/pimacs/elisp"
 )
 
 func main() {

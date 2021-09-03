@@ -114,8 +114,8 @@ func readEscape(ctx *readContext, stringp bool) (rune, error) {
 	case '0', '1', '2', '3', '4', '5', '6', '7':
 		num := c - '0'
 
-		for count := 0; count < 3; count++ {
-			c := ctx.read()
+		for count := 0; count < 2; count++ {
+			c = ctx.read()
 
 			if c >= '0' && c <= '7' {
 				num *= 8
@@ -124,13 +124,13 @@ func readEscape(ctx *readContext, stringp bool) (rune, error) {
 				ctx.unread(c)
 				break
 			}
-
-			if num >= 0x80 && num < 0x100 {
-				num = byte8toChar(num)
-			}
-
-			return num, nil
 		}
+
+		if num >= 0x80 && num < 0x100 {
+			num = byte8toChar(num)
+		}
+
+		return num, nil
 	case 'x':
 	case 'U':
 	case 'u':
@@ -196,7 +196,7 @@ func (p *Parser) readAtom(c rune, ctx *readContext) (lispObject, error) {
 
 	for {
 		if c == '\\' {
-			c := ctx.read()
+			c = ctx.read()
 			if c == eofRune {
 				return nil, fmt.Errorf("eof reading atom")
 			}

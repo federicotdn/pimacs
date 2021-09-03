@@ -9,3 +9,6 @@ build:
 run:
 	go build -gcflags=all="-N -l"
 	./pimacs
+
+test:
+	go test -v ./...
