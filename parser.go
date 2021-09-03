@@ -259,6 +259,11 @@ func readAtom(c rune, ctx *readContext) (lispObject, error) {
 		}
 	}
 
+	// interned
+	if s == "nil" {
+		return lispNil, nil
+	}
+
 	// uninterned
 	return makeSymbol(s), nil
 }
