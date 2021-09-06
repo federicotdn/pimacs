@@ -8,11 +8,19 @@ import (
 
 const (
 	eightBitCodeOffset rune = 0x3fff00
-	max5ByteChar       rune = 0x3fff7f
-	eofRune            rune = -1
+	max5ByteChar            = 0x3fff7f
+	eofRune                 = -1
+	nbsp                    = '\u00A0'
 )
 
-type Interpreter struct {
+type Interpreter interface {
+	Print(obj lispObject) (string, error)
+	ReadString(source string) (lispObject, error)
+}
+
+type interpreter struct {
+	obarray     map[string]*lispSymbol
+	nil_        lispObject
 }
 
 type readContext struct {
@@ -43,36 +51,135 @@ func (ctx *readContext) unread(c rune) {
 	ctx.i--
 }
 
-func stringToNumber(s string) (lispObject, error) {
+func (inp *interpreter) Print(obj lispObject) (string, error) {
+	str, err := inp.prin1(obj)
+	if err != nil {
+		return "", err
+	}
+
+	return str.(*lispString).value, nil
+}
+
+func (inp *interpreter) prin1(obj lispObject) (lispObject, error) {
+	type_ := obj.getType()
+	var s string
+
+	switch type_ {
+	case symbol:
+		s = obj.(*lispSymbol).name
+	case integer:
+		s = fmt.Sprint(obj.(*lispInteger).value)
+	case string_:
+		s = "\"" + obj.(*lispString).value + "\""
+	case vector:
+		return nil, fmt.Errorf("prin1 unimplemented")
+	case cons:
+		// TODO: Clean up when string functions are avaiable (don't type-assert)
+		lc := obj.(*lispCons)
+		current := lc
+
+		carStr, err := inp.prin1(lc.car)
+		if err != nil {
+			return nil, err
+		}
+		s = "(" + carStr.(*lispString).value
+
+		for {
+			next, ok := current.cdr.(*lispCons)
+			if ok {
+				nextStr, err := inp.prin1(next.car)
+				if err != nil {
+					return nil, err
+				}
+
+				s += " " + nextStr.(*lispString).value
+				current = next
+			} else {
+				if current.cdr != inp.nil_ {
+					cdrStr, err := inp.prin1(current.cdr)
+					if err != nil {
+						return nil, err
+					}
+					s += " . " + cdrStr.(*lispString).value
+				}
+
+				break
+			}
+		}
+
+		s += ")"
+	case float:
+		s = fmt.Sprint(obj.(*lispFloat).value)
+	default:
+		return nil, fmt.Errorf("prin1 unimplemented for '%v'", type_)
+	}
+
+	return inp.makeString(s), nil
+}
+
+func (inp *interpreter) setCdr(obj lispObject, newCdr lispObject) lispObject {
+	obj.(*lispCons).cdr = newCdr
+	return newCdr
+}
+
+func (inp *interpreter) stringToNumber(s string) (lispObject, error) {
 	nInt, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
-		return makeInteger(lispInt(nInt)), nil
+		return inp.makeInteger(lispInt(nInt)), nil
 	}
 
 	nFloat, err := strconv.ParseFloat(s, 64)
 	if err == nil {
-		return makeFloat(nFloat), nil
+		return inp.makeFloat(nFloat), nil
 	}
 
 	return nil, fmt.Errorf("unknown number format")
 }
 
-func byte8toChar(c rune) rune {
-	return c + eightBitCodeOffset
-}
-
-func charByte8(c rune) bool {
-	return c > max5ByteChar
-}
-
-func charToByte8(c rune) rune {
-	if charByte8(c) {
-		return c - eightBitCodeOffset
+func (inp *interpreter) makeSymbol(name string) *lispSymbol {
+	return &lispSymbol{
+		name: name,
 	}
-	return c & 0xff
 }
 
-func readEscape(ctx *readContext, stringp bool) (rune, error) {
+func (inp *interpreter) makeInteger(value lispInt) *lispInteger {
+	return &lispInteger{
+		value: value,
+	}
+}
+
+func (inp *interpreter) makeCons(car lispObject, cdr lispObject) *lispCons {
+	return &lispCons{
+		car: car,
+		cdr: cdr,
+	}
+}
+
+func (inp *interpreter) makeFloat(value float64) *lispFloat {
+	return &lispFloat{
+		value: value,
+	}
+}
+
+func (inp *interpreter) makeString(value string) *lispString {
+	return &lispString{
+		value: value,
+	}
+}
+
+func (inp *interpreter) makeList(obj lispObject, objs ...lispObject) *lispCons {
+	tmp := inp.makeCons(obj, inp.nil_)
+	val := tmp
+
+	for _, obj := range objs {
+		tmp.cdr = inp.makeCons(obj, inp.nil_)
+		tmp = tmp.cdr.(*lispCons)
+	}
+
+	return val
+}
+
+func (inp *interpreter) readEscape(ctx *readContext, stringp bool) (rune, error) {
 	c := ctx.read()
 	if c == eofRune {
 		return 0, fmt.Errorf("eof")
@@ -142,12 +249,45 @@ func readEscape(ctx *readContext, stringp bool) (rune, error) {
 	return 0, fmt.Errorf("unimplemented escape code: '%v", string(c))
 }
 
-func (p *Interpreter) readList(ctx *readContext) (lispObject, error) {
-	var val lispObject = lispNil
-	var tail lispObject = lispNil
+func (inp *interpreter) initialDefinitions() {
+	symNil := inp.intern("nil")
+	symNil.value = symNil
+
+	symT := inp.intern("t")
+	symT.value = symT
+
+	// TODO:
+	// quote
+	// backquote (`)
+}
+
+func NewInterpreter() Interpreter {
+	inp := interpreter{}
+	inp.obarray = make(map[string]*lispSymbol)
+
+	inp.initialDefinitions()
+
+	inp.nil_ = inp.intern("nil")
+
+	return &inp
+}
+
+func (inp *interpreter) intern(name string) *lispSymbol {
+	sym, ok := inp.obarray[name]
+	if !ok {
+		sym = inp.makeSymbol(name)
+		inp.obarray[name] = sym
+	}
+
+	return sym
+}
+
+func (inp *interpreter) readList(ctx *readContext) (lispObject, error) {
+	var val lispObject = inp.nil_
+	var tail lispObject = inp.nil_
 
 	for {
-		elt, c, err := p.read1(ctx)
+		elt, c, err := inp.read1(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -157,17 +297,17 @@ func (p *Interpreter) readList(ctx *readContext) (lispObject, error) {
 			case ')':
 				return val, nil
 			case '.':
-				if tail != lispNil {
-					obj, err := p.read0(ctx)
+				if tail != inp.nil_ {
+					obj, err := inp.read0(ctx)
 					if err != nil {
 						return nil, err
 					}
-					setCdr(tail, obj)
+					inp.setCdr(tail, obj)
 				} else {
-					val, err = p.read0(ctx)
+					val, err = inp.read0(ctx)
 				}
 
-				_, c, _ = p.read1(ctx)
+				_, c, _ = inp.read1(ctx)
 				if c == ')' {
 					return val, nil
 				}
@@ -178,10 +318,10 @@ func (p *Interpreter) readList(ctx *readContext) (lispObject, error) {
 			}
 		}
 
-		tmp := makeCons(elt, lispNil)
+		tmp := inp.makeCons(elt, inp.nil_)
 
-		if tail != lispNil {
-			setCdr(tail, tmp)
+		if tail != inp.nil_ {
+			inp.setCdr(tail, tmp)
 		} else {
 			val = tmp
 		}
@@ -190,7 +330,7 @@ func (p *Interpreter) readList(ctx *readContext) (lispObject, error) {
 	}
 }
 
-func (p *Interpreter) readAtom(c rune, ctx *readContext) (lispObject, error) {
+func (inp *interpreter) readAtom(c rune, ctx *readContext) (lispObject, error) {
 	quoted := false
 	builder := strings.Builder{}
 
@@ -217,26 +357,20 @@ func (p *Interpreter) readAtom(c rune, ctx *readContext) (lispObject, error) {
 	s := builder.String()
 
 	if !quoted {
-		num, err := stringToNumber(s)
+		num, err := inp.stringToNumber(s)
 		if err == nil {
 			return num, nil
 		}
 	}
 
-	// interned
-	if s == "nil" {
-		return lispNil, nil
-	}
-
-	// uninterned
-	return makeSymbol(s), nil
+	return inp.intern(s), nil
 }
 
-func (p *Interpreter) read1Result(obj lispObject, err error) (lispObject, rune, error) {
+func (inp *interpreter) read1Result(obj lispObject, err error) (lispObject, rune, error) {
 	return obj, 0, err
 }
 
-func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
+func (inp *interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 	var err error
 	var c rune
 
@@ -248,7 +382,7 @@ func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 
 		switch {
 		case c == '(':
-			return p.read1Result(p.readList(ctx))
+			return inp.read1Result(inp.readList(ctx))
 		case c == '[':
 			return nil, 0, fmt.Errorf("unimplented read: '%v'", string(c))
 		case c == ')' || c == ']':
@@ -263,17 +397,17 @@ func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 				}
 			}
 		case c == '\'' || c == '`':
-			obj, err := p.read0(ctx)
+			obj, err := inp.read0(ctx)
 			if err != nil {
 				return nil, 0, err
 			}
 
-			q := lispQuote
+			name := "quote"
 			if c == '`' {
-				q = lispBackQuote
+				name = "`"
 			}
 
-			list := makeList(q, obj)
+			list := inp.makeList(inp.intern(name), obj)
 			return list, 0, nil
 		case c == ',':
 			return nil, 0, fmt.Errorf("unimplented read: '%v'", string(c))
@@ -284,11 +418,11 @@ func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 			}
 
 			if c == ' ' || c == '\t' {
-				return makeInteger(lispInt(c)), 0, nil
+				return inp.makeInteger(lispInt(c)), 0, nil
 			}
 
 			if c == '\\' {
-				c, err = readEscape(ctx, false)
+				c, err = inp.readEscape(ctx, false)
 				if err != nil {
 					return nil, 0, err
 				}
@@ -303,7 +437,7 @@ func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 
 			special := strings.Contains("\"';()[]#?`,.", string(next))
 			if next <= 040 || special {
-				return makeInteger(lispInt(c)), 0, nil
+				return inp.makeInteger(lispInt(c)), 0, nil
 			}
 
 			return nil, 0, fmt.Errorf("invalid syntax for '?'")
@@ -317,7 +451,7 @@ func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 				}
 
 				if c == '\\' {
-					c, err = readEscape(ctx, true)
+					c, err = inp.readEscape(ctx, true)
 					if err != nil {
 						return nil, 0, err
 					}
@@ -334,7 +468,7 @@ func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 				return nil, c, fmt.Errorf("eof reading string")
 			}
 
-			return makeString(builder.String()), 0, nil
+			return inp.makeString(builder.String()), 0, nil
 		case c == '.':
 			next := ctx.read()
 			ctx.unread(next)
@@ -343,16 +477,16 @@ func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 			if next <= 040 || special {
 				return nil, c, nil
 			}
-			return p.read1Result(p.readAtom(c, ctx))
+			return inp.read1Result(inp.readAtom(c, ctx))
 		case c <= 040 || c == nbsp:
 		default:
-			return p.read1Result(p.readAtom(c, ctx))
+			return inp.read1Result(inp.readAtom(c, ctx))
 		}
 	}
 }
 
-func (p *Interpreter) read0(ctx *readContext) (lispObject, error) {
-	obj, c, err := p.read1(ctx)
+func (inp *interpreter) read0(ctx *readContext) (lispObject, error) {
+	obj, c, err := inp.read1(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -364,12 +498,25 @@ func (p *Interpreter) read0(ctx *readContext) (lispObject, error) {
 	return obj, nil
 }
 
-func (p *Interpreter) ReadString(source string) (lispObject, error) {
+func (inp *interpreter) ReadString(source string) (lispObject, error) {
 	ctx := readContext{
 		source: source,
 		runes:  []rune(source),
 		i:      0,
 	}
 
-	return p.read0(&ctx)
+	return inp.read0(&ctx)
+}
+
+// func (inp *interpreter) eval(form lispObject) (lispObject, error) {
+// 	if form.getType() == symbol {
+// 		// return value in env
+// 	} else if form.getType() != cons {
+// 		return form, nil
+// 	}
+
+// }
+
+func (inp *interpreter) apply(fn lispObject, args ...lispObject) (lispObject, error) {
+	return nil, nil
 }

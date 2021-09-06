@@ -16,7 +16,7 @@ func main() {
 	flag.StringVar(&loadFile, "l", "", usage+" (shorthand)")
 	flag.Parse()
 
-	interpreter := elisp.Interpreter{}
+	interpreter := elisp.NewInterpreter()
 
 	if loadFile != "" {
 		data, err := os.ReadFile(loadFile)
@@ -32,7 +32,12 @@ func main() {
 			os.Exit(1)
 		}
 
-		fmt.Println(obj.PrintObj())
+		printed, err := interpreter.Print(obj)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(printed)
 	} else {
 		for {
 			reader := bufio.NewReader(os.Stdin)
@@ -48,7 +53,12 @@ func main() {
 			if err != nil {
 				fmt.Println("error:", err)
 			} else {
-				fmt.Println(obj.PrintObj())
+				printed, err := interpreter.Print(obj)
+				if err != nil {
+					fmt.Println("error:", err)
+				} else {
+					fmt.Println(printed)
+				}
 			}
 		}
 	}
