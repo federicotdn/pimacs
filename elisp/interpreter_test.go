@@ -137,7 +137,9 @@ func TestReadStringCharacter(t *testing.T) {
 		{"? ", "32", nil},
 		{"?", "", anyError},
 		{"?\\n", "10", nil},
+		{"?\\\n", "-1", nil},
 		{"?\\r", "13", nil},
+		{"?\\ ", "32", nil},
 		{"?\\71", "57", nil},
 		{"?\\071", "57", nil},
 		{"?\\0071", "", anyError},
@@ -164,5 +166,19 @@ func TestReadStringWhitespace(t *testing.T) {
 		{"\n\n1", "1", nil},
 		{"\t1  ", "1", nil},
 		{"", "", anyError},
+	})
+}
+
+func TestReadStringStr(t *testing.T) {
+	testReadStringHelper(t, []readStringTestCase{
+		{`""`, `""`, nil},
+		{`".1"`, `".1"`, nil},
+		{`"hello"`, `"hello"`, nil},
+		{"\"hello\nworld\"", "\"hello\nworld\"", nil},
+		{`"hello\041"`, `"hello!"`, nil},
+		{"\"hello \\\nworld\"", `"hello world"`, nil},
+		{`"hello`, "", anyError},
+		{`"`, "", anyError},
+		{"\"hello \\\n", "", anyError},
 	})
 }

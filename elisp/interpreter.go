@@ -98,10 +98,10 @@ func readEscape(ctx *readContext, stringp bool) (rune, error) {
 	case 'v':
 		return '\v', nil
 	case '\n':
-		return 0, fmt.Errorf("eof on read escape")
+		return -1, nil
 	case ' ':
 		if stringp {
-			return 0, fmt.Errorf("eof on read escape")
+			return -1, nil
 		}
 		return ' ', nil
 	case 'M':
@@ -192,7 +192,7 @@ func (p *Interpreter) readList(ctx *readContext) (lispObject, error) {
 
 func (p *Interpreter) readAtom(c rune, ctx *readContext) (lispObject, error) {
 	quoted := false
-	buf := []rune{}
+	builder := strings.Builder{}
 
 	for {
 		if c == '\\' {
@@ -204,7 +204,7 @@ func (p *Interpreter) readAtom(c rune, ctx *readContext) (lispObject, error) {
 			quoted = true
 		}
 
-		buf = append(buf, c)
+		builder.WriteRune(c)
 		c = ctx.read()
 
 		special := strings.Contains("\"';()[]#`,", string(c))
@@ -214,7 +214,7 @@ func (p *Interpreter) readAtom(c rune, ctx *readContext) (lispObject, error) {
 	}
 
 	ctx.unread(c)
-	s := string(buf)
+	s := builder.String()
 
 	if !quoted {
 		num, err := stringToNumber(s)
@@ -308,7 +308,33 @@ func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 
 			return nil, 0, fmt.Errorf("invalid syntax for '?'")
 		case c == '"':
-			return nil, 0, fmt.Errorf("unimplented read: '%v'", string(c))
+			builder := strings.Builder{}
+
+			for {
+				c = ctx.read()
+				if c == eofRune || c == '"' {
+					break
+				}
+
+				if c == '\\' {
+					c, err = readEscape(ctx, true)
+					if err != nil {
+						return nil, 0, err
+					}
+
+					if c == -1 {
+						continue
+					}
+				}
+
+				builder.WriteRune(c)
+			}
+
+			if c == eofRune {
+				return nil, c, fmt.Errorf("eof reading string")
+			}
+
+			return makeString(builder.String()), 0, nil
 		case c == '.':
 			next := ctx.read()
 			ctx.unread(next)

@@ -35,6 +35,10 @@ type lispFloat struct {
 	value float64
 }
 
+type lispString struct {
+	value string
+}
+
 type lispObject interface {
 	getType() lispType
 	PrintObj() string
@@ -89,6 +93,14 @@ func (lf *lispFloat) PrintObj() string {
 	return fmt.Sprint(lf.value)
 }
 
+func (ls *lispString) getType() lispType {
+	return str
+}
+
+func (ls *lispString) PrintObj() string {
+	return "\"" + ls.value + "\""
+}
+
 func makeSymbol(name string) *lispSymbol {
 	return &lispSymbol{
 		name: name,
@@ -114,6 +126,12 @@ func setCdr(c lispObject, cdr lispObject) {
 
 func makeFloat(value float64) *lispFloat {
 	return &lispFloat{
+		value: value,
+	}
+}
+
+func makeString(value string) *lispString {
+	return &lispString{
 		value: value,
 	}
 }
