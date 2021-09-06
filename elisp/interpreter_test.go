@@ -19,9 +19,9 @@ func testReadStringHelper(t *testing.T, cases []readStringTestCase) {
 			t.Fatalf("input: '%v' defines both expected value and error", tc.input)
 		}
 
-		p := Parser{}
+		interpreter := Interpreter{}
 
-		output, err := p.ReadString(tc.input)
+		output, err := interpreter.ReadString(tc.input)
 		if err != nil {
 			if tc.err == nil {
 				t.Logf("input: '%v' got error '%v'", tc.input, err)

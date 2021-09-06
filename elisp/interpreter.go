@@ -12,7 +12,7 @@ const (
 	eofRune            rune = -1
 )
 
-type Parser struct {
+type Interpreter struct {
 }
 
 type readContext struct {
@@ -142,7 +142,7 @@ func readEscape(ctx *readContext, stringp bool) (rune, error) {
 	return 0, fmt.Errorf("unimplemented escape code: '%v", string(c))
 }
 
-func (p *Parser) readList(ctx *readContext) (lispObject, error) {
+func (p *Interpreter) readList(ctx *readContext) (lispObject, error) {
 	var val lispObject = lispNil
 	var tail lispObject = lispNil
 
@@ -190,7 +190,7 @@ func (p *Parser) readList(ctx *readContext) (lispObject, error) {
 	}
 }
 
-func (p *Parser) readAtom(c rune, ctx *readContext) (lispObject, error) {
+func (p *Interpreter) readAtom(c rune, ctx *readContext) (lispObject, error) {
 	quoted := false
 	buf := []rune{}
 
@@ -232,11 +232,11 @@ func (p *Parser) readAtom(c rune, ctx *readContext) (lispObject, error) {
 	return makeSymbol(s), nil
 }
 
-func (p *Parser) read1Result(obj lispObject, err error) (lispObject, rune, error) {
+func (p *Interpreter) read1Result(obj lispObject, err error) (lispObject, rune, error) {
 	return obj, 0, err
 }
 
-func (p *Parser) read1(ctx *readContext) (lispObject, rune, error) {
+func (p *Interpreter) read1(ctx *readContext) (lispObject, rune, error) {
 	var err error
 	var c rune
 
@@ -325,7 +325,7 @@ func (p *Parser) read1(ctx *readContext) (lispObject, rune, error) {
 	}
 }
 
-func (p *Parser) read0(ctx *readContext) (lispObject, error) {
+func (p *Interpreter) read0(ctx *readContext) (lispObject, error) {
 	obj, c, err := p.read1(ctx)
 	if err != nil {
 		return nil, err
@@ -338,7 +338,7 @@ func (p *Parser) read0(ctx *readContext) (lispObject, error) {
 	return obj, nil
 }
 
-func (p *Parser) ReadString(source string) (lispObject, error) {
+func (p *Interpreter) ReadString(source string) (lispObject, error) {
 	ctx := readContext{
 		source: source,
 		runes:  []rune(source),

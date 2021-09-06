@@ -16,7 +16,7 @@ func main() {
 	flag.StringVar(&loadFile, "l", "", usage+" (shorthand)")
 	flag.Parse()
 
-	parser := elisp.Parser{}
+	interpreter := elisp.Interpreter{}
 
 	if loadFile != "" {
 		data, err := os.ReadFile(loadFile)
@@ -26,7 +26,7 @@ func main() {
 		}
 
 		source := string(data)
-		obj, err := parser.ReadString(source)
+		obj, err := interpreter.ReadString(source)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -44,7 +44,7 @@ func main() {
 				break
 			}
 
-			obj, err := parser.ReadString(source)
+			obj, err := interpreter.ReadString(source)
 			if err != nil {
 				fmt.Println("error:", err)
 			} else {
