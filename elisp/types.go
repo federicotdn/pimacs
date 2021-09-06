@@ -18,10 +18,8 @@ type lispSymbol struct {
 	name  string
 	value lispObject
 
-	// Should be lispObject instead
+	// TODO: Should be lispObject instead (?)
 	function struct {
-		// 'lispObject' or something more expressive? i.e. a struct
-		// Return error?
 		callabe func(args ...lispObject) (lispObject, error)
 		minArgs int
 		maxArgs int

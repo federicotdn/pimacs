@@ -49,16 +49,11 @@ func main() {
 				break
 			}
 
-			obj, err := interpreter.ReadString(source)
+			printed, err := interpreter.ReadEvalPrint(source)
 			if err != nil {
-				fmt.Println("error:", err)
+				fmt.Println(err)
 			} else {
-				printed, err := interpreter.Print(obj)
-				if err != nil {
-					fmt.Println("error:", err)
-				} else {
-					fmt.Println(printed)
-				}
+				fmt.Println(printed)
 			}
 		}
 	}

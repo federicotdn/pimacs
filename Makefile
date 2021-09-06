@@ -6,6 +6,9 @@ clean:
 build:
 	go build
 
+fmt:
+	gofmt -s -w -l .
+
 run:
 	go build -gcflags=all="-N -l"
 	./pimacs

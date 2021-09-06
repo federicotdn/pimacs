@@ -13,14 +13,32 @@ const (
 	nbsp                    = '\u00A0'
 )
 
+func getArgs1(args ...lispObject) lispObject {
+	if len(args) != 1 {
+		panic(fmt.Sprintf("expected 1 arg, got: %v", len(args)))
+	}
+
+	return args[0]
+}
+
+func getArgs2(args ...lispObject) (lispObject, lispObject) {
+	if len(args) != 2 {
+		panic(fmt.Sprintf("expected 2 args, got: %v", len(args)))
+	}
+
+	return args[0], args[1]
+}
+
 type Interpreter interface {
 	Print(obj lispObject) (string, error)
+	PrintDbg(obj lispObject) string
 	ReadString(source string) (lispObject, error)
+	ReadEvalPrint(source string) (string, error)
 }
 
 type interpreter struct {
-	obarray     map[string]*lispSymbol
-	nil_        lispObject
+	obarray map[string]*lispSymbol
+	nil_    lispObject
 }
 
 type readContext struct {
@@ -58,6 +76,15 @@ func (inp *interpreter) Print(obj lispObject) (string, error) {
 	}
 
 	return str.(*lispString).value, nil
+}
+
+func (inp *interpreter) PrintDbg(obj lispObject) string {
+	str, err := inp.prin1(obj)
+	if err != nil {
+		return "<error: " + err.Error() + ">"
+	}
+
+	return str.(*lispString).value
 }
 
 func (inp *interpreter) prin1(obj lispObject) (lispObject, error) {
@@ -117,10 +144,35 @@ func (inp *interpreter) prin1(obj lispObject) (lispObject, error) {
 	return inp.makeString(s), nil
 }
 
-func (inp *interpreter) setCdr(obj lispObject, newCdr lispObject) lispObject {
+func (inp *interpreter) setCdr(objs ...lispObject) (lispObject, error) {
+	obj, newCdr := getArgs2(objs...)
 	obj.(*lispCons).cdr = newCdr
-	return newCdr
+
+	return newCdr, nil
 }
+
+func (inp *interpreter) car(objs ...lispObject) (lispObject, error) {
+	obj := getArgs1(objs...)
+
+	return obj.(*lispCons).car, nil
+}
+
+func (inp *interpreter) cdr(objs ...lispObject) (lispObject, error) {
+	obj := getArgs1(objs...)
+
+	return obj.(*lispCons).cdr, nil
+}
+
+func (inp *interpreter) plus(objs ...lispObject) (lispObject, error) {
+	var total lispInt = 0
+	for _, obj := range objs {
+		total += obj.(*lispInteger).value
+	}
+
+	return inp.makeInteger(total), nil
+}
+
+// func (inp *interpreter) if_(objs ...lispObject) (lispObject, error) {}
 
 func (inp *interpreter) stringToNumber(s string) (lispObject, error) {
 	nInt, err := strconv.ParseInt(s, 10, 64)
@@ -250,11 +302,21 @@ func (inp *interpreter) readEscape(ctx *readContext, stringp bool) (rune, error)
 }
 
 func (inp *interpreter) initialDefinitions() {
-	symNil := inp.intern("nil")
-	symNil.value = symNil
+	nil_ := inp.intern("nil")
+	nil_.value = nil_
 
-	symT := inp.intern("t")
-	symT.value = symT
+	t := inp.intern("t")
+	t.value = t
+
+	car := inp.intern("car")
+	car.function.callabe = inp.car
+	car.function.minArgs = 1
+	car.function.maxArgs = 1
+
+	plus := inp.intern("+")
+	plus.function.callabe = inp.plus
+	plus.function.minArgs = 0
+	plus.function.maxArgs = argsMany
 
 	// TODO:
 	// quote
@@ -508,15 +570,60 @@ func (inp *interpreter) ReadString(source string) (lispObject, error) {
 	return inp.read0(&ctx)
 }
 
-// func (inp *interpreter) eval(form lispObject) (lispObject, error) {
-// 	if form.getType() == symbol {
-// 		// return value in env
-// 	} else if form.getType() != cons {
-// 		return form, nil
-// 	}
+func (inp *interpreter) ReadEvalPrint(source string) (string, error) {
+	obj, err := inp.ReadString(source)
+	if err != nil {
+		return "", err
+	}
 
-// }
+	result, err := inp.eval(obj)
+	if err != nil {
+		return "", err
+	}
+
+	return inp.Print(result)
+}
+
+func (inp *interpreter) eval(form lispObject) (lispObject, error) {
+	if form.getType() == symbol {
+		// TODO: Use environments!
+		return form.(*lispSymbol).value, nil
+	} else if form.getType() != cons {
+		return form, nil
+	}
+
+	car, _ := inp.car(form)
+	cdr, _ := inp.cdr(form)
+
+	args := []lispObject{}
+	for {
+		if cdr != inp.nil_ && cdr.getType() != cons {
+			return nil, fmt.Errorf("wrong type argument: '%v'", cdr.getType())
+		}
+
+		if cdr == inp.nil_ {
+			break
+		}
+
+		arg, _ := inp.car(cdr)
+
+		evalled, err := inp.eval(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		args = append(args, evalled)
+		cdr, _ = inp.cdr(cdr)
+	}
+
+	return inp.apply(car, args...)
+}
 
 func (inp *interpreter) apply(fn lispObject, args ...lispObject) (lispObject, error) {
-	return nil, nil
+	callable := fn.(*lispSymbol).function.callabe
+	if callable == nil {
+		return nil, fmt.Errorf("not a function: '%v'", inp.PrintDbg(fn))
+	}
+
+	return callable(args...)
 }
