@@ -20,8 +20,9 @@ func testReadStringHelper(t *testing.T, cases []readStringTestCase) {
 		}
 
 		interpreter := NewInterpreter()
+		ec := NewExecContext()
 
-		output, err := interpreter.ReadString(tc.input)
+		output, err := interpreter.ReadString(tc.input, ec)
 		if err != nil {
 			if tc.err == nil {
 				t.Logf("input: '%v' got error '%v'", tc.input, err)
@@ -31,7 +32,7 @@ func testReadStringHelper(t *testing.T, cases []readStringTestCase) {
 				t.Fail()
 			}
 		} else {
-			printed, err := interpreter.Print(output)
+			printed, err := interpreter.Print(output, ec)
 			if err != nil {
 				t.Fatalf("input: '%v' unable to print output", tc.input)
 			}

@@ -17,6 +17,7 @@ func main() {
 	flag.Parse()
 
 	interpreter := elisp.NewInterpreter()
+	ec := elisp.NewExecContext()
 
 	if loadFile != "" {
 		data, err := os.ReadFile(loadFile)
@@ -26,13 +27,13 @@ func main() {
 		}
 
 		source := string(data)
-		obj, err := interpreter.ReadString(source)
+		obj, err := interpreter.ReadString(source, ec)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		printed, err := interpreter.Print(obj)
+		printed, err := interpreter.Print(obj, ec)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -49,7 +50,7 @@ func main() {
 				break
 			}
 
-			printed, err := interpreter.ReadEvalPrint(source)
+			printed, err := interpreter.ReadEvalPrint(source, ec)
 			if err != nil {
 				fmt.Println(err)
 			} else {
