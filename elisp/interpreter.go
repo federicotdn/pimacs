@@ -68,7 +68,7 @@ func (ec *execContext) xCdr(obj lispObject) lispObject {
 	return obj.(*lispCons).cdr
 }
 
-func (ec *execContext) xSetCdr(obj lispObject, newCdr lispObject) lispObject {
+func (ec *execContext) xSetCdr(obj, newCdr lispObject) lispObject {
 	obj.(*lispCons).cdr = newCdr
 	return newCdr
 }
@@ -169,7 +169,7 @@ func (ec *execContext) makeInteger(value lispInt) *lispInteger {
 	}
 }
 
-func (ec *execContext) makeCons(car lispObject, cdr lispObject) *lispCons {
+func (ec *execContext) makeCons(car, cdr lispObject) *lispCons {
 	return &lispCons{
 		car: car,
 		cdr: cdr,
@@ -640,6 +640,13 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		return nil, fmt.Errorf("expected at least %v arguments but got %v", fn.minArgs, len(args))
 	} else if fn.maxArgs >= 0 && nArgs > fn.maxArgs {
 		return nil, fmt.Errorf("expected at most %v arguments but got %v", fn.maxArgs, len(args))
+	}
+
+	if fn.maxArgs >= 0 {
+		for nArgs < fn.maxArgs {
+			args = append(args, ec.nil_)
+			nArgs++
+		}
 	}
 
 	switch fn.maxArgs {

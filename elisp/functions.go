@@ -128,11 +128,17 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	return ec.makeInteger(lispInt(num)), nil
 }
 
+func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
+	return ec.evalSub(form)
+}
+
 func (ec *execContext) initialDefsFunctions() {
 	ec.defun1("car", ec.car, 1)
+	ec.defun1("cdr", ec.cdr, 1)
 	ec.defun1("length", ec.length, 1)
 	ec.defunM("+", ec.plusSign, 0)
 	ec.defun2("cons", ec.cons_, 2)
+	ec.defun2("eval", ec.eval, 1)
 	ec.defunU("quote", ec.quote, 1)
 	ec.defunU("if", ec.if_, 2)
 	ec.defunU("progn", ec.progn, 0)
