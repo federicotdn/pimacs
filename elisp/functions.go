@@ -129,11 +129,45 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
-	return ec.evalSub(form)
+	size := ec.bindingsSize()
+
+	if lexical.getType() != cons && lexical != ec.nil_ {
+		lexical = ec.makeList(ec.t)
+	}
+
+	ec.specBind(ec.env, lexical)
+	val, err := ec.evalSub(form)
+
+	return ec.unbindTo(size, val, err)
 }
 
 func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
 	return ec.setInternal(symbol, newVal)
+}
+
+func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
+	for alist.getType() == cons {
+		element := ec.xCar(alist)
+
+		if element.getType() == cons && ec.xCar(element) == key {
+			return element, nil
+		}
+
+		alist = ec.xCdr(alist)
+	}
+
+	if alist != ec.nil_ {
+		return nil, fmt.Errorf("wrong type argument")
+	}
+
+	return ec.nil_, nil
+}
+
+func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
+	if obj1 == obj2 {
+		return ec.t, nil
+	}
+	return ec.nil_, nil
 }
 
 func (ec *execContext) initialDefsFunctions() {
@@ -143,6 +177,8 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defun2("cons", ec.cons_, 2)
 	ec.defun2("eval", ec.eval, 1)
 	ec.defun2("set", ec.set, 2)
+	ec.defun2("eq", ec.eq, 2)
+	ec.defun2("assq", ec.assq, 2)
 	ec.defunM("+", ec.plusSign, 0)
 	ec.defunU("quote", ec.quote, 1)
 	ec.defunU("if", ec.if_, 2)

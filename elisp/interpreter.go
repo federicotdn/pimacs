@@ -7,10 +7,8 @@ import (
 )
 
 const (
-	eightBitCodeOffset rune = 0x3fff00
-	max5ByteChar            = 0x3fff7f
-	eofRune                 = -1
-	nbsp                    = '\u00A0'
+	eofRune rune = -1
+	nbsp         = '\u00A0'
 )
 
 type Interpreter interface {
@@ -22,14 +20,32 @@ type Interpreter interface {
 type interpreter struct {
 }
 
-type specBinding struct {
+type specBindingTag int
+
+const (
+	specLet specBindingTag = iota
+)
+
+type specBinding interface {
+	tag() specBindingTag
 }
 
 type execContext struct {
-	specpdl []specBinding
-	inp     *interpreter
-	nil_    lispObject
-	obarray map[string]*lispSymbol
+	bindings []specBinding
+	inp      *interpreter
+	nil_     lispObject
+	t        lispObject
+	obarray  map[string]*lispSymbol
+	env      *lispSymbol
+}
+
+type specBindingLet struct {
+	symbol *lispSymbol
+	oldVal lispObject
+}
+
+func (sbl *specBindingLet) tag() specBindingTag {
+	return specLet
 }
 
 type readContext struct {
@@ -97,7 +113,7 @@ func (ec *execContext) prin1(obj lispObject) (lispObject, error) {
 		s = fmt.Sprint(obj.(*lispInteger).value)
 	case string_:
 		s = "\"" + obj.(*lispString).value + "\""
-	case vector:
+	case vectorLike:
 		return nil, fmt.Errorf("prin1 unimplemented")
 	case cons:
 		// TODO: Clean up when string functions are avaiable (don't type-assert)
@@ -315,11 +331,14 @@ func NewInterpreter() Interpreter {
 func NewExecContext() *execContext {
 	ec := execContext{}
 	ec.obarray = make(map[string]*lispSymbol)
+	ec.bindings = []specBinding{}
+	ec.env = ec.makeSymbol("internal-interpreter-environment")
 
 	ec.initialDefs()          // interpreter.go
 	ec.initialDefsFunctions() // functions.go
 
 	ec.nil_ = ec.intern("nil")
+	ec.t = ec.intern("t")
 
 	return &ec
 }
@@ -593,8 +612,24 @@ func (inp *interpreter) ReadEvalPrint(source string, ec *execContext) (string, e
 }
 
 func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
+	var err error
+
 	if form.getType() == symbol {
-		// TODO: Use environments!
+		var lex lispObject
+
+		if ec.env.value != ec.nil_ {
+			lex, err = ec.assq(form, ec.env.value)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			lex = ec.nil_
+		}
+
+		if lex != ec.nil_ {
+			return ec.xCdr(lex), nil
+		}
+
 		sym := form.(*lispSymbol)
 		if sym.value == nil {
 			return nil, fmt.Errorf("void-variable '%v'", sym.name)
@@ -613,7 +648,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	fn := sym.function
 
 	if fn == nil {
-		return nil, fmt.Errorf("void function '%v'", sym.name)
+		return nil, fmt.Errorf("void-function '%v'", sym.name)
 	}
 
 	args := []lispObject{}
@@ -634,7 +669,6 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		var processed lispObject
 
 		if fn.maxArgs != argsUnevalled {
-			var err error
 			processed, err = ec.evalSub(arg)
 			if err != nil {
 				return nil, err
@@ -677,4 +711,45 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 
 func (ec *execContext) apply(fn lispObject, args ...lispObject) (lispObject, error) {
 	return nil, nil
+}
+
+func (ec *execContext) specBind(symbol *lispSymbol, value lispObject) {
+	ec.bindings = append(ec.bindings, &specBindingLet{
+		symbol: symbol,
+		oldVal: symbol.value,
+	})
+
+	symbol.value = value
+}
+
+func (ec *execContext) bindingsSize() int {
+	return len(ec.bindings)
+}
+
+func (ec *execContext) unbindTo(target int, obj lispObject, err error) (lispObject, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Check if defer can be used for this
+	size := len(ec.bindings)
+	if size < target {
+		panic(fmt.Sprintf("unable to unbind back to %v, size is %v", target, size))
+	}
+
+	for len(ec.bindings) > target {
+		current := ec.bindings[len(ec.bindings)-1]
+
+		switch current.tag() {
+		case specLet:
+			let := current.(*specBindingLet)
+			let.symbol.value = let.oldVal
+		default:
+			panic("unknown specBinding tag")
+		}
+
+		ec.bindings = ec.bindings[:len(ec.bindings)-1]
+	}
+
+	return obj, nil
 }

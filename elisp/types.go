@@ -7,7 +7,7 @@ const (
 	symbol lispType = iota
 	integer
 	string_
-	vector
+	vectorLike
 	cons
 	float
 	argsMany      = -1

@@ -1,5 +1,10 @@
 package elisp
 
+const (
+	eightBitCodeOffset rune = 0x3fff00
+	max5ByteChar            = 0x3fff7f
+)
+
 func byte8toChar(c rune) rune {
 	return c + eightBitCodeOffset
 }
