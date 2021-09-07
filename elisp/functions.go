@@ -72,7 +72,7 @@ func (inp *interpreter) if_(args lispObject) (lispObject, error) {
 	car := inp.xCar(args)
 	cdr := inp.xCdr(args)
 
-	cond, err := inp.eval(car)
+	cond, err := inp.evalSub(car)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (inp *interpreter) if_(args lispObject) (lispObject, error) {
 			return nil, err
 		}
 
-		return inp.eval(then)
+		return inp.evalSub(then)
 	}
 
 	else_, err := inp.cdr(cdr)
@@ -101,7 +101,7 @@ func (inp *interpreter) progn(body lispObject) (lispObject, error) {
 	for body.getType() == cons {
 		form := inp.xCar(body)
 		body = inp.xCdr(body)
-		val, err = inp.eval(form)
+		val, err = inp.evalSub(form)
 		if err != nil {
 			return nil, err
 		}

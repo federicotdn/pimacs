@@ -547,7 +547,7 @@ func (inp *interpreter) ReadEvalPrint(source string) (string, error) {
 		return "", err
 	}
 
-	result, err := inp.eval(obj)
+	result, err := inp.evalSub(obj)
 	if err != nil {
 		return "", err
 	}
@@ -555,7 +555,7 @@ func (inp *interpreter) ReadEvalPrint(source string) (string, error) {
 	return inp.Print(result)
 }
 
-func (inp *interpreter) eval(form lispObject) (lispObject, error) {
+func (inp *interpreter) evalSub(form lispObject) (lispObject, error) {
 	if form.getType() == symbol {
 		// TODO: Use environments!
 		sym := form.(*lispSymbol)
@@ -597,7 +597,7 @@ func (inp *interpreter) eval(form lispObject) (lispObject, error) {
 
 		if fn.maxArgs != argsUnevalled {
 			var err error
-			processed, err = inp.eval(arg)
+			processed, err = inp.evalSub(arg)
 			if err != nil {
 				return nil, err
 			}
