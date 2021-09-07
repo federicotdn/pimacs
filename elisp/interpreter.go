@@ -13,22 +13,6 @@ const (
 	nbsp                    = '\u00A0'
 )
 
-func getArgs1(args ...lispObject) lispObject {
-	if len(args) != 1 {
-		panic(fmt.Sprintf("expected 1 arg, got: %v", len(args)))
-	}
-
-	return args[0]
-}
-
-func getArgs2(args ...lispObject) (lispObject, lispObject) {
-	if len(args) != 2 {
-		panic(fmt.Sprintf("expected 2 args, got: %v", len(args)))
-	}
-
-	return args[0], args[1]
-}
-
 type Interpreter interface {
 	Print(obj lispObject) (string, error)
 	PrintDbg(obj lispObject) string
@@ -142,112 +126,6 @@ func (inp *interpreter) prin1(obj lispObject) (lispObject, error) {
 	}
 
 	return inp.makeString(s), nil
-}
-
-func (inp *interpreter) xCar(obj lispObject) lispObject {
-	return obj.(*lispCons).car
-}
-
-func (inp *interpreter) xCdr(obj lispObject) lispObject {
-	return obj.(*lispCons).cdr
-}
-
-func (inp *interpreter) cons(car lispObject, cdr lispObject) (lispObject, error) {
-	return inp.makeCons(car, cdr), nil
-}
-
-func (inp *interpreter) setCdr(obj lispObject, newCdr lispObject) (lispObject, error) {
-	obj.(*lispCons).cdr = newCdr
-
-	return newCdr, nil
-}
-
-func (inp *interpreter) car(obj lispObject) (lispObject, error) {
-	if obj == inp.nil_ {
-		return inp.nil_, nil
-	}
-
-	cons, ok := obj.(*lispCons)
-	if !ok {
-		return nil, fmt.Errorf("object is not a cons")
-	}
-	return cons.car, nil
-}
-
-func (inp *interpreter) cdr(obj lispObject) (lispObject, error) {
-	if obj == inp.nil_ {
-		return inp.nil_, nil
-	}
-
-	cons, ok := obj.(*lispCons)
-	if !ok {
-		return nil, fmt.Errorf("object is not a cons")
-	}
-	return cons.cdr, nil
-}
-
-func (inp *interpreter) plus(objs ...lispObject) (lispObject, error) {
-	var total lispInt = 0
-	for i, obj := range objs {
-		number, ok := obj.(*lispInteger)
-		if !ok {
-			return nil, fmt.Errorf("argument in position %v is not an integer", i)
-		}
-		total += number.value
-	}
-
-	return inp.makeInteger(total), nil
-}
-
-func (inp *interpreter) quote(args lispObject) (lispObject, error) {
-	cdr, _ := inp.cdr(args)
-	if cdr != inp.nil_ {
-		return nil, fmt.Errorf("expected exactly 1 argument")
-	}
-
-	return inp.car(args)
-}
-
-func (inp *interpreter) if_(args lispObject) (lispObject, error) {
-	car := inp.xCar(args)
-	cdr := inp.xCdr(args)
-
-	cond, err := inp.eval(car)
-	if err != nil {
-		return nil, err
-	}
-
-	if cond != inp.nil_ {
-		then, err := inp.car(cdr)
-		if err != nil {
-			return nil, err
-		}
-
-		return inp.eval(then)
-	}
-
-	else_, err := inp.cdr(cdr)
-	if err != nil {
-		return nil, err
-	}
-
-	return inp.progn(else_)
-}
-
-func (inp *interpreter) progn(body lispObject) (lispObject, error) {
-	var err error
-	val := inp.nil_
-
-	for body.getType() == cons {
-		form := inp.xCar(body)
-		body = inp.xCdr(body)
-		val, err = inp.eval(form)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return val, nil
 }
 
 func (inp *interpreter) stringToNumber(s string) (lispObject, error) {
@@ -401,35 +279,26 @@ func (inp *interpreter) defunM(name string, fn lispFnM, minArgs int) *lispSymbol
 	return sym
 }
 
-func (inp *interpreter) defunU(name string, fn lispFn1) *lispSymbol {
+func (inp *interpreter) defunU(name string, fn lispFn1, minArgs int) *lispSymbol {
 	sym := inp.intern(name)
-	sym.function = &builtInFunction{callabe1: fn, minArgs: 1, maxArgs: argsUnevalled}
+	sym.function = &builtInFunction{callabe1: fn, minArgs: minArgs, maxArgs: argsUnevalled}
 	return sym
 }
 
-func (inp *interpreter) initialDefinitions() {
+func (inp *interpreter) initialDefs() {
 	nil_ := inp.intern("nil")
 	nil_.value = nil_
 
 	t := inp.intern("t")
 	t.value = t
-
-	inp.defun1("car", inp.car, 1)
-	inp.defunM("+", inp.plus, 0)
-	inp.defun2("cons", inp.cons, 2)
-	inp.defunU("quote", inp.quote)
-	inp.defunU("if", inp.if_)
-	inp.defunU("progn", inp.progn)
-
-	// TODO:
-	// backquote (`)
 }
 
 func NewInterpreter() Interpreter {
 	inp := interpreter{}
 	inp.obarray = make(map[string]*lispSymbol)
 
-	inp.initialDefinitions()
+	inp.initialDefs()          // interpreter.go
+	inp.initialDefsFunctions() // functions.go
 
 	inp.nil_ = inp.intern("nil")
 
@@ -699,8 +568,9 @@ func (inp *interpreter) eval(form lispObject) (lispObject, error) {
 		return form, nil
 	}
 
-	car, _ := inp.car(form)
-	cdr, _ := inp.cdr(form)
+	car := inp.xCar(form)
+	cdr := inp.xCdr(form)
+	original := cdr
 
 	fn := car.(*lispSymbol).function
 
@@ -709,40 +579,39 @@ func (inp *interpreter) eval(form lispObject) (lispObject, error) {
 	}
 
 	args := []lispObject{}
+	nArgs := 0
 
-	if fn.maxArgs != argsUnevalled {
-		for {
-			if cdr != inp.nil_ && cdr.getType() != cons {
-				return nil, fmt.Errorf("wrong type argument: '%v'", cdr.getType())
-			}
-
-			if cdr == inp.nil_ {
-				break
-			}
-
-			arg, _ := inp.car(cdr)
-			var processed lispObject
-
-			{
-				var err error
-				processed, err = inp.eval(arg)
-				if err != nil {
-					return nil, err
-				}
-
-				args = append(args, processed)
-			}
-
-			cdr, _ = inp.cdr(cdr)
+	for {
+		if cdr != inp.nil_ && cdr.getType() != cons {
+			return nil, fmt.Errorf("wrong type argument: '%v'", cdr.getType())
 		}
 
-		if len(args) < fn.minArgs {
-			return nil, fmt.Errorf("expected at least %v arguments but got %v", fn.minArgs, len(args))
-		} else if fn.maxArgs != argsMany && len(args) > fn.maxArgs {
-			return nil, fmt.Errorf("expected at most %v arguments but got %v", fn.maxArgs, len(args))
+		if cdr == inp.nil_ {
+			break
 		}
-	} else if cdr == inp.nil_ {
-		return nil, fmt.Errorf("expected at least 1 argument but got 0")
+
+		nArgs++
+
+		arg := inp.xCar(cdr)
+		var processed lispObject
+
+		if fn.maxArgs != argsUnevalled {
+			var err error
+			processed, err = inp.eval(arg)
+			if err != nil {
+				return nil, err
+			}
+
+			args = append(args, processed)
+		}
+
+		cdr = inp.xCdr(cdr)
+	}
+
+	if nArgs < fn.minArgs {
+		return nil, fmt.Errorf("expected at least %v arguments but got %v", fn.minArgs, len(args))
+	} else if fn.maxArgs >= 0 && nArgs > fn.maxArgs {
+		return nil, fmt.Errorf("expected at most %v arguments but got %v", fn.maxArgs, len(args))
 	}
 
 	switch fn.maxArgs {
@@ -755,7 +624,7 @@ func (inp *interpreter) eval(form lispObject) (lispObject, error) {
 	case argsMany:
 		return fn.callabem(args...)
 	case argsUnevalled:
-		return fn.callabe1(cdr)
+		return fn.callabe1(original)
 	default:
 		return nil, fmt.Errorf("unknown max args value: '%v'", fn.maxArgs)
 	}
