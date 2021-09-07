@@ -144,35 +144,111 @@ func (inp *interpreter) prin1(obj lispObject) (lispObject, error) {
 	return inp.makeString(s), nil
 }
 
-func (inp *interpreter) setCdr(objs ...lispObject) (lispObject, error) {
-	obj, newCdr := getArgs2(objs...)
+func (inp *interpreter) xCar(obj lispObject) lispObject {
+	return obj.(*lispCons).car
+}
+
+func (inp *interpreter) xCdr(obj lispObject) lispObject {
+	return obj.(*lispCons).cdr
+}
+
+func (inp *interpreter) cons(car lispObject, cdr lispObject) (lispObject, error) {
+	return inp.makeCons(car, cdr), nil
+}
+
+func (inp *interpreter) setCdr(obj lispObject, newCdr lispObject) (lispObject, error) {
 	obj.(*lispCons).cdr = newCdr
 
 	return newCdr, nil
 }
 
-func (inp *interpreter) car(objs ...lispObject) (lispObject, error) {
-	obj := getArgs1(objs...)
+func (inp *interpreter) car(obj lispObject) (lispObject, error) {
+	if obj == inp.nil_ {
+		return inp.nil_, nil
+	}
 
-	return obj.(*lispCons).car, nil
+	cons, ok := obj.(*lispCons)
+	if !ok {
+		return nil, fmt.Errorf("object is not a cons")
+	}
+	return cons.car, nil
 }
 
-func (inp *interpreter) cdr(objs ...lispObject) (lispObject, error) {
-	obj := getArgs1(objs...)
+func (inp *interpreter) cdr(obj lispObject) (lispObject, error) {
+	if obj == inp.nil_ {
+		return inp.nil_, nil
+	}
 
-	return obj.(*lispCons).cdr, nil
+	cons, ok := obj.(*lispCons)
+	if !ok {
+		return nil, fmt.Errorf("object is not a cons")
+	}
+	return cons.cdr, nil
 }
 
 func (inp *interpreter) plus(objs ...lispObject) (lispObject, error) {
 	var total lispInt = 0
-	for _, obj := range objs {
-		total += obj.(*lispInteger).value
+	for i, obj := range objs {
+		number, ok := obj.(*lispInteger)
+		if !ok {
+			return nil, fmt.Errorf("argument in position %v is not an integer", i)
+		}
+		total += number.value
 	}
 
 	return inp.makeInteger(total), nil
 }
 
-// func (inp *interpreter) if_(objs ...lispObject) (lispObject, error) {}
+func (inp *interpreter) quote(args lispObject) (lispObject, error) {
+	cdr, _ := inp.cdr(args)
+	if cdr != inp.nil_ {
+		return nil, fmt.Errorf("expected exactly 1 argument")
+	}
+
+	return inp.car(args)
+}
+
+func (inp *interpreter) if_(args lispObject) (lispObject, error) {
+	car := inp.xCar(args)
+	cdr := inp.xCdr(args)
+
+	cond, err := inp.eval(car)
+	if err != nil {
+		return nil, err
+	}
+
+	if cond != inp.nil_ {
+		then, err := inp.car(cdr)
+		if err != nil {
+			return nil, err
+		}
+
+		return inp.eval(then)
+	}
+
+	else_, err := inp.cdr(cdr)
+	if err != nil {
+		return nil, err
+	}
+
+	return inp.progn(else_)
+}
+
+func (inp *interpreter) progn(body lispObject) (lispObject, error) {
+	var err error
+	val := inp.nil_
+
+	for body.getType() == cons {
+		form := inp.xCar(body)
+		body = inp.xCdr(body)
+		val, err = inp.eval(form)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return val, nil
+}
 
 func (inp *interpreter) stringToNumber(s string) (lispObject, error) {
 	nInt, err := strconv.ParseInt(s, 10, 64)
@@ -301,6 +377,36 @@ func (inp *interpreter) readEscape(ctx *readContext, stringp bool) (rune, error)
 	return 0, fmt.Errorf("unimplemented escape code: '%v", string(c))
 }
 
+func (inp *interpreter) defun0(name string, fn lispFn0) *lispSymbol {
+	sym := inp.intern(name)
+	sym.function = &builtInFunction{callabe0: fn}
+	return sym
+}
+
+func (inp *interpreter) defun1(name string, fn lispFn1, minArgs int) *lispSymbol {
+	sym := inp.intern(name)
+	sym.function = &builtInFunction{callabe1: fn, minArgs: minArgs, maxArgs: 1}
+	return sym
+}
+
+func (inp *interpreter) defun2(name string, fn lispFn2, minArgs int) *lispSymbol {
+	sym := inp.intern(name)
+	sym.function = &builtInFunction{callabe2: fn, minArgs: minArgs, maxArgs: 2}
+	return sym
+}
+
+func (inp *interpreter) defunM(name string, fn lispFnM, minArgs int) *lispSymbol {
+	sym := inp.intern(name)
+	sym.function = &builtInFunction{callabem: fn, minArgs: minArgs, maxArgs: argsMany}
+	return sym
+}
+
+func (inp *interpreter) defunU(name string, fn lispFn1) *lispSymbol {
+	sym := inp.intern(name)
+	sym.function = &builtInFunction{callabe1: fn, minArgs: 1, maxArgs: argsUnevalled}
+	return sym
+}
+
 func (inp *interpreter) initialDefinitions() {
 	nil_ := inp.intern("nil")
 	nil_.value = nil_
@@ -308,18 +414,14 @@ func (inp *interpreter) initialDefinitions() {
 	t := inp.intern("t")
 	t.value = t
 
-	car := inp.intern("car")
-	car.function.callabe = inp.car
-	car.function.minArgs = 1
-	car.function.maxArgs = 1
-
-	plus := inp.intern("+")
-	plus.function.callabe = inp.plus
-	plus.function.minArgs = 0
-	plus.function.maxArgs = argsMany
+	inp.defun1("car", inp.car, 1)
+	inp.defunM("+", inp.plus, 0)
+	inp.defun2("cons", inp.cons, 2)
+	inp.defunU("quote", inp.quote)
+	inp.defunU("if", inp.if_)
+	inp.defunU("progn", inp.progn)
 
 	// TODO:
-	// quote
 	// backquote (`)
 }
 
@@ -587,7 +689,12 @@ func (inp *interpreter) ReadEvalPrint(source string) (string, error) {
 func (inp *interpreter) eval(form lispObject) (lispObject, error) {
 	if form.getType() == symbol {
 		// TODO: Use environments!
-		return form.(*lispSymbol).value, nil
+		sym := form.(*lispSymbol)
+		if sym.value == nil {
+			return nil, fmt.Errorf("void-variable '%v'", sym.name)
+		}
+
+		return sym.value, nil
 	} else if form.getType() != cons {
 		return form, nil
 	}
@@ -595,35 +702,65 @@ func (inp *interpreter) eval(form lispObject) (lispObject, error) {
 	car, _ := inp.car(form)
 	cdr, _ := inp.cdr(form)
 
-	args := []lispObject{}
-	for {
-		if cdr != inp.nil_ && cdr.getType() != cons {
-			return nil, fmt.Errorf("wrong type argument: '%v'", cdr.getType())
-		}
+	fn := car.(*lispSymbol).function
 
-		if cdr == inp.nil_ {
-			break
-		}
-
-		arg, _ := inp.car(cdr)
-
-		evalled, err := inp.eval(arg)
-		if err != nil {
-			return nil, err
-		}
-
-		args = append(args, evalled)
-		cdr, _ = inp.cdr(cdr)
+	if fn == nil {
+		return nil, fmt.Errorf("not a function: '%v'", inp.PrintDbg(car))
 	}
 
-	return inp.apply(car, args...)
+	args := []lispObject{}
+
+	if fn.maxArgs != argsUnevalled {
+		for {
+			if cdr != inp.nil_ && cdr.getType() != cons {
+				return nil, fmt.Errorf("wrong type argument: '%v'", cdr.getType())
+			}
+
+			if cdr == inp.nil_ {
+				break
+			}
+
+			arg, _ := inp.car(cdr)
+			var processed lispObject
+
+			{
+				var err error
+				processed, err = inp.eval(arg)
+				if err != nil {
+					return nil, err
+				}
+
+				args = append(args, processed)
+			}
+
+			cdr, _ = inp.cdr(cdr)
+		}
+
+		if len(args) < fn.minArgs {
+			return nil, fmt.Errorf("expected at least %v arguments but got %v", fn.minArgs, len(args))
+		} else if fn.maxArgs != argsMany && len(args) > fn.maxArgs {
+			return nil, fmt.Errorf("expected at most %v arguments but got %v", fn.maxArgs, len(args))
+		}
+	} else if cdr == inp.nil_ {
+		return nil, fmt.Errorf("expected at least 1 argument but got 0")
+	}
+
+	switch fn.maxArgs {
+	case 0:
+		return fn.callabe0()
+	case 1:
+		return fn.callabe1(args[0])
+	case 2:
+		return fn.callabe2(args[0], args[1])
+	case argsMany:
+		return fn.callabem(args...)
+	case argsUnevalled:
+		return fn.callabe1(cdr)
+	default:
+		return nil, fmt.Errorf("unknown max args value: '%v'", fn.maxArgs)
+	}
 }
 
 func (inp *interpreter) apply(fn lispObject, args ...lispObject) (lispObject, error) {
-	callable := fn.(*lispSymbol).function.callabe
-	if callable == nil {
-		return nil, fmt.Errorf("not a function: '%v'", inp.PrintDbg(fn))
-	}
-
-	return callable(args...)
+	return nil, nil
 }
