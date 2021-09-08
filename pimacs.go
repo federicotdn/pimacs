@@ -21,7 +21,7 @@ func main() {
 			break
 		}
 
-		printed, err := interpreter.ReadEvalPrint(source)
+		printed, err := interpreter.ReadEvalPrin1(source)
 		if err != nil {
 			fmt.Println(err)
 		} else {

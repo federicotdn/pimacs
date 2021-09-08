@@ -12,8 +12,8 @@ const (
 )
 
 type Interpreter interface {
-	ReadPrint(source string) (string, error)
-	ReadEvalPrint(source string) (string, error)
+	ReadPrin1(source string) (string, error)
+	ReadEvalPrin1(source string) (string, error)
 }
 
 type interpreter struct {
@@ -35,6 +35,7 @@ type execContext struct {
 	inp      *interpreter
 	nil_     lispObject
 	t        lispObject
+	unbound  lispObject
 	obarray  map[string]*lispSymbol
 	env      *lispSymbol
 }
@@ -103,16 +104,21 @@ func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 	return nil, fmt.Errorf("unknown number format")
 }
 
+func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
+	return &lispSymbol{
+		name: name,
+	}
+}
+
 func (ec *execContext) makeSymbol(name string) *lispSymbol {
-	if ec.nil_ == nil && name != "nil" {
-		panic("context is not initialized")
+	if ec.nil_ == nil || ec.unbound == nil {
+		panic("context not initialized")
 	}
 
-	return &lispSymbol{
-		name:     name,
-		value:    ec.nil_,
-		function: ec.nil_,
-	}
+	base := ec.makeSymbolBase(name)
+	base.value = ec.unbound
+	base.function = ec.nil_
+	return base
 }
 
 func (ec *execContext) makeInteger(value lispInt) *lispInteger {
@@ -293,14 +299,21 @@ func newExecContext() *execContext {
 	ec.obarray = make(map[string]*lispSymbol)
 	ec.bindings = []specBinding{}
 
-	nil_ := ec.intern("nil")
+	nil_ := ec.makeSymbolBase("nil")
 	nil_.value = nil_
 	nil_.function = nil_
+	ec.obarray["nil"] = nil_
 	ec.nil_ = nil_
 
-	ec.t = ec.intern("t")
+	ec.unbound = ec.makeSymbolBase("unbound")
 
-	ec.env = ec.makeSymbol("internal-interpreter-environment")
+	t := ec.intern("t")
+	t.value = t
+	ec.t = t
+
+	env := ec.makeSymbol("internal-interpreter-environment")
+	env.value = ec.nil_
+	ec.env = env
 
 	ec.initialDefs()          // interpreter.go
 	ec.initialDefsFunctions() // functions.go
@@ -554,7 +567,7 @@ func (ec *execContext) readFromString(source string) (lispObject, error) {
 	return ec.read0(&ctx)
 }
 
-func (inp *interpreter) ReadPrint(source string) (string, error) {
+func (inp *interpreter) ReadPrin1(source string) (string, error) {
 	result, err := inp.ec.readFromString(source)
 	if err != nil {
 		return "", err
@@ -568,7 +581,7 @@ func (inp *interpreter) ReadPrint(source string) (string, error) {
 	return printed.(*lispString).value, nil
 }
 
-func (inp *interpreter) ReadEvalPrint(source string) (string, error) {
+func (inp *interpreter) ReadEvalPrin1(source string) (string, error) {
 	obj, err := inp.ec.readFromString(source)
 	if err != nil {
 		return "", err
@@ -607,7 +620,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		}
 
 		sym := form.(*lispSymbol)
-		if sym.value == ec.nil_ {
+		if sym.value == ec.unbound {
 			return nil, fmt.Errorf("void-variable '%v'", sym.name)
 		}
 

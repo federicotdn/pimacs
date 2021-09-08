@@ -40,13 +40,18 @@ func testStringToString(t *testing.T, fn func(string) (string, error), cases []s
 	}
 }
 
-func readPrint(input string) (string, error) {
+func readPrin1(input string) (string, error) {
 	inp := NewInterpreter()
-	return inp.ReadPrint(input)
+	return inp.ReadPrin1(input)
+}
+
+func readEvalPrin1(input string) (string, error) {
+	inp := NewInterpreter()
+	return inp.ReadEvalPrin1(input)
 }
 
 func TestReadPrint(t *testing.T) {
-	testStringToString(t, readPrint, []stringToStringTC{
+	testStringToString(t, readPrin1, []stringToStringTC{
 		{"1", "1", nil},
 		{"-1", "-1", nil},
 		{"0", "0", nil},
@@ -129,5 +134,36 @@ func TestReadPrint(t *testing.T) {
 		{`"hello`, "", anyError},
 		{`"`, "", anyError},
 		{"\"hello \\\n", "", anyError},
+	})
+}
+
+func TestReadEvalPrint(t *testing.T) {
+	testStringToString(t, readEvalPrin1, []stringToStringTC{
+		{"1", "1", nil},
+		{"nil", "nil", nil},
+		{"t", "t", nil},
+		{"(+)", "0", nil},
+		{"(+ 1)", "1", nil},
+		{"(+ 1 1)", "2", nil},
+		{"(length '(1 2 3))", "3", nil},
+		{"(eval '(+ 1 1))", "2", nil},
+		{"(progn 1 2 3)", "3", nil},
+		{"(progn)", "nil", nil},
+		{"(progn (set 'a 42) a)", "42", nil},
+		{"(length \"hello\")", "5", nil},
+		{"foo", "", anyError},
+		{"(foo 1)", "", anyError},
+		{"(cons)", "", anyError},
+		{"(cons 1 2 3)", "", anyError},
+		{"(if t 1 2)", "1", nil},
+		{"(if nil 1 2)", "2", nil},
+		{"(if t 42)", "42", nil},
+		{"(if nil 42)", "nil", nil},
+		{"unbound", "", anyError},
+		{"(eq nil nil)", "t", nil},
+		{"(eq nil ())", "t", nil},
+		{"(eq t t)", "t", nil},
+		{"(eq 1000 1000)", "nil", nil},
+		{"(progn (if nil 1 2 3 (set 'foo 42)) foo)", "42", nil},
 	})
 }
