@@ -1,6 +1,7 @@
 package elisp
 
 type lispType int
+type vectorLikeType int
 type lispInt int64
 
 const (
@@ -14,12 +15,17 @@ const (
 	argsUnevalled = -2
 )
 
+const (
+	vectorLikeTypeNormal vectorLikeType = iota
+	vectorLikeTypeSubroutine
+)
+
 type lispFn0 func() (lispObject, error)
 type lispFn1 func(lispObject) (lispObject, error)
 type lispFn2 func(lispObject, lispObject) (lispObject, error)
 type lispFnM func(...lispObject) (lispObject, error)
 
-type builtInFunction struct {
+type subroutine struct {
 	callabe0 lispFn0
 	callabe1 lispFn1
 	callabe2 lispFn2
@@ -29,11 +35,9 @@ type builtInFunction struct {
 }
 
 type lispSymbol struct {
-	name  string
-	value lispObject
-
-	// TODO: Should be lispObject instead (?)
-	function *builtInFunction
+	name     string
+	value    lispObject
+	function lispObject
 }
 
 type lispCons struct {
@@ -51,6 +55,13 @@ type lispFloat struct {
 
 type lispString struct {
 	value string
+}
+
+type vectorLikeValue interface{}
+
+type lispVectorLike struct {
+	vecType vectorLikeType
+	value   vectorLikeValue
 }
 
 type lispObject interface {
@@ -75,4 +86,8 @@ func (lf *lispFloat) getType() lispType {
 
 func (ls *lispString) getType() lispType {
 	return string_
+}
+
+func (lv *lispVectorLike) getType() lispType {
+	return vectorLike
 }

@@ -175,7 +175,9 @@ func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 
 func (ec *execContext) makeSymbol(name string) *lispSymbol {
 	return &lispSymbol{
-		name: name,
+		name:     name,
+		value:    ec.nil_,
+		function: ec.nil_,
 	}
 }
 
@@ -214,6 +216,13 @@ func (ec *execContext) makeList(obj lispObject, objs ...lispObject) *lispCons {
 	}
 
 	return val
+}
+
+func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeValue) *lispVectorLike {
+	return &lispVectorLike{
+		vecType: vecType,
+		value:   value,
+	}
 }
 
 func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) {
@@ -286,34 +295,49 @@ func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) 
 	return 0, fmt.Errorf("unimplemented escape code: '%v", string(c))
 }
 
-func (ec *execContext) defun0(name string, fn lispFn0) *lispSymbol {
+func (ec *execContext) defSubr(name string, sub *subroutine) *lispSymbol {
 	sym := ec.intern(name)
-	sym.function = &builtInFunction{callabe0: fn}
+	vec := ec.makeVectorLike(vectorLikeTypeSubroutine, sub)
+	sym.function = vec
 	return sym
 }
 
-func (ec *execContext) defun1(name string, fn lispFn1, minArgs int) *lispSymbol {
-	sym := ec.intern(name)
-	sym.function = &builtInFunction{callabe1: fn, minArgs: minArgs, maxArgs: 1}
-	return sym
+func (ec *execContext) defSubr0(name string, fn lispFn0) *lispSymbol {
+	return ec.defSubr(name, &subroutine{
+		callabe0: fn,
+	})
 }
 
-func (ec *execContext) defun2(name string, fn lispFn2, minArgs int) *lispSymbol {
-	sym := ec.intern(name)
-	sym.function = &builtInFunction{callabe2: fn, minArgs: minArgs, maxArgs: 2}
-	return sym
+func (ec *execContext) defSubr1(name string, fn lispFn1, minArgs int) *lispSymbol {
+	return ec.defSubr(name, &subroutine{
+		callabe1: fn,
+		minArgs:  minArgs,
+		maxArgs:  1,
+	})
 }
 
-func (ec *execContext) defunM(name string, fn lispFnM, minArgs int) *lispSymbol {
-	sym := ec.intern(name)
-	sym.function = &builtInFunction{callabem: fn, minArgs: minArgs, maxArgs: argsMany}
-	return sym
+func (ec *execContext) defSubr2(name string, fn lispFn2, minArgs int) *lispSymbol {
+	return ec.defSubr(name, &subroutine{
+		callabe2: fn,
+		minArgs:  minArgs,
+		maxArgs:  2,
+	})
 }
 
-func (ec *execContext) defunU(name string, fn lispFn1, minArgs int) *lispSymbol {
-	sym := ec.intern(name)
-	sym.function = &builtInFunction{callabe1: fn, minArgs: minArgs, maxArgs: argsUnevalled}
-	return sym
+func (ec *execContext) defSubrM(name string, fn lispFnM, minArgs int) *lispSymbol {
+	return ec.defSubr(name, &subroutine{
+		callabem: fn,
+		minArgs:  minArgs,
+		maxArgs:  argsMany,
+	})
+}
+
+func (ec *execContext) defSubrU(name string, fn lispFn1, minArgs int) *lispSymbol {
+	return ec.defSubr(name, &subroutine{
+		callabe1: fn,
+		minArgs:  minArgs,
+		maxArgs:  argsUnevalled,
+	})
 }
 
 func (ec *execContext) initialDefs() {
@@ -332,13 +356,18 @@ func NewExecContext() *execContext {
 	ec := execContext{}
 	ec.obarray = make(map[string]*lispSymbol)
 	ec.bindings = []specBinding{}
+
+	nil_ := ec.intern("nil")
+	nil_.value = nil_
+	nil_.function = nil_
+	ec.nil_ = nil_
+
+	ec.t = ec.intern("t")
+
 	ec.env = ec.makeSymbol("internal-interpreter-environment")
 
 	ec.initialDefs()          // interpreter.go
 	ec.initialDefsFunctions() // functions.go
-
-	ec.nil_ = ec.intern("nil")
-	ec.t = ec.intern("t")
 
 	return &ec
 }
@@ -644,12 +673,25 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	cdr := ec.xCdr(form)
 	original := cdr
 
+	if car.getType() != symbol {
+		return nil, fmt.Errorf("function is not a symbol")
+	} else if car == ec.nil_ {
+		return nil, fmt.Errorf("void-function")
+	}
+
 	sym := car.(*lispSymbol)
 	fn := sym.function
 
-	if fn == nil {
-		return nil, fmt.Errorf("void-function '%v'", sym.name)
+	if fn.getType() != vectorLike {
+		return nil, fmt.Errorf("function must be vector-like")
 	}
+
+	vec := fn.(*lispVectorLike)
+	if vec.vecType != vectorLikeTypeSubroutine {
+		return nil, fmt.Errorf("vector must be a subroutine")
+	}
+
+	sub := vec.value.(*subroutine)
 
 	args := []lispObject{}
 	nArgs := 0
@@ -668,7 +710,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		arg := ec.xCar(cdr)
 		var processed lispObject
 
-		if fn.maxArgs != argsUnevalled {
+		if sub.maxArgs != argsUnevalled {
 			processed, err = ec.evalSub(arg)
 			if err != nil {
 				return nil, err
@@ -680,32 +722,32 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		cdr = ec.xCdr(cdr)
 	}
 
-	if nArgs < fn.minArgs {
-		return nil, fmt.Errorf("expected at least %v arguments but got %v", fn.minArgs, len(args))
-	} else if fn.maxArgs >= 0 && nArgs > fn.maxArgs {
-		return nil, fmt.Errorf("expected at most %v arguments but got %v", fn.maxArgs, len(args))
+	if nArgs < sub.minArgs {
+		return nil, fmt.Errorf("expected at least %v arguments but got %v", sub.minArgs, len(args))
+	} else if sub.maxArgs >= 0 && nArgs > sub.maxArgs {
+		return nil, fmt.Errorf("expected at most %v arguments but got %v", sub.maxArgs, len(args))
 	}
 
-	if fn.maxArgs >= 0 {
-		for nArgs < fn.maxArgs {
+	if sub.maxArgs >= 0 {
+		for nArgs < sub.maxArgs {
 			args = append(args, ec.nil_)
 			nArgs++
 		}
 	}
 
-	switch fn.maxArgs {
+	switch sub.maxArgs {
 	case 0:
-		return fn.callabe0()
+		return sub.callabe0()
 	case 1:
-		return fn.callabe1(args[0])
+		return sub.callabe1(args[0])
 	case 2:
-		return fn.callabe2(args[0], args[1])
+		return sub.callabe2(args[0], args[1])
 	case argsMany:
-		return fn.callabem(args...)
+		return sub.callabem(args...)
 	case argsUnevalled:
-		return fn.callabe1(original)
+		return sub.callabe1(original)
 	default:
-		return nil, fmt.Errorf("unknown max args value: '%v'", fn.maxArgs)
+		return nil, fmt.Errorf("unknown max args value: '%v'", sub.maxArgs)
 	}
 }
 

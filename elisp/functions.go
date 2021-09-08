@@ -171,18 +171,18 @@ func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) initialDefsFunctions() {
-	ec.defun1("car", ec.car, 1)
-	ec.defun1("cdr", ec.cdr, 1)
-	ec.defun1("length", ec.length, 1)
-	ec.defun2("cons", ec.cons_, 2)
-	ec.defun2("eval", ec.eval, 1)
-	ec.defun2("set", ec.set, 2)
-	ec.defun2("eq", ec.eq, 2)
-	ec.defun2("assq", ec.assq, 2)
-	ec.defunM("+", ec.plusSign, 0)
-	ec.defunU("quote", ec.quote, 1)
-	ec.defunU("if", ec.if_, 2)
-	ec.defunU("progn", ec.progn, 0)
+	ec.defSubr1("car", ec.car, 1)
+	ec.defSubr1("cdr", ec.cdr, 1)
+	ec.defSubr1("length", ec.length, 1)
+	ec.defSubr2("cons", ec.cons_, 2)
+	ec.defSubr2("eval", ec.eval, 1)
+	ec.defSubr2("set", ec.set, 2)
+	ec.defSubr2("eq", ec.eq, 2)
+	ec.defSubr2("assq", ec.assq, 2)
+	ec.defSubrM("+", ec.plusSign, 0)
+	ec.defSubrU("quote", ec.quote, 1)
+	ec.defSubrU("if", ec.if_, 2)
+	ec.defSubrU("progn", ec.progn, 0)
 
 	// TODO:
 	// backquote (`)
