@@ -170,6 +170,63 @@ func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 	return ec.nil_, nil
 }
 
+func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
+	type_ := obj.getType()
+	var s string
+
+	switch type_ {
+	case symbol:
+		s = obj.(*lispSymbol).name
+	case integer:
+		s = fmt.Sprint(obj.(*lispInteger).value)
+	case string_:
+		s = "\"" + obj.(*lispString).value + "\""
+	case vectorLike:
+		return nil, fmt.Errorf("prin1 unimplemented")
+	case cons:
+		// TODO: Clean up when string functions are avaiable (don't type-assert)
+		lc := obj.(*lispCons)
+		current := lc
+
+		carStr, err := ec.prin1(lc.car, ec.nil_)
+		if err != nil {
+			return nil, err
+		}
+		s = "(" + carStr.(*lispString).value
+
+		for {
+			next, ok := current.cdr.(*lispCons)
+			if ok {
+				nextStr, err := ec.prin1(next.car, ec.nil_)
+				if err != nil {
+					return nil, err
+				}
+
+				s += " " + nextStr.(*lispString).value
+				current = next
+			} else {
+				if current.cdr != ec.nil_ {
+					cdrStr, err := ec.prin1(current.cdr, ec.nil_)
+					if err != nil {
+						return nil, err
+					}
+					s += " . " + cdrStr.(*lispString).value
+				}
+
+				break
+			}
+		}
+
+		s += ")"
+	case float:
+		s = fmt.Sprint(obj.(*lispFloat).value)
+	default:
+		return nil, fmt.Errorf("prin1 unimplemented for '%v'", type_)
+	}
+
+	return ec.makeString(s), nil
+}
+
 func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr1("car", ec.car, 1)
 	ec.defSubr1("cdr", ec.cdr, 1)
@@ -179,6 +236,7 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr2("set", ec.set, 2)
 	ec.defSubr2("eq", ec.eq, 2)
 	ec.defSubr2("assq", ec.assq, 2)
+	ec.defSubr2("prin1", ec.prin1, 1)
 	ec.defSubrM("+", ec.plusSign, 0)
 	ec.defSubrU("quote", ec.quote, 1)
 	ec.defSubrU("if", ec.if_, 2)
