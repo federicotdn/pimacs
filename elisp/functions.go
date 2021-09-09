@@ -130,6 +130,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 	size := ec.bindingsSize()
+	defer ec.unbind(size)
 
 	if lexical.getType() != lispTypeCons && lexical != ec.nil_ {
 		lexical = ec.makeList(ec.t)
@@ -137,8 +138,11 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 
 	ec.specBind(ec.env, lexical)
 	val, err := ec.evalSub(form)
+	if err != nil {
+		return nil, err
+	}
 
-	return ec.unbindTo(size, val, err)
+	return val, nil
 }
 
 func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {

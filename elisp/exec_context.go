@@ -683,12 +683,7 @@ func (ec *execContext) bindingsSize() int {
 	return len(ec.bindings)
 }
 
-func (ec *execContext) unbindTo(target int, obj lispObject, err error) (lispObject, error) {
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: Check if defer can be used for this
+func (ec *execContext) unbind(target int) {
 	size := len(ec.bindings)
 	if size < target {
 		panic(fmt.Sprintf("unable to unbind back to %v, size is %v", target, size))
@@ -707,6 +702,4 @@ func (ec *execContext) unbindTo(target int, obj lispObject, err error) (lispObje
 
 		ec.bindings = ec.bindings[:len(ec.bindings)-1]
 	}
-
-	return obj, nil
 }
