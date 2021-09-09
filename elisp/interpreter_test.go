@@ -165,5 +165,11 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(eq t t)", "t", nil},
 		{"(eq 1000 1000)", "nil", nil},
 		{"(progn (if nil 1 2 3 (set 'foo 42)) foo)", "42", nil},
+		{"(throw 'f 1)", "", anyError},
+		{"(catch 'f (throw 'f 1))", "1", nil},
+		{"(catch 'k (throw 'f 1))", "", anyError},
+		{"(catch)", "", anyError},
+		{"(catch 'k)", "nil", nil},
+		{"(progn (catch 'a (unwind-protect (throw 'a nil) (set 'foo 42))) foo)", "42", nil},
 	})
 }

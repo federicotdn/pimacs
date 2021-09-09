@@ -96,6 +96,11 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	return val, nil
 }
 
+func (ec *execContext) progIgnore(body lispObject) error {
+	_, err := ec.progn(body)
+	return err
+}
+
 func (ec *execContext) listLength(obj lispObject) (lispObject, error) {
 	total := 0
 
@@ -222,6 +227,18 @@ func (ec *execContext) catch(args lispObject) (lispObject, error) {
 	return obj, nil
 }
 
+func (ec *execContext) unwindProtect(args lispObject) (lispObject, error) {
+	val, err := ec.evalSub(ec.xCar(args))
+
+	unwindErr := ec.progIgnore(ec.xCdr(args))
+	if unwindErr != nil {
+		// TODO: Check if this is correct
+		return nil, unwindErr
+	}
+
+	return val, err
+}
+
 func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 	lispType := obj.getType()
 	var s string
@@ -293,6 +310,7 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr2("throw", ec.throw, 2)
 	ec.defSubrM("+", ec.plusSign, 0)
 	ec.defSubrU("catch", ec.catch, 1)
+	ec.defSubrU("unwind-protect", ec.unwindProtect, 1)
 	ec.defSubrU("quote", ec.quote, 1)
 	ec.defSubrU("if", ec.if_, 2)
 	ec.defSubrU("progn", ec.progn, 0)

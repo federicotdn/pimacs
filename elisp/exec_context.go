@@ -589,7 +589,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	original := cdr
 
 	if car.getType() != lispTypeSymbol {
-		return nil, fmt.Errorf("function is not a symbol")
+		return nil, fmt.Errorf("function is not a symbol: %v", car.getType())
 	} else if car == ec.nil_ {
 		return nil, fmt.Errorf("void-function")
 	}
