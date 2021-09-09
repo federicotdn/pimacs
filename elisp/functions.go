@@ -189,6 +189,35 @@ func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 	return ec.nil_, nil
 }
 
+func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
+	return nil, &stackJumpTag{
+		tag:   tag,
+		value: value,
+	}
+}
+
+func (ec *execContext) catch(args lispObject) (lispObject, error) {
+	tag, err := ec.evalSub(ec.xCar(args))
+	if err != nil {
+		return nil, err
+	}
+
+	obj, err := ec.progn(ec.xCdr(args))
+	if err != nil {
+		jmp, ok := err.(*stackJumpTag)
+		if !ok {
+			return nil, err
+		}
+
+		if jmp.tag == tag {
+			return jmp.value, nil
+		}
+
+		return nil, err
+	}
+	return obj, nil
+}
+
 func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 	lispType := obj.getType()
 	var s string
@@ -257,7 +286,9 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr2("eq", ec.eq, 2)
 	ec.defSubr2("assq", ec.assq, 2)
 	ec.defSubr2("prin1", ec.prin1, 1)
+	ec.defSubr2("throw", ec.throw, 2)
 	ec.defSubrM("+", ec.plusSign, 0)
+	ec.defSubrU("catch", ec.catch, 1)
 	ec.defSubrU("quote", ec.quote, 1)
 	ec.defSubrU("if", ec.if_, 2)
 	ec.defSubrU("progn", ec.progn, 0)

@@ -11,12 +11,16 @@ const (
 	nbsp         = '\u00A0'
 )
 
-
 type specBindingTag int
 
 const (
 	specLet specBindingTag = iota
 )
+
+type stackJumpTag struct {
+	tag   lispObject
+	value lispObject
+}
 
 type specBinding interface {
 	tag() specBindingTag
@@ -37,14 +41,18 @@ type specBindingLet struct {
 	oldVal lispObject
 }
 
-func (sbl *specBindingLet) tag() specBindingTag {
-	return specLet
-}
-
 type readContext struct {
 	source string
 	runes  []rune
 	i      int
+}
+
+func (jmp *stackJumpTag) Error() string {
+	return fmt.Sprintf("stack jump: tag: %v", jmp.tag)
+}
+
+func (sbl *specBindingLet) tag() specBindingTag {
+	return specLet
 }
 
 func (ctx *readContext) read() rune {
@@ -138,11 +146,15 @@ func (ec *execContext) makeString(value string) *lispString {
 	}
 }
 
-func (ec *execContext) makeList(obj lispObject, objs ...lispObject) *lispCons {
-	tmp := ec.makeCons(obj, ec.nil_)
+func (ec *execContext) makeList(objs ...lispObject) lispObject {
+	if len(objs) == 0 {
+		return ec.nil_
+	}
+
+	tmp := ec.makeCons(objs[0], ec.nil_)
 	val := tmp
 
-	for _, obj := range objs {
+	for _, obj := range objs[1:] {
 		tmp.cdr = ec.makeCons(obj, ec.nil_)
 		tmp = tmp.cdr.(*lispCons)
 	}
@@ -698,4 +710,3 @@ func (ec *execContext) unbindTo(target int, obj lispObject, err error) (lispObje
 
 	return obj, nil
 }
-
