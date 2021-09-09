@@ -142,7 +142,26 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
-	return ec.setInternal(symbol, newVal)
+	sym, ok := symbol.(*lispSymbol)
+	if !ok {
+		return nil, fmt.Errorf("not a symbol")
+	}
+
+	sym.value = newVal
+	return newVal, nil
+}
+
+func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
+	if symbol == ec.nil_ && definition != ec.nil_ {
+		return nil, fmt.Errorf("setting constant nil")
+	}
+
+	if symbol.getType() != lispTypeSymbol {
+		return nil, fmt.Errorf("not a symbol")
+	}
+
+	symbol.(*lispSymbol).function = definition
+	return definition, nil
 }
 
 func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
@@ -234,6 +253,7 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr2("cons", ec.cons_, 2)
 	ec.defSubr2("eval", ec.eval, 1)
 	ec.defSubr2("set", ec.set, 2)
+	ec.defSubr2("fset", ec.fset, 2)
 	ec.defSubr2("eq", ec.eq, 2)
 	ec.defSubr2("assq", ec.assq, 2)
 	ec.defSubr2("prin1", ec.prin1, 1)

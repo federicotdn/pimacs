@@ -317,16 +317,6 @@ func (ec *execContext) intern(name string) *lispSymbol {
 	return sym
 }
 
-func (ec *execContext) setInternal(symbol, newVal lispObject) (lispObject, error) {
-	sym, ok := symbol.(*lispSymbol)
-	if !ok {
-		return nil, fmt.Errorf("not a symbol")
-	}
-
-	sym.value = newVal
-	return newVal, nil
-}
-
 func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
 	var val lispObject = ec.nil_
 	var tail lispObject = ec.nil_
