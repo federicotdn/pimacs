@@ -5,12 +5,12 @@ type vectorLikeType int
 type lispInt int64
 
 const (
-	symbol lispType = iota
-	integer
-	string_
-	vectorLike
-	cons
-	float
+	lispTypeSymbol lispType = iota
+	lispTypeInt
+	lispTypeStr
+	lispTypeVecLike
+	lispTypeCons
+	lispTypeFloat
 	argsMany      = -1
 	argsUnevalled = -2
 )
@@ -69,25 +69,25 @@ type lispObject interface {
 }
 
 func (ls *lispSymbol) getType() lispType {
-	return symbol
+	return lispTypeSymbol
 }
 
 func (lc *lispCons) getType() lispType {
-	return cons
+	return lispTypeCons
 }
 
 func (li *lispInteger) getType() lispType {
-	return integer
+	return lispTypeInt
 }
 
 func (lf *lispFloat) getType() lispType {
-	return float
+	return lispTypeFloat
 }
 
 func (ls *lispString) getType() lispType {
-	return string_
+	return lispTypeStr
 }
 
 func (lv *lispVectorLike) getType() lispType {
-	return vectorLike
+	return lispTypeVecLike
 }

@@ -556,7 +556,7 @@ func (ec *execContext) readFromString(source string) (lispObject, error) {
 func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	var err error
 
-	if form.getType() == symbol {
+	if form.getType() == lispTypeSymbol {
 		var lex lispObject
 
 		if ec.env.value != ec.nil_ {
@@ -578,7 +578,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		}
 
 		return sym.value, nil
-	} else if form.getType() != cons {
+	} else if form.getType() != lispTypeCons {
 		return form, nil
 	}
 
@@ -586,7 +586,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	cdr := ec.xCdr(form)
 	original := cdr
 
-	if car.getType() != symbol {
+	if car.getType() != lispTypeSymbol {
 		return nil, fmt.Errorf("function is not a symbol")
 	} else if car == ec.nil_ {
 		return nil, fmt.Errorf("void-function")
@@ -595,7 +595,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	sym := car.(*lispSymbol)
 	fn := sym.function
 
-	if fn.getType() != vectorLike {
+	if fn.getType() != lispTypeVecLike {
 		return nil, fmt.Errorf("function must be vector-like")
 	}
 
@@ -610,7 +610,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	nArgs := 0
 
 	for {
-		if cdr != ec.nil_ && cdr.getType() != cons {
+		if cdr != ec.nil_ && cdr.getType() != lispTypeCons {
 			return nil, fmt.Errorf("wrong type argument: '%v'", cdr.getType())
 		}
 

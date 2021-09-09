@@ -84,7 +84,7 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	var err error
 	val := ec.nil_
 
-	for body.getType() == cons {
+	for body.getType() == lispTypeCons {
 		form := ec.xCar(body)
 		body = ec.xCdr(body)
 		val, err = ec.evalSub(form)
@@ -99,7 +99,7 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 func (ec *execContext) listLength(obj lispObject) (lispObject, error) {
 	total := 0
 
-	for obj.getType() == cons {
+	for obj.getType() == lispTypeCons {
 		total += 1
 		obj = ec.xCdr(obj)
 	}
@@ -115,9 +115,9 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	num := 0
 
 	switch obj.getType() {
-	case string_:
+	case lispTypeStr:
 		num = len(obj.(*lispString).value)
-	case cons:
+	case lispTypeCons:
 		return ec.listLength(obj)
 	default:
 		if obj != ec.nil_ {
@@ -131,7 +131,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 	size := ec.bindingsSize()
 
-	if lexical.getType() != cons && lexical != ec.nil_ {
+	if lexical.getType() != lispTypeCons && lexical != ec.nil_ {
 		lexical = ec.makeList(ec.t)
 	}
 
@@ -146,10 +146,10 @@ func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
-	for alist.getType() == cons {
+	for alist.getType() == lispTypeCons {
 		element := ec.xCar(alist)
 
-		if element.getType() == cons && ec.xCar(element) == key {
+		if element.getType() == lispTypeCons && ec.xCar(element) == key {
 			return element, nil
 		}
 
@@ -171,19 +171,19 @@ func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
-	type_ := obj.getType()
+	lispType := obj.getType()
 	var s string
 
-	switch type_ {
-	case symbol:
+	switch lispType {
+	case lispTypeSymbol:
 		s = obj.(*lispSymbol).name
-	case integer:
+	case lispTypeInt:
 		s = fmt.Sprint(obj.(*lispInteger).value)
-	case string_:
+	case lispTypeStr:
 		s = "\"" + obj.(*lispString).value + "\""
-	case vectorLike:
+	case lispTypeVecLike:
 		return nil, fmt.Errorf("prin1 unimplemented")
-	case cons:
+	case lispTypeCons:
 		// TODO: Clean up when string functions are avaiable (don't type-assert)
 		lc := obj.(*lispCons)
 		current := lc
@@ -218,10 +218,10 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 		}
 
 		s += ")"
-	case float:
+	case lispTypeFloat:
 		s = fmt.Sprint(obj.(*lispFloat).value)
 	default:
-		return nil, fmt.Errorf("prin1 unimplemented for '%v'", type_)
+		return nil, fmt.Errorf("prin1 unimplemented for '%v'", lispType)
 	}
 
 	return ec.makeString(s), nil
