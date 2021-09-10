@@ -32,6 +32,8 @@ type specBinding interface {
 }
 
 type globals struct {
+	nil_                   lispObject
+	t                      lispObject
 	internalInterpreterEnv lispObject
 	unbound                lispObject
 }
@@ -40,8 +42,7 @@ type execContext struct {
 	bindings []specBinding
 	inp      *interpreter
 	nil_     lispObject
-	t        lispObject
-	g        globals
+	globals  globals
 	obarray  map[string]*lispSymbol
 }
 
@@ -118,6 +119,10 @@ func xEnsure(obj lispObject, err error) lispObject {
 	return obj
 }
 
+func xSymbol(obj lispObject) *lispSymbol {
+	return obj.(*lispSymbol)
+}
+
 func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 	nInt, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
@@ -139,12 +144,8 @@ func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
 }
 
 func (ec *execContext) makeSymbol(name string) *lispSymbol {
-	if ec.nil_ == nil || ec.g.unbound == nil {
-		panic("context not initialized")
-	}
-
 	base := ec.makeSymbolBase(name)
-	base.value = ec.g.unbound
+	base.value = ec.globals.unbound
 	base.function = ec.nil_
 	base.plist = ec.nil_
 	return base
@@ -335,50 +336,32 @@ func (ec *execContext) defSubrU(name string, fn lispFn1, minArgs int) *subroutin
 	return sub
 }
 
-func (ec *execContext) initialDefs() {
-	nil_ := ec.intern("nil")
-	nil_.value = nil_
-
-	t := ec.intern("t")
-	t.value = t
-}
-
 func newExecContext() *execContext {
 	ec := execContext{}
+
 	ec.obarray = make(map[string]*lispSymbol)
 	ec.bindings = []specBinding{}
 
-	nil_ := ec.makeSymbolBase("nil")
-	nil_.value = nil_
-	nil_.function = nil_
-	nil_.plist = nil_
-	ec.obarray["nil"] = nil_
-	ec.nil_ = nil_
-
-	ec.g.unbound = ec.makeSymbolBase("unbound")
-
-	t := ec.intern("t")
-	t.value = t
-	ec.t = t
-
-	env := ec.makeSymbol("internal-interpreter-environment")
-	env.value = ec.nil_
-	ec.g.internalInterpreterEnv = env
-
-	error_ := ec.intern("error")
-	xEnsure(ec.put(error_, ec.intern("error-conditions"), ec.makeList(ec.intern("error"))))
-
-	ec.initialDefs()          // exec_context.go
+	ec.initialDefsSymbols()   // symbols.go
+	ec.initialDefsVariables() // variables.go
 	ec.initialDefsFunctions() // functions.go
 
 	return &ec
+}
+
+func (ec *execContext) internSymbol(symbol *lispSymbol) {
+	prev, ok := ec.obarray[symbol.name]
+	if ok && prev != symbol {
+		panic("different symbol with that name already interned")
+	}
+	ec.obarray[symbol.name] = symbol
 }
 
 func (ec *execContext) intern(name string) *lispSymbol {
 	sym, ok := ec.obarray[name]
 	if !ok {
 		sym = ec.makeSymbol(name)
-		ec.obarray[name] = sym
+		ec.internSymbol(sym)
 	}
 
 	return sym
@@ -616,7 +599,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	if form.getType() == lispTypeSymbol {
 		var lex lispObject
 
-		envVal := ec.g.internalInterpreterEnv.(*lispSymbol).value
+		envVal := ec.globals.internalInterpreterEnv.(*lispSymbol).value
 		if envVal != ec.nil_ {
 			lex, err = ec.assq(form, envVal)
 			if err != nil {
@@ -631,7 +614,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		}
 
 		sym := form.(*lispSymbol)
-		if sym.value == ec.g.unbound {
+		if sym.value == ec.globals.unbound {
 			return nil, fmt.Errorf("void-variable '%v'", sym.name)
 		}
 

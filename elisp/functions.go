@@ -105,7 +105,7 @@ func (ec *execContext) listLength(obj lispObject) (lispObject, error) {
 	}
 
 	if obj != ec.nil_ {
-		return nil, fmt.Errorf("wrong type argument")
+		return nil, fmt.Errorf("length: wrong type argument")
 	}
 
 	return ec.makeInteger(lispInt(total)), nil
@@ -121,7 +121,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 		return ec.listLength(obj)
 	default:
 		if obj != ec.nil_ {
-			return nil, fmt.Errorf("wrong type argument")
+			return nil, fmt.Errorf("length: wrong type argument")
 		}
 	}
 
@@ -133,10 +133,10 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 	defer ec.unbind(size)
 
 	if lexical.getType() != lispTypeCons && lexical != ec.nil_ {
-		lexical = ec.makeList(ec.t)
+		lexical = ec.makeList(ec.globals.t)
 	}
 
-	ec.specBind(ec.g.internalInterpreterEnv.(*lispSymbol), lexical)
+	ec.specBind(ec.globals.internalInterpreterEnv.(*lispSymbol), lexical)
 	val, err := ec.evalSub(form)
 	if err != nil {
 		return nil, err
@@ -180,7 +180,7 @@ func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 	}
 
 	if alist != ec.nil_ {
-		return nil, fmt.Errorf("wrong type argument")
+		return nil, fmt.Errorf("assq: wrong type argument %v", alist.getType())
 	}
 
 	return ec.nil_, nil
@@ -188,7 +188,7 @@ func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 
 func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 	if obj1 == obj2 {
-		return ec.t, nil
+		return ec.globals.t, nil
 	}
 	return ec.nil_, nil
 }
