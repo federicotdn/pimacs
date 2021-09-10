@@ -22,8 +22,18 @@ type stackJumpTag struct {
 	value lispObject
 }
 
+type stackJumpSignal struct {
+	errorSymbol lispObject
+	data        lispObject
+}
+
 type specBinding interface {
 	tag() specBindingTag
+}
+
+type globals struct {
+	internalInterpreterEnv lispObject
+	unbound                lispObject
 }
 
 type execContext struct {
@@ -31,9 +41,8 @@ type execContext struct {
 	inp      *interpreter
 	nil_     lispObject
 	t        lispObject
-	unbound  lispObject
+	g        globals
 	obarray  map[string]*lispSymbol
-	env      *lispSymbol
 }
 
 type specBindingLet struct {
@@ -48,7 +57,13 @@ type readContext struct {
 }
 
 func (jmp *stackJumpTag) Error() string {
+	// TODO: revise
 	return fmt.Sprintf("stack jump: tag: %v", jmp.tag)
+}
+
+func (jmp *stackJumpSignal) Error() string {
+	// TODO: revise
+	return fmt.Sprintf("stack jump: signal: %v", jmp.errorSymbol)
 }
 
 func (sbl *specBindingLet) tag() specBindingTag {
@@ -77,17 +92,30 @@ func (ctx *readContext) unread(c rune) {
 	ctx.i--
 }
 
-func (ec *execContext) xCar(obj lispObject) lispObject {
+func xCar(obj lispObject) lispObject {
 	return obj.(*lispCons).car
 }
 
-func (ec *execContext) xCdr(obj lispObject) lispObject {
+func xCdr(obj lispObject) lispObject {
 	return obj.(*lispCons).cdr
 }
 
-func (ec *execContext) xSetCdr(obj, newCdr lispObject) lispObject {
-	obj.(*lispCons).cdr = newCdr
+func xSetCar(cell, newCar lispObject) lispObject {
+	cell.(*lispCons).car = newCar
+	return newCar
+}
+
+func xSetCdr(cell, newCdr lispObject) lispObject {
+	cell.(*lispCons).cdr = newCdr
 	return newCdr
+}
+
+func xEnsure(obj lispObject, err error) lispObject {
+	if err != nil {
+		panic(err)
+	}
+
+	return obj
 }
 
 func (ec *execContext) stringToNumber(s string) (lispObject, error) {
@@ -111,13 +139,14 @@ func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
 }
 
 func (ec *execContext) makeSymbol(name string) *lispSymbol {
-	if ec.nil_ == nil || ec.unbound == nil {
+	if ec.nil_ == nil || ec.g.unbound == nil {
 		panic("context not initialized")
 	}
 
 	base := ec.makeSymbolBase(name)
-	base.value = ec.unbound
+	base.value = ec.g.unbound
 	base.function = ec.nil_
+	base.plist = ec.nil_
 	return base
 }
 
@@ -236,52 +265,74 @@ func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) 
 		return c, nil
 	}
 
-	return 0, fmt.Errorf("unimplemented escape code: '%v", string(c))
+	panic("unimplemented escape code")
 }
 
-func (ec *execContext) defSubr(name string, sub *subroutine) *lispSymbol {
+func (ec *execContext) defSubr(name string, sub *subroutine) {
+	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
+		panic("min args must be smaller or equal to max args")
+	}
 	sym := ec.intern(name)
 	vec := ec.makeVectorLike(vectorLikeTypeSubroutine, sub)
 	sym.function = vec
-	return sym
 }
 
-func (ec *execContext) defSubr0(name string, fn lispFn0) *lispSymbol {
-	return ec.defSubr(name, &subroutine{
+func (ec *execContext) defSubr0(name string, fn lispFn0) *subroutine {
+	sub := &subroutine{
 		callabe0: fn,
-	})
+	}
+	ec.defSubr(name, sub)
+	return sub
 }
 
-func (ec *execContext) defSubr1(name string, fn lispFn1, minArgs int) *lispSymbol {
-	return ec.defSubr(name, &subroutine{
+func (ec *execContext) defSubr1(name string, fn lispFn1, minArgs int) *subroutine {
+	sub := &subroutine{
 		callabe1: fn,
 		minArgs:  minArgs,
 		maxArgs:  1,
-	})
+	}
+	ec.defSubr(name, sub)
+	return sub
 }
 
-func (ec *execContext) defSubr2(name string, fn lispFn2, minArgs int) *lispSymbol {
-	return ec.defSubr(name, &subroutine{
+func (ec *execContext) defSubr2(name string, fn lispFn2, minArgs int) *subroutine {
+	sub := &subroutine{
 		callabe2: fn,
 		minArgs:  minArgs,
 		maxArgs:  2,
-	})
+	}
+	ec.defSubr(name, sub)
+	return sub
 }
 
-func (ec *execContext) defSubrM(name string, fn lispFnM, minArgs int) *lispSymbol {
-	return ec.defSubr(name, &subroutine{
+func (ec *execContext) defSubr3(name string, fn lispFn3, minArgs int) *subroutine {
+	sub := &subroutine{
+		callabe3: fn,
+		minArgs:  minArgs,
+		maxArgs:  3,
+	}
+	ec.defSubr(name, sub)
+	return sub
+}
+
+func (ec *execContext) defSubrM(name string, fn lispFnM, minArgs int) *subroutine {
+	sub := &subroutine{
 		callabem: fn,
 		minArgs:  minArgs,
 		maxArgs:  argsMany,
-	})
+	}
+	ec.defSubr(name, sub)
+	return sub
 }
 
-func (ec *execContext) defSubrU(name string, fn lispFn1, minArgs int) *lispSymbol {
-	return ec.defSubr(name, &subroutine{
+func (ec *execContext) defSubrU(name string, fn lispFn1, minArgs int) *subroutine {
+	sub := &subroutine{
 		callabe1: fn,
 		minArgs:  minArgs,
 		maxArgs:  argsUnevalled,
-	})
+	}
+	ec.defSubr(name, sub)
+	return sub
 }
 
 func (ec *execContext) initialDefs() {
@@ -300,10 +351,11 @@ func newExecContext() *execContext {
 	nil_ := ec.makeSymbolBase("nil")
 	nil_.value = nil_
 	nil_.function = nil_
+	nil_.plist = nil_
 	ec.obarray["nil"] = nil_
 	ec.nil_ = nil_
 
-	ec.unbound = ec.makeSymbolBase("unbound")
+	ec.g.unbound = ec.makeSymbolBase("unbound")
 
 	t := ec.intern("t")
 	t.value = t
@@ -311,7 +363,10 @@ func newExecContext() *execContext {
 
 	env := ec.makeSymbol("internal-interpreter-environment")
 	env.value = ec.nil_
-	ec.env = env
+	ec.g.internalInterpreterEnv = env
+
+	error_ := ec.intern("error")
+	xEnsure(ec.put(error_, ec.intern("error-conditions"), ec.makeList(ec.intern("error"))))
 
 	ec.initialDefs()          // exec_context.go
 	ec.initialDefsFunctions() // functions.go
@@ -349,7 +404,7 @@ func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
 					if err != nil {
 						return nil, err
 					}
-					ec.xSetCdr(tail, obj)
+					xSetCdr(tail, obj)
 				} else {
 					val, err = ec.read0(ctx)
 				}
@@ -368,7 +423,7 @@ func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
 		tmp := ec.makeCons(elt, ec.nil_)
 
 		if tail != ec.nil_ {
-			ec.xSetCdr(tail, tmp)
+			xSetCdr(tail, tmp)
 		} else {
 			val = tmp
 		}
@@ -561,8 +616,9 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	if form.getType() == lispTypeSymbol {
 		var lex lispObject
 
-		if ec.env.value != ec.nil_ {
-			lex, err = ec.assq(form, ec.env.value)
+		envVal := ec.g.internalInterpreterEnv.(*lispSymbol).value
+		if envVal != ec.nil_ {
+			lex, err = ec.assq(form, envVal)
 			if err != nil {
 				return nil, err
 			}
@@ -571,11 +627,11 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		}
 
 		if lex != ec.nil_ {
-			return ec.xCdr(lex), nil
+			return xCdr(lex), nil
 		}
 
 		sym := form.(*lispSymbol)
-		if sym.value == ec.unbound {
+		if sym.value == ec.g.unbound {
 			return nil, fmt.Errorf("void-variable '%v'", sym.name)
 		}
 
@@ -584,8 +640,8 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		return form, nil
 	}
 
-	car := ec.xCar(form)
-	cdr := ec.xCdr(form)
+	car := xCar(form)
+	cdr := xCdr(form)
 	original := cdr
 
 	if car.getType() != lispTypeSymbol {
@@ -622,7 +678,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 
 		nArgs++
 
-		arg := ec.xCar(cdr)
+		arg := xCar(cdr)
 		var processed lispObject
 
 		if sub.maxArgs != argsUnevalled {
@@ -634,7 +690,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 			args = append(args, processed)
 		}
 
-		cdr = ec.xCdr(cdr)
+		cdr = xCdr(cdr)
 	}
 
 	if nArgs < sub.minArgs {
@@ -650,24 +706,43 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		}
 	}
 
+	var result lispObject
+
 	switch sub.maxArgs {
 	case 0:
-		return sub.callabe0()
+		result, err = sub.callabe0()
 	case 1:
-		return sub.callabe1(args[0])
+		result, err = sub.callabe1(args[0])
 	case 2:
-		return sub.callabe2(args[0], args[1])
+		result, err = sub.callabe2(args[0], args[1])
+	case 3:
+		result, err = sub.callabe3(args[0], args[1], args[2])
 	case argsMany:
-		return sub.callabem(args...)
+		result, err = sub.callabem(args...)
 	case argsUnevalled:
-		return sub.callabe1(original)
+		result, err = sub.callabe1(original)
 	default:
-		return nil, fmt.Errorf("unknown max args value: '%v'", sub.maxArgs)
+		panic("unknown maxargs value")
 	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if sub.noReturn {
+		panic("subroutine with noreturn returned value")
+	}
+
+	return result, nil
 }
 
 func (ec *execContext) apply(fn lispObject, args ...lispObject) (lispObject, error) {
 	return nil, nil
+}
+
+func (ec *execContext) progIgnore(body lispObject) error {
+	_, err := ec.progn(body)
+	return err
 }
 
 func (ec *execContext) specBind(symbol *lispSymbol, value lispObject) {

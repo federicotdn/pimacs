@@ -23,21 +23,25 @@ const (
 type lispFn0 func() (lispObject, error)
 type lispFn1 func(lispObject) (lispObject, error)
 type lispFn2 func(lispObject, lispObject) (lispObject, error)
+type lispFn3 func(lispObject, lispObject, lispObject) (lispObject, error)
 type lispFnM func(...lispObject) (lispObject, error)
 
 type subroutine struct {
 	callabe0 lispFn0
 	callabe1 lispFn1
 	callabe2 lispFn2
+	callabe3 lispFn3
 	callabem lispFnM
 	minArgs  int
 	maxArgs  int
+	noReturn bool
 }
 
 type lispSymbol struct {
 	name     string
 	value    lispObject
 	function lispObject
+	plist    lispObject
 }
 
 type lispCons struct {
