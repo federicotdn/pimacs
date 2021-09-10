@@ -13,7 +13,7 @@ func (ec *execContext) initializeSymbols(syms []symbolInit) {
 		}
 
 		*sym.loc = ec.makeSymbolBase(sym.name)
-		symbol := (*sym.loc).(*lispSymbol)
+		symbol := xSymbol(*sym.loc)
 
 		if ec.globals.unbound == nil {
 			panic("unbound not initialized yet")
@@ -27,7 +27,7 @@ func (ec *execContext) initializeSymbols(syms []symbolInit) {
 	}
 
 	for _, sym := range syms {
-		symbol := (*sym.loc).(*lispSymbol)
+		symbol := xSymbol(*sym.loc)
 		symbol.function = ec.globals.nil_
 		symbol.plist = ec.globals.nil_
 	}

@@ -26,7 +26,7 @@ func (inp *interpreter) ReadPrin1(source string) (string, error) {
 		return "", err
 	}
 
-	return printed.(*lispString).value, nil
+	return xString(printed).value, nil
 }
 
 func (inp *interpreter) ReadEvalPrin1(source string) (string, error) {
@@ -45,5 +45,5 @@ func (inp *interpreter) ReadEvalPrin1(source string) (string, error) {
 		return "", err
 	}
 
-	return printed.(*lispString).value, nil
+	return xString(printed).value, nil
 }

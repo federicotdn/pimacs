@@ -13,11 +13,10 @@ func (ec *execContext) car(obj lispObject) (lispObject, error) {
 		return ec.nil_, nil
 	}
 
-	cons, ok := obj.(*lispCons)
-	if !ok {
+	if !consp(obj) {
 		return nil, fmt.Errorf("object is not a cons")
 	}
-	return cons.car, nil
+	return xCons(obj).car, nil
 }
 
 func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
@@ -25,33 +24,31 @@ func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
 		return ec.nil_, nil
 	}
 
-	cons, ok := obj.(*lispCons)
-	if !ok {
+	if !consp(obj) {
 		return nil, fmt.Errorf("object is not a cons")
 	}
-	return cons.cdr, nil
+	return xCons(obj).cdr, nil
 }
 
 func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 	var total lispInt = 0
 	for i, obj := range objs {
-		number, ok := obj.(*lispInteger)
-		if !ok {
+		if !integerp(obj) {
 			return nil, fmt.Errorf("argument in position %v is not an integer", i)
 		}
-		total += number.value
+		total += xInteger(obj).value
 	}
 
 	return ec.makeInteger(total), nil
 }
 
 func (ec *execContext) quote(args lispObject) (lispObject, error) {
-	cdr, _ := ec.cdr(args)
+	cdr := xCdr(args)
 	if cdr != ec.nil_ {
 		return nil, fmt.Errorf("expected exactly 1 argument")
 	}
 
-	return ec.car(args)
+	return xCar(args), nil
 }
 
 func (ec *execContext) if_(args lispObject) (lispObject, error) {
@@ -64,12 +61,7 @@ func (ec *execContext) if_(args lispObject) (lispObject, error) {
 	}
 
 	if cond != ec.nil_ {
-		then, err := ec.car(cdr_)
-		if err != nil {
-			return nil, err
-		}
-
-		return ec.evalSub(then)
+		return ec.evalSub(xCar(cdr_))
 	}
 
 	else_, err := ec.cdr(cdr_)
@@ -81,10 +73,11 @@ func (ec *execContext) if_(args lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) progn(body lispObject) (lispObject, error) {
-	var err error
 	val := ec.nil_
 
 	for body.getType() == lispTypeCons {
+		var err error
+
 		form := xCar(body)
 		body = xCdr(body)
 		val, err = ec.evalSub(form)
@@ -99,7 +92,7 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 func (ec *execContext) listLength(obj lispObject) (lispObject, error) {
 	total := 0
 
-	for obj.getType() == lispTypeCons {
+	for consp(obj) {
 		total += 1
 		obj = xCdr(obj)
 	}
@@ -116,7 +109,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 	switch obj.getType() {
 	case lispTypeStr:
-		num = len(obj.(*lispString).value)
+		num = len(xString(obj).value)
 	case lispTypeCons:
 		return ec.listLength(obj)
 	default:
@@ -132,11 +125,11 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 	size := ec.bindingsSize()
 	defer ec.unbind(size)
 
-	if lexical.getType() != lispTypeCons && lexical != ec.nil_ {
+	if !consp(lexical) && lexical != ec.nil_ {
 		lexical = ec.makeList(ec.globals.t)
 	}
 
-	ec.specBind(ec.globals.internalInterpreterEnv.(*lispSymbol), lexical)
+	ec.specBind(xSymbol(ec.globals.internalInterpreterEnv), lexical)
 	val, err := ec.evalSub(form)
 	if err != nil {
 		return nil, err
@@ -146,12 +139,11 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
-	sym, ok := symbol.(*lispSymbol)
-	if !ok {
+	if !symbolp(symbol) {
 		return nil, fmt.Errorf("not a symbol")
 	}
 
-	sym.value = newVal
+	xSymbol(symbol).value = newVal
 	return newVal, nil
 }
 
@@ -160,19 +152,19 @@ func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 		return nil, fmt.Errorf("setting constant nil")
 	}
 
-	if symbol.getType() != lispTypeSymbol {
+	if !symbolp(symbol) {
 		return nil, fmt.Errorf("not a symbol")
 	}
 
-	symbol.(*lispSymbol).function = definition
+	xSymbol(symbol).function = definition
 	return definition, nil
 }
 
 func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
-	for alist.getType() == lispTypeCons {
+	for consp(alist) {
 		element := xCar(alist)
 
-		if element.getType() == lispTypeCons && xCar(element) == key {
+		if consp(element) && xCar(element) == key {
 			return element, nil
 		}
 
@@ -239,7 +231,7 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	bodyForm := xCar(xCdr(args))
 	// handlers := xCdr(xCdr(args))
 
-	if variable.getType() != lispTypeSymbol {
+	if !symbolp(variable) {
 		return nil, fmt.Errorf("wrong type argument: var")
 	}
 
@@ -271,23 +263,21 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 
 	switch lispType {
 	case lispTypeSymbol:
-		s = obj.(*lispSymbol).name
+		s = xSymbol(obj).name
 	case lispTypeInt:
-		s = fmt.Sprint(obj.(*lispInteger).value)
+		s = fmt.Sprint(xInteger(obj).value)
 	case lispTypeStr:
-		s = "\"" + obj.(*lispString).value + "\""
-	case lispTypeVecLike:
-		return nil, fmt.Errorf("prin1 unimplemented")
+		s = "\"" + xString(obj).value + "\""
 	case lispTypeCons:
-		// TODO: Clean up when string functions are avaiable (don't type-assert)
-		lc := obj.(*lispCons)
+		// TODO: Clean up when string functions are available (don't type-assert)
+		lc := xCons(obj)
 		current := lc
 
 		carStr, err := ec.prin1(lc.car, ec.nil_)
 		if err != nil {
 			return nil, err
 		}
-		s = "(" + carStr.(*lispString).value
+		s = "(" + xString(carStr).value
 
 		for {
 			next, ok := current.cdr.(*lispCons)
@@ -314,9 +304,11 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 
 		s += ")"
 	case lispTypeFloat:
-		s = fmt.Sprint(obj.(*lispFloat).value)
+		s = fmt.Sprint(xFloat(obj).value)
+	case lispTypeVecLike:
+		s = "<vector-like>"
 	default:
-		return nil, fmt.Errorf("prin1 unimplemented for '%v'", lispType)
+		panic("unknown type")
 	}
 
 	return ec.makeString(s), nil
@@ -326,13 +318,12 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 	prev := ec.nil_
 	tail := plist
 
-	for tail.getType() == lispTypeCons {
+	for consp(tail) {
 		next := xCdr(tail)
-		if next.getType() != lispTypeCons {
-			break
-		}
 
-		if prop == xCar(tail) {
+		if !consp(next) {
+			break
+		} else if prop == xCar(tail) {
 			xSetCar(next, val)
 			return plist, nil
 		}
@@ -357,10 +348,10 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 func (ec *execContext) plistGet(plist, prop lispObject) (lispObject, error) {
 	tail := plist
 
-	for tail.getType() == lispTypeCons {
+	for consp(tail) {
 		next := xCdr(tail)
 
-		if next.getType() != lispTypeCons {
+		if !consp(next) {
 			break
 		} else if prop == xCar(tail) {
 			return xCar(next), nil
@@ -373,11 +364,11 @@ func (ec *execContext) plistGet(plist, prop lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolPlist(symbol lispObject) (lispObject, error) {
-	if symbol.getType() != lispTypeSymbol {
+	if !symbolp(symbol) {
 		return nil, fmt.Errorf("wrong type error")
 	}
 
-	return symbol.(*lispSymbol).plist, nil
+	return xSymbol(symbol).plist, nil
 }
 
 func (ec *execContext) get(symbol, propName lispObject) (lispObject, error) {
@@ -399,7 +390,7 @@ func (ec *execContext) put(symbol, propName, value lispObject) (lispObject, erro
 		return nil, err
 	}
 
-	symbol.(*lispSymbol).plist = plist
+	xSymbol(symbol).plist = plist
 	return value, nil
 }
 

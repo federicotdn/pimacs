@@ -123,6 +123,38 @@ func xSymbol(obj lispObject) *lispSymbol {
 	return obj.(*lispSymbol)
 }
 
+func symbolp(obj lispObject) bool {
+	return obj.getType() == lispTypeSymbol
+}
+
+func xCons(obj lispObject) *lispCons {
+	return obj.(*lispCons)
+}
+
+func consp(obj lispObject) bool {
+	return obj.getType() == lispTypeCons
+}
+
+func xVectorLike(obj lispObject) *lispVectorLike {
+	return obj.(*lispVectorLike)
+}
+
+func xString(obj lispObject) *lispString {
+	return obj.(*lispString)
+}
+
+func xInteger(obj lispObject) *lispInteger {
+	return obj.(*lispInteger)
+}
+
+func integerp(obj lispObject) bool {
+	return obj.getType() == lispTypeInt
+}
+
+func xFloat(obj lispObject) *lispFloat {
+	return obj.(*lispFloat)
+}
+
 func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 	nInt, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
@@ -186,7 +218,7 @@ func (ec *execContext) makeList(objs ...lispObject) lispObject {
 
 	for _, obj := range objs[1:] {
 		tmp.cdr = ec.makeCons(obj, ec.nil_)
-		tmp = tmp.cdr.(*lispCons)
+		tmp = xCons(tmp.cdr)
 	}
 
 	return val
@@ -599,7 +631,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	if form.getType() == lispTypeSymbol {
 		var lex lispObject
 
-		envVal := ec.globals.internalInterpreterEnv.(*lispSymbol).value
+		envVal := xSymbol(ec.globals.internalInterpreterEnv).value
 		if envVal != ec.nil_ {
 			lex, err = ec.assq(form, envVal)
 			if err != nil {
@@ -613,7 +645,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 			return xCdr(lex), nil
 		}
 
-		sym := form.(*lispSymbol)
+		sym := xSymbol(form)
 		if sym.value == ec.globals.unbound {
 			return nil, fmt.Errorf("void-variable '%v'", sym.name)
 		}
@@ -633,14 +665,14 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		return nil, fmt.Errorf("void-function")
 	}
 
-	sym := car.(*lispSymbol)
+	sym := xSymbol(car)
 	fn := sym.function
 
 	if fn.getType() != lispTypeVecLike {
 		return nil, fmt.Errorf("function must be vector-like")
 	}
 
-	vec := fn.(*lispVectorLike)
+	vec := xVectorLike(fn)
 	if vec.vecType != vectorLikeTypeSubroutine {
 		return nil, fmt.Errorf("vector must be a subroutine")
 	}
