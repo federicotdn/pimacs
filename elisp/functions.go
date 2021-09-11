@@ -126,10 +126,10 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 	defer ec.unbind(size)
 
 	if !consp(lexical) && lexical != ec.nil_ {
-		lexical = ec.makeList(ec.globals.t)
+		lexical = ec.makeList(ec.t)
 	}
 
-	ec.specBind(xSymbol(ec.globals.internalInterpreterEnv), lexical)
+	ec.specBind(xSymbol(ec.g.internalInterpreterEnv), lexical)
 	val, err := ec.evalSub(form)
 	if err != nil {
 		return nil, err
@@ -180,7 +180,7 @@ func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 
 func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 	if obj1 == obj2 {
-		return ec.globals.t, nil
+		return ec.t, nil
 	}
 	return ec.nil_, nil
 }

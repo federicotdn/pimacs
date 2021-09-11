@@ -31,18 +31,12 @@ type specBinding interface {
 	tag() specBindingTag
 }
 
-type globals struct {
-	nil_                   lispObject
-	t                      lispObject
-	internalInterpreterEnv lispObject
-	unbound                lispObject
-}
-
 type execContext struct {
 	bindings []specBinding
 	inp      *interpreter
 	nil_     lispObject
-	globals  globals
+	t        lispObject
+	g        globals
 	obarray  map[string]*lispSymbol
 }
 
@@ -177,7 +171,7 @@ func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
 
 func (ec *execContext) makeSymbol(name string) *lispSymbol {
 	base := ec.makeSymbolBase(name)
-	base.value = ec.globals.unbound
+	base.value = ec.g.unbound
 	base.function = ec.nil_
 	base.plist = ec.nil_
 	return base
@@ -375,6 +369,7 @@ func newExecContext() *execContext {
 	ec.bindings = []specBinding{}
 
 	ec.initialDefsSymbols()   // symbols.go
+	ec.initialDefsErrors()    // errors.gmo
 	ec.initialDefsVariables() // variables.go
 	ec.initialDefsFunctions() // functions.go
 
@@ -631,7 +626,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	if form.getType() == lispTypeSymbol {
 		var lex lispObject
 
-		envVal := xSymbol(ec.globals.internalInterpreterEnv).value
+		envVal := xSymbol(ec.g.internalInterpreterEnv).value
 		if envVal != ec.nil_ {
 			lex, err = ec.assq(form, envVal)
 			if err != nil {
@@ -646,7 +641,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		}
 
 		sym := xSymbol(form)
-		if sym.value == ec.globals.unbound {
+		if sym.value == ec.g.unbound {
 			return nil, fmt.Errorf("void-variable '%v'", sym.name)
 		}
 

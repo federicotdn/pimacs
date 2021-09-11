@@ -184,5 +184,8 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(catch)", "", anyError},
 		{"(catch 'k)", "nil", nil},
 		{"(progn (catch 'a (unwind-protect (throw 'a nil) (set 'foo 42))) foo)", "42", nil},
+		{"(symbol-plist 'error)", "(error-conditions (error) error-message \"error\")", nil},
+		{"(symbol-plist 'quit)", "(error-conditions (quit) error-message \"Quit\")", nil},
+		{"(symbol-plist 'user-error)", "(error-conditions (user-error error) error-message \"\")", nil},
 	})
 }
