@@ -52,10 +52,26 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 		if !numberp(obj) {
 			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, obj)
 		}
-		total += xInteger(obj).value
+		total += xIntegerValue(obj)
 	}
 
 	return ec.makeInteger(total), nil
+}
+
+func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
+	for i := 1; i < len(objs); i++ {
+		if !numberp(objs[i-1]) {
+			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, objs[i-1])
+		} else if !numberp(objs[i]) {
+			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, objs[i])
+		}
+
+		if xIntegerValue(objs[i-1]) >= xIntegerValue(objs[i]) {
+			return ec.nil_, nil
+		}
+	}
+
+	return ec.t, nil
 }
 
 func (ec *execContext) quote(args lispObject) (lispObject, error) {
@@ -90,6 +106,28 @@ func (ec *execContext) if_(args lispObject) (lispObject, error) {
 	}
 
 	return ec.progn(else_)
+}
+
+func (ec *execContext) while(args lispObject) (lispObject, error) {
+	test := xCar(args)
+	body := xCdr(args)
+
+	for {
+		result, err := ec.evalSub(test)
+		if err != nil {
+			return nil, err
+		}
+		if result == ec.nil_ {
+			break
+		}
+
+		err = ec.progIgnore(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return ec.nil_, nil
 }
 
 func (ec *execContext) progn(body lispObject) (lispObject, error) {
@@ -383,7 +421,7 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 	case lispTypeSymbol:
 		s = xSymbol(obj).name
 	case lispTypeInteger:
-		s = fmt.Sprint(xInteger(obj).value)
+		s = fmt.Sprint(xIntegerValue(obj))
 	case lispTypeString:
 		s = "\"" + xString(obj).value + "\""
 	case lispTypeCons:
@@ -540,11 +578,13 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr3("plist-put", ec.plistPut, 3)
 	ec.defSubr3("put", ec.put, 3)
 	ec.defSubrM("+", ec.plusSign, 0)
+	ec.defSubrM("<", ec.lessThanSign, 1)
 	ec.defSubrM("list", ec.list, 0)
 	ec.defSubrU("catch", ec.catch, 1)
 	ec.defSubrU("unwind-protect", ec.unwindProtect, 1)
 	ec.defSubrU("quote", ec.quote, 1)
 	ec.defSubrU("if", ec.if_, 2)
+	ec.defSubrU("while", ec.while, 1)
 	ec.defSubrU("progn", ec.progn, 0)
 	ec.defSubrU("condition-case", ec.conditionCase, 2)
 }

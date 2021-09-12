@@ -199,5 +199,9 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(condition-case nil (throw 'foo 1) (t 42))", "42", nil},
 		{"(catch 'foo (condition-case nil (throw 'foo 1234) (t 42)))", "1234", nil},
 		{"(condition-case a (signal 'error \"foo\") ((error) a))", "(error . \"foo\")", nil},
+		{"(<)", "", anyError},
+		{"(< 1 4)", "t", nil},
+		{"(< 4 2)", "nil", nil},
+		{"(< 4 4)", "nil", nil},
 	})
 }

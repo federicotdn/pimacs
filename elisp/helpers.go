@@ -71,6 +71,10 @@ func xInteger(obj lispObject) *lispInteger {
 	return obj.(*lispInteger)
 }
 
+func xIntegerValue(obj lispObject) lispInt {
+	return xInteger(obj).value
+}
+
 func integerp(obj lispObject) bool {
 	return obj.getType() == lispTypeInteger
 }
