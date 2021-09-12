@@ -96,20 +96,6 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	return val, nil
 }
 
-func (ec *execContext) listLength(obj lispObject) (lispObject, error) {
-	total := 0
-
-	for ; consp(obj); obj = xCdr(obj) {
-		total += 1
-	}
-
-	if obj != ec.nil_ {
-		return nil, fmt.Errorf("length: wrong type argument")
-	}
-
-	return ec.makeInteger(lispInt(total)), nil
-}
-
 func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	num := 0
 
@@ -117,7 +103,13 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	case lispTypeString:
 		num = len(xString(obj).value)
 	case lispTypeCons:
-		return ec.listLength(obj)
+		for ; consp(obj); obj = xCdr(obj) {
+			num += 1
+		}
+
+		if obj != ec.nil_ {
+			return nil, fmt.Errorf("length: wrong type argument")
+		}
 	default:
 		if obj != ec.nil_ {
 			return nil, fmt.Errorf("length: wrong type argument")
