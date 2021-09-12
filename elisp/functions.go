@@ -196,6 +196,11 @@ func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
+	if !ec.catchInStack(tag) {
+		// TODO: Revise
+		return ec.signal(ec.g.noCatch, ec.makeList(tag, value))
+	}
+
 	return nil, &stackJumpTag{
 		tag:   tag,
 		value: value,
@@ -207,6 +212,10 @@ func (ec *execContext) catch(args lispObject) (lispObject, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	size := ec.bindingsSize()
+	ec.specPushCatch(tag)
+	defer ec.unbind(size)
 
 	obj, err := ec.progn(xCdr(args))
 	if err != nil {

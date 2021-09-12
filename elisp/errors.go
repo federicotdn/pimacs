@@ -20,4 +20,5 @@ func (ec *execContext) initialDefsErrors() {
 	ec.putError(ec.g.voidVariable, errorTail, "Symbol's value as variable is void")
 	ec.putError(ec.g.wrongNumberofArguments, errorTail, "Wrong number of arguments")
 	ec.putError(ec.g.endOfFile, errorTail, "End of file during parsing")
+	ec.putError(ec.g.noCatch, errorTail, "No catch for tag")
 }

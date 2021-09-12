@@ -12,10 +12,12 @@ type symbolInit struct {
 }
 
 type globals struct {
+	// Essential runtime objects
 	nil_                   lispObject
 	t                      lispObject
 	internalInterpreterEnv lispObject
 	unbound                lispObject
+	// Errors
 	error_                 lispObject
 	quit                   lispObject
 	userError              lispObject
@@ -26,8 +28,10 @@ type globals struct {
 	voidVariable           lispObject
 	wrongNumberofArguments lispObject
 	endOfFile              lispObject
-	errorConditions        lispObject
-	errorMessage           lispObject
+	noCatch                lispObject
+	// Misc. symbols
+	errorConditions lispObject
+	errorMessage    lispObject
 }
 
 func (ec *execContext) initialDefsSymbols() {
@@ -52,6 +56,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.voidVariable, name: "void-variable"},
 		{loc: &g.wrongNumberofArguments, name: "wrong-number-of-arguments"},
 		{loc: &g.endOfFile, name: "end-of-file"},
+		{loc: &g.noCatch, name: "no-catch"},
 		{loc: &g.errorConditions, name: "error-conditions"},
 		{loc: &g.errorMessage, name: "error-message"},
 	}

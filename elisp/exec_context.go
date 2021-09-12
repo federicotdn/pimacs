@@ -15,6 +15,7 @@ type specBindingTag int
 
 const (
 	specLet specBindingTag = iota
+	specCatch
 )
 
 type stackJumpTag struct {
@@ -45,6 +46,10 @@ type specBindingLet struct {
 	oldVal lispObject
 }
 
+type specBindingCatch struct {
+	catchTag lispObject
+}
+
 type readContext struct {
 	source string
 	runes  []rune
@@ -63,6 +68,10 @@ func (jmp *stackJumpSignal) Error() string {
 
 func (sbl *specBindingLet) tag() specBindingTag {
 	return specLet
+}
+
+func (sbc *specBindingCatch) tag() specBindingTag {
+	return specCatch
 }
 
 func (ctx *readContext) read() rune {
@@ -708,13 +717,34 @@ func (ec *execContext) specBind(symbol lispObject, value lispObject) {
 	sym.value = value
 }
 
+func (ec *execContext) specPushCatch(tag lispObject) {
+	ec.bindings = append(ec.bindings, &specBindingCatch{
+		catchTag: tag,
+	})
+}
+
+func (ec *execContext) catchInStack(tag lispObject) bool {
+	for _, binding := range ec.bindings {
+		if binding.tag() != specCatch {
+			continue
+		}
+
+		catchTag := binding.(*specBindingCatch).catchTag
+		if catchTag == tag {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (ec *execContext) bindingsSize() int {
 	return len(ec.bindings)
 }
 
 func (ec *execContext) unbind(target int) {
 	size := len(ec.bindings)
-	if size < target {
+	if target < 0 || size <= target {
 		panic(fmt.Sprintf("unable to unbind back to %v, size is %v", target, size))
 	}
 
@@ -725,6 +755,8 @@ func (ec *execContext) unbind(target int) {
 		case specLet:
 			let := current.(*specBindingLet)
 			let.symbol.value = let.oldVal
+		case specCatch:
+			// Nothing to do.
 		default:
 			panic("unknown specBinding tag")
 		}
