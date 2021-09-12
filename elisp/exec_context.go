@@ -11,11 +11,11 @@ const (
 	nbsp         = '\u00A0'
 )
 
-type specBindingTag int
+type stackEntryTag int
 
 const (
-	specLet specBindingTag = iota
-	specCatch
+	entryLet stackEntryTag = iota
+	entryCatch
 )
 
 type stackJumpTag struct {
@@ -28,25 +28,25 @@ type stackJumpSignal struct {
 	data        lispObject
 }
 
-type specBinding interface {
-	tag() specBindingTag
+type stackEntry interface {
+	tag() stackEntryTag
 }
 
 type execContext struct {
-	bindings []specBinding
-	inp      *interpreter
-	nil_     lispObject
-	t        lispObject
-	g        globals
-	obarray  map[string]*lispSymbol
+	stack   []stackEntry
+	inp     *interpreter
+	nil_    lispObject
+	t       lispObject
+	g       globals
+	obarray map[string]*lispSymbol
 }
 
-type specBindingLet struct {
+type stackEntryLet struct {
 	symbol *lispSymbol
 	oldVal lispObject
 }
 
-type specBindingCatch struct {
+type stackEntryCatch struct {
 	catchTag lispObject
 }
 
@@ -66,12 +66,12 @@ func (jmp *stackJumpSignal) Error() string {
 	return fmt.Sprintf("stack jump: signal: %v", jmp.errorSymbol)
 }
 
-func (sbl *specBindingLet) tag() specBindingTag {
-	return specLet
+func (sel *stackEntryLet) tag() stackEntryTag {
+	return entryLet
 }
 
-func (sbc *specBindingCatch) tag() specBindingTag {
-	return specCatch
+func (sec *stackEntryCatch) tag() stackEntryTag {
+	return entryCatch
 }
 
 func (ctx *readContext) read() rune {
@@ -313,7 +313,7 @@ func newExecContext() *execContext {
 	ec := execContext{}
 
 	ec.obarray = make(map[string]*lispSymbol)
-	ec.bindings = []specBinding{}
+	ec.stack = []stackEntry{}
 
 	ec.initialDefsSymbols()   // symbols.go
 	ec.initialDefsErrors()    // errors.gmo
@@ -664,7 +664,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	}
 
 	var result lispObject
-	count := ec.bindingsSize()
+	count := ec.stackSize()
 
 	switch sub.maxArgs {
 	case 0:
@@ -691,7 +691,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		panic("subroutine with noreturn returned value")
 	}
 
-	if count != ec.bindingsSize() {
+	if count != ec.stackSize() {
 		panic("one or more bindings not undone after call")
 	}
 
@@ -707,9 +707,9 @@ func (ec *execContext) progIgnore(body lispObject) error {
 	return err
 }
 
-func (ec *execContext) specBind(symbol lispObject, value lispObject) {
+func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) {
 	sym := xSymbol(symbol)
-	ec.bindings = append(ec.bindings, &specBindingLet{
+	ec.stack = append(ec.stack, &stackEntryLet{
 		symbol: sym,
 		oldVal: sym.value,
 	})
@@ -717,19 +717,19 @@ func (ec *execContext) specBind(symbol lispObject, value lispObject) {
 	sym.value = value
 }
 
-func (ec *execContext) specPushCatch(tag lispObject) {
-	ec.bindings = append(ec.bindings, &specBindingCatch{
+func (ec *execContext) stackPushCatch(tag lispObject) {
+	ec.stack = append(ec.stack, &stackEntryCatch{
 		catchTag: tag,
 	})
 }
 
 func (ec *execContext) catchInStack(tag lispObject) bool {
-	for _, binding := range ec.bindings {
-		if binding.tag() != specCatch {
+	for _, binding := range ec.stack {
+		if binding.tag() != entryCatch {
 			continue
 		}
 
-		catchTag := binding.(*specBindingCatch).catchTag
+		catchTag := binding.(*stackEntryCatch).catchTag
 		if catchTag == tag {
 			return true
 		}
@@ -738,29 +738,29 @@ func (ec *execContext) catchInStack(tag lispObject) bool {
 	return false
 }
 
-func (ec *execContext) bindingsSize() int {
-	return len(ec.bindings)
+func (ec *execContext) stackSize() int {
+	return len(ec.stack)
 }
 
 func (ec *execContext) unbind(target int) {
-	size := len(ec.bindings)
+	size := len(ec.stack)
 	if target < 0 || size <= target {
 		panic(fmt.Sprintf("unable to unbind back to %v, size is %v", target, size))
 	}
 
-	for len(ec.bindings) > target {
-		current := ec.bindings[len(ec.bindings)-1]
+	for len(ec.stack) > target {
+		current := ec.stack[len(ec.stack)-1]
 
 		switch current.tag() {
-		case specLet:
-			let := current.(*specBindingLet)
+		case entryLet:
+			let := current.(*stackEntryLet)
 			let.symbol.value = let.oldVal
-		case specCatch:
+		case entryCatch:
 			// Nothing to do.
 		default:
 			panic("unknown specBinding tag")
 		}
 
-		ec.bindings = ec.bindings[:len(ec.bindings)-1]
+		ec.stack = ec.stack[:len(ec.stack)-1]
 	}
 }

@@ -120,14 +120,14 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
-	size := ec.bindingsSize()
+	size := ec.stackSize()
 	defer ec.unbind(size)
 
 	if !consp(lexical) && lexical != ec.nil_ {
 		lexical = ec.makeList(ec.t)
 	}
 
-	ec.specBind(ec.g.internalInterpreterEnv, lexical)
+	ec.stackPushLet(ec.g.internalInterpreterEnv, lexical)
 	val, err := ec.evalSub(form)
 	if err != nil {
 		return nil, err
@@ -213,8 +213,8 @@ func (ec *execContext) catch(args lispObject) (lispObject, error) {
 		return nil, err
 	}
 
-	size := ec.bindingsSize()
-	ec.specPushCatch(tag)
+	size := ec.stackSize()
+	ec.stackPushCatch(tag)
 	defer ec.unbind(size)
 
 	obj, err := ec.progn(xCdr(args))
@@ -342,9 +342,9 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 		handlerVar = ec.g.internalInterpreterEnv
 	}
 
-	size := ec.bindingsSize()
+	size := ec.stackSize()
 	defer ec.unbind(size)
-	ec.specBind(handlerVar, value)
+	ec.stackPushLet(handlerVar, value)
 
 	result, err = ec.progn(body)
 
