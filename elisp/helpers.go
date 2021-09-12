@@ -30,6 +30,10 @@ func xSymbol(obj lispObject) *lispSymbol {
 	return obj.(*lispSymbol)
 }
 
+func xSymbolValue(obj lispObject) lispObject {
+	return xSymbol(obj).value
+}
+
 func symbolp(obj lispObject) bool {
 	return obj.getType() == lispTypeSymbol
 }

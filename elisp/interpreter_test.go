@@ -187,5 +187,11 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(symbol-plist 'error)", "(error-conditions (error) error-message \"error\")", nil},
 		{"(symbol-plist 'quit)", "(error-conditions (quit) error-message \"Quit\")", nil},
 		{"(symbol-plist 'user-error)", "(error-conditions (user-error error) error-message \"\")", nil},
+		{"(condition-case nil 42)", "42", nil},
+		{"(condition-case foo 42)", "42", nil},
+		{"(condition-case nil (signal 'user-error nil))", "", anyError},
+		{"(condition-case nil (signal 'user-error nil) (user-error 42))", "42", nil},
+		{"(condition-case nil (signal 'user-error nil) (user-error 1) (user-error 2))", "1", nil},
+		{"(condition-case nil (throw 'foo 1) (t 42))", "42", nil},
 	})
 }

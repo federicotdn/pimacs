@@ -75,11 +75,10 @@ func (ec *execContext) if_(args lispObject) (lispObject, error) {
 func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	val := ec.nil_
 
-	for body.getType() == lispTypeCons {
+	for ; consp(body); body = xCdr(body) {
 		var err error
 
 		form := xCar(body)
-		body = xCdr(body)
 		val, err = ec.evalSub(form)
 		if err != nil {
 			return nil, err
@@ -92,9 +91,8 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 func (ec *execContext) listLength(obj lispObject) (lispObject, error) {
 	total := 0
 
-	for consp(obj) {
+	for ; consp(obj); obj = xCdr(obj) {
 		total += 1
-		obj = xCdr(obj)
 	}
 
 	if obj != ec.nil_ {
@@ -129,7 +127,7 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 		lexical = ec.makeList(ec.t)
 	}
 
-	ec.specBind(xSymbol(ec.g.internalInterpreterEnv), lexical)
+	ec.specBind(ec.g.internalInterpreterEnv, lexical)
 	val, err := ec.evalSub(form)
 	if err != nil {
 		return nil, err
@@ -161,14 +159,12 @@ func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
-	for consp(alist) {
+	for ; consp(alist); alist = xCdr(alist) {
 		element := xCar(alist)
 
 		if consp(element) && xCar(element) == key {
 			return element, nil
 		}
-
-		alist = xCdr(alist)
 	}
 
 	if alist != ec.nil_ {
@@ -176,6 +172,20 @@ func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 	}
 
 	return ec.nil_, nil
+}
+
+func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
+	for ; consp(list); list = xCdr(list) {
+		if xCar(list) == elt {
+			return list, nil
+		}
+	}
+
+	if list != ec.nil_ {
+		return nil, fmt.Errorf("memq: wrong type argument")
+	}
+
+	return ec.g.nil_, nil
 }
 
 func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
@@ -226,28 +236,115 @@ func (ec *execContext) unwindProtect(args lispObject) (lispObject, error) {
 	return val, err
 }
 
+func (ec *execContext) clauseHandlesConditions(clause, errConditions lispObject) (bool, error) {
+	clauseConditions := xCar(clause)
+
+	if !consp(clauseConditions) {
+		clauseConditions = ec.makeList(clauseConditions)
+	}
+
+	for cond := clauseConditions; consp(cond); cond = xCdr(cond) {
+		condName := xCar(cond)
+		found, err := ec.memq(condName, errConditions)
+		if err != nil {
+			return false, err
+		}
+
+		if found != ec.nil_ || condName == ec.t {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	variable := xCar(args)
 	bodyForm := xCar(xCdr(args))
-	// handlers := xCdr(xCdr(args))
+	handlers := xCdr(xCdr(args))
+
+	clauses := []lispObject{}
 
 	if !symbolp(variable) {
 		return nil, fmt.Errorf("wrong type argument: var")
 	}
 
-	// TODO: check structure of handlers
+	for tail := handlers; consp(tail); tail = xCdr(tail) {
+		tem := xCar(tail)
+		clauses = append(clauses, tem)
+
+		if tem == ec.nil_ {
+			continue
+		}
+
+		if consp(tem) && (symbolp(xCar(tem)) || consp(xCar(tem))) {
+			continue
+		}
+
+		return nil, fmt.Errorf("invalid type handler")
+	}
 
 	result, err := ec.evalSub(bodyForm)
 	if err == nil {
+		// No error, return result as normal
 		return result, nil
 	}
 
 	jmp, ok := err.(*stackJumpSignal)
 	if !ok {
+		// There's an error, but it's a throw - don't handle that here
 		return nil, err
 	}
 
-	return nil, jmp
+	errConditions, err := ec.get(jmp.errorSymbol, ec.g.errorConditions)
+	if err != nil {
+		return nil, err
+	}
+
+	var body lispObject
+
+	for _, clause := range clauses {
+		doesHandle, err := ec.clauseHandlesConditions(clause, errConditions)
+		if err != nil {
+			return nil, err
+		}
+
+		if doesHandle {
+			body = xCdr(clause)
+			break
+		}
+	}
+
+	if body == nil {
+		// No handler was chosen
+		return nil, jmp
+	}
+
+	if variable == ec.nil_ {
+		return ec.progn(body)
+	}
+
+	value := jmp.data
+	handlerVar := variable
+	env := xSymbolValue(ec.g.internalInterpreterEnv)
+
+	if env != ec.nil_ {
+		value = ec.makeCons(ec.makeCons(variable, value), env)
+		handlerVar = ec.g.internalInterpreterEnv
+	}
+
+	size := ec.bindingsSize()
+	defer ec.unbind(size)
+	ec.specBind(handlerVar, value)
+
+	result, err = ec.progn(body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+
 }
 
 func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) {
@@ -409,6 +506,7 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr2("fset", ec.fset, 2)
 	ec.defSubr2("eq", ec.eq, 2)
 	ec.defSubr2("assq", ec.assq, 2)
+	ec.defSubr2("memq", ec.memq, 2)
 	ec.defSubr2("get", ec.get, 2)
 	ec.defSubr2("prin1", ec.prin1, 1)
 	ec.defSubr2("throw", ec.throw, 2).noReturn = true

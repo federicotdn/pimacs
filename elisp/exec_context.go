@@ -564,7 +564,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	if form.getType() == lispTypeSymbol {
 		var lex lispObject
 
-		envVal := xSymbol(ec.g.internalInterpreterEnv).value
+		envVal := xSymbolValue(ec.g.internalInterpreterEnv)
 		if envVal != ec.nil_ {
 			lex, err = ec.assq(form, envVal)
 			if err != nil {
@@ -655,6 +655,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	}
 
 	var result lispObject
+	count := ec.bindingsSize()
 
 	switch sub.maxArgs {
 	case 0:
@@ -681,6 +682,10 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		panic("subroutine with noreturn returned value")
 	}
 
+	if count != ec.bindingsSize() {
+		panic("one or more bindings not undone after call")
+	}
+
 	return result, nil
 }
 
@@ -693,13 +698,14 @@ func (ec *execContext) progIgnore(body lispObject) error {
 	return err
 }
 
-func (ec *execContext) specBind(symbol *lispSymbol, value lispObject) {
+func (ec *execContext) specBind(symbol lispObject, value lispObject) {
+	sym := xSymbol(symbol)
 	ec.bindings = append(ec.bindings, &specBindingLet{
-		symbol: symbol,
-		oldVal: symbol.value,
+		symbol: sym,
+		oldVal: sym.value,
 	})
 
-	symbol.value = value
+	sym.value = value
 }
 
 func (ec *execContext) bindingsSize() int {
