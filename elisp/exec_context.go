@@ -14,7 +14,7 @@ const (
 type stackEntryTag int
 
 const (
-	entryLet stackEntryTag = iota
+	entryLet stackEntryTag = iota + 1
 	entryCatch
 )
 

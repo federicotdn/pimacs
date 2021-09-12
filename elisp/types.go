@@ -5,7 +5,7 @@ type vectorLikeType int
 type lispInt int64
 
 const (
-	lispTypeSymbol lispType = iota
+	lispTypeSymbol lispType = iota + 1
 	lispTypeInteger
 	lispTypeString
 	lispTypeVectorLike
@@ -16,7 +16,7 @@ const (
 )
 
 const (
-	vectorLikeTypeNormal vectorLikeType = iota
+	vectorLikeTypeNormal vectorLikeType = iota + 1
 	vectorLikeTypeSubroutine
 )
 
