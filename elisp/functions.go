@@ -4,6 +4,14 @@ import (
 	"fmt"
 )
 
+func (ec *execContext) sequencep(object lispObject) (lispObject, error) {
+	if consp(object) || object == ec.nil_ || arrayp(object) {
+		return ec.t, nil
+	}
+
+	return ec.nil_, nil
+}
+
 func (ec *execContext) cons(car lispObject, cdr lispObject) (lispObject, error) {
 	return ec.makeCons(car, cdr), nil
 }
@@ -106,7 +114,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	num := 0
 
 	switch obj.getType() {
-	case lispTypeStr:
+	case lispTypeString:
 		num = len(xString(obj).value)
 	case lispTypeCons:
 		return ec.listLength(obj)
@@ -370,9 +378,9 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 	switch lispType {
 	case lispTypeSymbol:
 		s = xSymbol(obj).name
-	case lispTypeInt:
+	case lispTypeInteger:
 		s = fmt.Sprint(xInteger(obj).value)
-	case lispTypeStr:
+	case lispTypeString:
 		s = "\"" + xString(obj).value + "\""
 	case lispTypeCons:
 		// TODO: Clean up when string functions are available (don't type-assert)
@@ -411,7 +419,7 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 		s += ")"
 	case lispTypeFloat:
 		s = fmt.Sprint(xFloat(obj).value)
-	case lispTypeVecLike:
+	case lispTypeVectorLike:
 		s = "<vector-like>"
 	default:
 		panic("unknown type")
@@ -505,6 +513,7 @@ func (ec *execContext) list(args ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) initialDefsFunctions() {
+	ec.defSubr1("sequencep", ec.sequencep, 1)
 	ec.defSubr1("car", ec.car, 1)
 	ec.defSubr1("cdr", ec.cdr, 1)
 	ec.defSubr1("length", ec.length, 1)

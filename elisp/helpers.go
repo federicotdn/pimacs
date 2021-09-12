@@ -50,8 +50,21 @@ func xVectorLike(obj lispObject) *lispVectorLike {
 	return obj.(*lispVectorLike)
 }
 
+func vectorLikep(obj lispObject, vecType vectorLikeType) bool {
+	vec, ok := obj.(*lispVectorLike)
+	if !ok {
+		return false
+	}
+
+	return vec.vecType == vecType
+}
+
 func xString(obj lispObject) *lispString {
 	return obj.(*lispString)
+}
+
+func stringp(obj lispObject) bool {
+	return obj.getType() == lispTypeString
 }
 
 func xInteger(obj lispObject) *lispInteger {
@@ -59,9 +72,14 @@ func xInteger(obj lispObject) *lispInteger {
 }
 
 func integerp(obj lispObject) bool {
-	return obj.getType() == lispTypeInt
+	return obj.getType() == lispTypeInteger
 }
 
 func xFloat(obj lispObject) *lispFloat {
 	return obj.(*lispFloat)
+}
+
+func arrayp(obj lispObject) bool {
+	// TODO: Incomplete!
+	return vectorLikep(obj, vectorLikeTypeNormal) || stringp(obj)
 }

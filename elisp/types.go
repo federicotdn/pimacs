@@ -6,9 +6,9 @@ type lispInt int64
 
 const (
 	lispTypeSymbol lispType = iota
-	lispTypeInt
-	lispTypeStr
-	lispTypeVecLike
+	lispTypeInteger
+	lispTypeString
+	lispTypeVectorLike
 	lispTypeCons
 	lispTypeFloat
 	argsMany      = -1
@@ -81,7 +81,7 @@ func (lc *lispCons) getType() lispType {
 }
 
 func (li *lispInteger) getType() lispType {
-	return lispTypeInt
+	return lispTypeInteger
 }
 
 func (lf *lispFloat) getType() lispType {
@@ -89,9 +89,9 @@ func (lf *lispFloat) getType() lispType {
 }
 
 func (ls *lispString) getType() lispType {
-	return lispTypeStr
+	return lispTypeString
 }
 
 func (lv *lispVectorLike) getType() lispType {
-	return lispTypeVecLike
+	return lispTypeVectorLike
 }

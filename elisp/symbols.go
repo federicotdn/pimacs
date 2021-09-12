@@ -12,12 +12,14 @@ type symbolInit struct {
 }
 
 type globals struct {
-	// Essential runtime objects
+	// 1. Essential runtime objects
 	nil_                   lispObject
 	t                      lispObject
 	internalInterpreterEnv lispObject
 	unbound                lispObject
-	// Errors
+	// 2. Subroutine symbols
+	sequencep lispObject
+	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
 	userError              lispObject
@@ -29,7 +31,7 @@ type globals struct {
 	wrongNumberofArguments lispObject
 	endOfFile              lispObject
 	noCatch                lispObject
-	// Misc. symbols
+	// 4. Misc. symbols
 	errorConditions lispObject
 	errorMessage    lispObject
 }
@@ -38,6 +40,7 @@ func (ec *execContext) initialDefsSymbols() {
 	g := &ec.g
 
 	syms := []symbolInit{
+		// 1
 		{loc: &g.unbound, name: "unbound", unintern: true},
 		{loc: &g.nil_, name: "nil"},
 		{loc: &g.t, name: "t"},
@@ -46,6 +49,9 @@ func (ec *execContext) initialDefsSymbols() {
 			name:     "internal-interpreter-environment",
 			unintern: true,
 		},
+		// 2
+		{loc: &g.sequencep, name: "sequencep"},
+		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
 		{loc: &g.userError, name: "user-error"},
@@ -57,6 +63,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.wrongNumberofArguments, name: "wrong-number-of-arguments"},
 		{loc: &g.endOfFile, name: "end-of-file"},
 		{loc: &g.noCatch, name: "no-catch"},
+		// 4
 		{loc: &g.errorConditions, name: "error-conditions"},
 		{loc: &g.errorMessage, name: "error-message"},
 	}

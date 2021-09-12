@@ -610,7 +610,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	sym := xSymbol(car)
 	fn := sym.function
 
-	if fn.getType() != lispTypeVecLike {
+	if fn.getType() != lispTypeVectorLike {
 		return nil, fmt.Errorf("function must be vector-like")
 	}
 
