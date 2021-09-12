@@ -21,4 +21,13 @@ func (ec *execContext) initialDefsErrors() {
 	ec.putError(ec.g.wrongNumberofArguments, errorTail, "Wrong number of arguments")
 	ec.putError(ec.g.endOfFile, errorTail, "End of file during parsing")
 	ec.putError(ec.g.noCatch, errorTail, "No catch for tag")
+	ec.putError(ec.g.settingConstant, errorTail, "Attempt to set a constant symbol")
+}
+
+func (ec *execContext) wrongTypeArgument(predicate, value lispObject) (lispObject, error) {
+	return ec.signal(ec.g.wrongTypeArgument, ec.makeList(predicate, value))
+}
+
+func (ec *execContext) wrongNumberOfArguments(fn, count lispObject) (lispObject, error) {
+	return ec.signal(ec.g.wrongNumberofArguments, ec.makeList(fn, count))
 }

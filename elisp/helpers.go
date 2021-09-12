@@ -79,6 +79,14 @@ func xFloat(obj lispObject) *lispFloat {
 	return obj.(*lispFloat)
 }
 
+func floatp(obj lispObject) bool {
+	return obj.getType() == lispTypeFloat
+}
+
+func numberp(obj lispObject) bool {
+	return integerp(obj) || floatp(obj)
+}
+
 func arrayp(obj lispObject) bool {
 	// TODO: Incomplete!
 	return vectorLikep(obj, vectorLikeTypeNormal) || stringp(obj)

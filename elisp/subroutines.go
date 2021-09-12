@@ -5,11 +5,19 @@ import (
 )
 
 func (ec *execContext) sequencep(object lispObject) (lispObject, error) {
-	if consp(object) || object == ec.nil_ || arrayp(object) {
-		return ec.t, nil
-	}
+	return ec.fromBool(consp(object) || object == ec.nil_ || arrayp(object))
+}
 
-	return ec.nil_, nil
+func (ec *execContext) listp(object lispObject) (lispObject, error) {
+	return ec.fromBool(object == ec.nil_ || consp(object))
+}
+
+func (ec *execContext) symbolp(object lispObject) (lispObject, error) {
+	return ec.fromBool(symbolp(object))
+}
+
+func (ec *execContext) numberOrMarkerp(object lispObject) (lispObject, error) {
+	return ec.fromBool(numberp(object))
 }
 
 func (ec *execContext) cons(car lispObject, cdr lispObject) (lispObject, error) {
@@ -22,7 +30,7 @@ func (ec *execContext) car(obj lispObject) (lispObject, error) {
 	}
 
 	if !consp(obj) {
-		return nil, fmt.Errorf("object is not a cons")
+		return ec.wrongTypeArgument(ec.g.listp, obj)
 	}
 	return xCons(obj).car, nil
 }
@@ -33,16 +41,16 @@ func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
 	}
 
 	if !consp(obj) {
-		return nil, fmt.Errorf("object is not a cons")
+		return ec.wrongTypeArgument(ec.g.listp, obj)
 	}
 	return xCons(obj).cdr, nil
 }
 
 func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 	var total lispInt = 0
-	for i, obj := range objs {
-		if !integerp(obj) {
-			return nil, fmt.Errorf("argument in position %v is not an integer", i)
+	for _, obj := range objs {
+		if !numberp(obj) {
+			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, obj)
 		}
 		total += xInteger(obj).value
 	}
@@ -53,7 +61,11 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 func (ec *execContext) quote(args lispObject) (lispObject, error) {
 	cdr := xCdr(args)
 	if cdr != ec.nil_ {
-		return nil, fmt.Errorf("expected exactly 1 argument")
+		length, err := ec.length(args)
+		if err != nil {
+			return nil, err
+		}
+		return ec.wrongNumberOfArguments(ec.g.quote, length)
 	}
 
 	return xCar(args), nil
@@ -103,16 +115,17 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	case lispTypeString:
 		num = len(xString(obj).value)
 	case lispTypeCons:
-		for ; consp(obj); obj = xCdr(obj) {
+		tail := obj
+		for ; consp(tail); tail = xCdr(tail) {
 			num += 1
 		}
 
-		if obj != ec.nil_ {
-			return nil, fmt.Errorf("length: wrong type argument")
+		if tail != ec.nil_ {
+			return ec.wrongTypeArgument(ec.g.listp, obj)
 		}
 	default:
 		if obj != ec.nil_ {
-			return nil, fmt.Errorf("length: wrong type argument")
+			return ec.wrongTypeArgument(ec.g.sequencep, obj)
 		}
 	}
 
@@ -138,7 +151,7 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 
 func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return nil, fmt.Errorf("not a symbol")
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
 	}
 
 	xSymbol(symbol).value = newVal
@@ -147,11 +160,11 @@ func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
 
 func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 	if symbol == ec.nil_ && definition != ec.nil_ {
-		return nil, fmt.Errorf("setting constant nil")
+		return ec.signal(ec.g.settingConstant, ec.makeList(symbol))
 	}
 
 	if !symbolp(symbol) {
-		return nil, fmt.Errorf("not a symbol")
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
 	}
 
 	xSymbol(symbol).function = definition
@@ -159,40 +172,39 @@ func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
-	for ; consp(alist); alist = xCdr(alist) {
-		element := xCar(alist)
+	tail := alist
+	for ; consp(tail); tail = xCdr(tail) {
+		element := xCar(tail)
 
 		if consp(element) && xCar(element) == key {
 			return element, nil
 		}
 	}
 
-	if alist != ec.nil_ {
-		return nil, fmt.Errorf("assq: wrong type argument %v", alist.getType())
+	if tail != ec.nil_ {
+		return ec.wrongTypeArgument(ec.g.listp, alist)
 	}
 
 	return ec.nil_, nil
 }
 
 func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
-	for ; consp(list); list = xCdr(list) {
-		if xCar(list) == elt {
-			return list, nil
+	tail := list
+	for ; consp(tail); tail = xCdr(tail) {
+		if xCar(tail) == elt {
+			return tail, nil
 		}
 	}
 
-	if list != ec.nil_ {
-		return nil, fmt.Errorf("memq: wrong type argument")
+	if tail != ec.nil_ {
+		return ec.wrongTypeArgument(ec.g.listp, list)
 	}
 
 	return ec.g.nil_, nil
 }
 
 func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
-	if obj1 == obj2 {
-		return ec.t, nil
-	}
-	return ec.nil_, nil
+	return ec.fromBool(obj1 == obj2)
 }
 
 func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
@@ -275,7 +287,7 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	clauses := []lispObject{}
 
 	if !symbolp(variable) {
-		return nil, fmt.Errorf("wrong type argument: var")
+		return ec.wrongTypeArgument(ec.g.symbolp, variable)
 	}
 
 	for tail := handlers; consp(tail); tail = xCdr(tail) {
@@ -359,7 +371,7 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) {
 	return nil, &stackJumpSignal{
 		errorSymbol: errorSymbol,
-		data:        data,
+		data:        ec.makeCons(errorSymbol, data),
 	}
 }
 
@@ -506,6 +518,9 @@ func (ec *execContext) list(args ...lispObject) (lispObject, error) {
 
 func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr1("sequencep", ec.sequencep, 1)
+	ec.defSubr1("listp", ec.listp, 1)
+	ec.defSubr1("symbolp", ec.symbolp, 1)
+	ec.defSubr1("number-or-marker-p", ec.numberOrMarkerp, 1)
 	ec.defSubr1("car", ec.car, 1)
 	ec.defSubr1("cdr", ec.cdr, 1)
 	ec.defSubr1("length", ec.length, 1)

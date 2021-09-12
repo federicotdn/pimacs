@@ -18,7 +18,11 @@ type globals struct {
 	internalInterpreterEnv lispObject
 	unbound                lispObject
 	// 2. Subroutine symbols
-	sequencep lispObject
+	sequencep       lispObject
+	listp           lispObject
+	symbolp         lispObject
+	numberOrMarkerp lispObject
+	quote           lispObject
 	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
@@ -31,6 +35,7 @@ type globals struct {
 	wrongNumberofArguments lispObject
 	endOfFile              lispObject
 	noCatch                lispObject
+	settingConstant        lispObject
 	// 4. Misc. symbols
 	errorConditions lispObject
 	errorMessage    lispObject
@@ -51,6 +56,10 @@ func (ec *execContext) initialDefsSymbols() {
 		},
 		// 2
 		{loc: &g.sequencep, name: "sequencep"},
+		{loc: &g.listp, name: "listp"},
+		{loc: &g.symbolp, name: "symbolp"},
+		{loc: &g.numberOrMarkerp, name: "number-or-marker-p"},
+		{loc: &g.quote, name: "quote"},
 		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
@@ -63,6 +72,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.wrongNumberofArguments, name: "wrong-number-of-arguments"},
 		{loc: &g.endOfFile, name: "end-of-file"},
 		{loc: &g.noCatch, name: "no-catch"},
+		{loc: &g.settingConstant, name: "setting-constant"},
 		// 4
 		{loc: &g.errorConditions, name: "error-conditions"},
 		{loc: &g.errorMessage, name: "error-message"},

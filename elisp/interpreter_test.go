@@ -148,6 +148,10 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(+)", "0", nil},
 		{"(+ 1)", "1", nil},
 		{"(+ 1 1)", "2", nil},
+		{"(+ 1 nil)", "", anyError},
+		{"(memq 'a '(a b c))", "(a b c)", nil},
+		{"(memq 'a '(a . b))", "(a . b)", nil},
+		{"(memq 'c '(a . b))", "", anyError},
 		{"(length '(1 2 3))", "3", nil},
 		{"(eval '(+ 1 1))", "2", nil},
 		{"(progn 1 2 3)", "3", nil},
@@ -194,5 +198,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(condition-case nil (signal 'user-error nil) (user-error 1) (user-error 2))", "1", nil},
 		{"(condition-case nil (throw 'foo 1) (t 42))", "42", nil},
 		{"(catch 'foo (condition-case nil (throw 'foo 1234) (t 42)))", "1234", nil},
+		{"(condition-case a (signal 'error \"foo\") ((error) a))", "(error . \"foo\")", nil},
 	})
 }

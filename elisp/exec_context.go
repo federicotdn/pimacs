@@ -764,3 +764,10 @@ func (ec *execContext) unbind(target int) {
 		ec.stack = ec.stack[:len(ec.stack)-1]
 	}
 }
+
+func (ec *execContext) fromBool(b bool) (lispObject, error) {
+	if b {
+		return ec.t, nil
+	}
+	return ec.g.nil_, nil
+}
