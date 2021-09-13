@@ -18,6 +18,7 @@ const (
 const (
 	vectorLikeTypeNormal vectorLikeType = iota + 1
 	vectorLikeTypeSubroutine
+	vectorLikeTypeGoChannel
 )
 
 type lispFn0 func() (lispObject, error)

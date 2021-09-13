@@ -63,6 +63,10 @@ func xString(obj lispObject) *lispString {
 	return obj.(*lispString)
 }
 
+func xStringValue(obj lispObject) string {
+	return xString(obj).value
+}
+
 func stringp(obj lispObject) bool {
 	return obj.getType() == lispTypeString
 }

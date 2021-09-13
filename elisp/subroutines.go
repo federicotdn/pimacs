@@ -2,7 +2,12 @@ package elisp
 
 import (
 	"fmt"
+	"time"
 )
+
+func (ec *execContext) null(object lispObject) (lispObject, error) {
+	return ec.fromBool(object == ec.nil_)
+}
 
 func (ec *execContext) sequencep(object lispObject) (lispObject, error) {
 	return ec.fromBool(consp(object) || object == ec.nil_ || arrayp(object))
@@ -18,6 +23,64 @@ func (ec *execContext) symbolp(object lispObject) (lispObject, error) {
 
 func (ec *execContext) numberOrMarkerp(object lispObject) (lispObject, error) {
 	return ec.fromBool(numberp(object))
+}
+
+func (ec *execContext) integerp(object lispObject) (lispObject, error) {
+	return ec.fromBool(integerp(object))
+}
+
+func (ec *execContext) goChannelp(object lispObject) (lispObject, error) {
+	return ec.fromBool(vectorLikep(object, vectorLikeTypeGoChannel))
+}
+
+func (ec *execContext) makeGoChannel(size lispObject) (lispObject, error) {
+	if !integerp(size) {
+		return ec.wrongTypeArgument(ec.g.integerp, size)
+	}
+
+	channel := make(chan lispObject, int(xIntegerValue(size)))
+	return ec.makeVectorLike(vectorLikeTypeGoChannel, channel), nil
+}
+
+func (ec *execContext) goChannelSend(channel, object lispObject) (lispObject, error) {
+	if !vectorLikep(channel, vectorLikeTypeGoChannel) {
+		return ec.wrongTypeArgument(ec.g.goChannelp, channel)
+	}
+
+	goChan := xVectorLike(channel).value.(chan lispObject)
+	goChan <- object
+
+	return object, nil
+}
+
+func (ec *execContext) goChannelReceive(channel lispObject) (lispObject, error) {
+	if !vectorLikep(channel, vectorLikeTypeGoChannel) {
+		return ec.wrongTypeArgument(ec.g.goChannelp, channel)
+	}
+
+	goChan := xVectorLike(channel).value.(chan lispObject)
+	object, ok := <-goChan
+
+	if !ok {
+		return ec.g.goChannelClosed, nil
+	}
+
+	return object, nil
+}
+
+func (ec *execContext) goChannelClose(channel lispObject) (lispObject, error) {
+	if !vectorLikep(channel, vectorLikeTypeGoChannel) {
+		return ec.wrongTypeArgument(ec.g.goChannelp, channel)
+	}
+
+	goChan := xVectorLike(channel).value.(chan lispObject)
+	close(goChan)
+	return ec.nil_, nil
+}
+
+func (ec *execContext) sleepFor(seconds, milliseconds lispObject) (lispObject, error) {
+	time.Sleep(time.Duration(xIntegerValue(seconds)) * time.Second)
+	return ec.nil_, nil
 }
 
 func (ec *execContext) cons(car lispObject, cdr lispObject) (lispObject, error) {
@@ -462,7 +525,8 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 	case lispTypeFloat:
 		s = fmt.Sprint(xFloat(obj).value)
 	case lispTypeVectorLike:
-		s = "<vector-like>"
+		vec := xVectorLike(obj)
+		s = fmt.Sprintf("#<vector-like type %v value %v>", vec.vecType, vec.value)
 	default:
 		panic("unknown type")
 	}
@@ -554,15 +618,84 @@ func (ec *execContext) list(args ...lispObject) (lispObject, error) {
 	return ec.makeList(args...), nil
 }
 
+func (ec *execContext) pimacsGo(args lispObject) (lispObject, error) {
+	shared := xCar(args)
+	tail := shared
+
+	channels := make(map[string]chan lispObject)
+
+	for ; consp(tail); tail = xCdr(tail) {
+		elem := xCar(tail)
+
+		if !consp(elem) || !consp(xCdr(elem)) {
+			return ec.wrongTypeArgument(ec.g.listp, elem)
+		}
+
+		symbol := xCar(elem)
+		value, err := ec.evalSub(xCar(xCdr(elem)))
+		if err != nil {
+			return nil, err
+		}
+
+		if !symbolp(symbol) {
+			return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		}
+
+		if !vectorLikep(value, vectorLikeTypeGoChannel) {
+			return ec.wrongTypeArgument(ec.g.goChannelp, value)
+		}
+
+		channels[xSymbol(symbol).name] = xVectorLike(value).value.(chan lispObject)
+	}
+
+	if tail != ec.nil_ {
+		return ec.wrongTypeArgument(ec.g.listp, shared)
+	}
+
+	body, err := ec.prin1(ec.makeCons(ec.g.progn, xCdr(args)), ec.nil_)
+	if err != nil {
+		return nil, err
+	}
+
+	newEc := newExecContext()
+	contents := xStringValue(body)
+
+	go func() {
+		for name, channel := range channels {
+			newEc.intern(name).value = newEc.makeVectorLike(vectorLikeTypeGoChannel, channel)
+		}
+
+		obj, err := newEc.readFromString(contents)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = newEc.evalSub(obj)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	return ec.nil_, nil
+}
+
 func (ec *execContext) initialDefsFunctions() {
+	ec.defSubr1("null", ec.null, 1)
 	ec.defSubr1("sequencep", ec.sequencep, 1)
 	ec.defSubr1("listp", ec.listp, 1)
 	ec.defSubr1("symbolp", ec.symbolp, 1)
 	ec.defSubr1("number-or-marker-p", ec.numberOrMarkerp, 1)
+	ec.defSubr1("integerp", ec.numberOrMarkerp, 1)
+	ec.defSubr1("pimacs-go-channel-p", ec.goChannelp, 1)
+	ec.defSubr1("pimacs-make-go-channel", ec.makeGoChannel, 1)
+	ec.defSubr1("pimacs-go-channel-receive", ec.goChannelReceive, 1)
+	ec.defSubr1("pimacs-go-channel-close", ec.goChannelClose, 1)
 	ec.defSubr1("car", ec.car, 1)
 	ec.defSubr1("cdr", ec.cdr, 1)
 	ec.defSubr1("length", ec.length, 1)
 	ec.defSubr1("symbol-plist", ec.symbolPlist, 1)
+	ec.defSubr2("sleep-for", ec.sleepFor, 1)
+	ec.defSubr2("pimacs-go-channel-send", ec.goChannelSend, 2)
 	ec.defSubr2("cons", ec.cons, 2)
 	ec.defSubr2("eval", ec.eval, 1)
 	ec.defSubr2("set", ec.set, 2)
@@ -587,4 +720,5 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubrU("while", ec.while, 1)
 	ec.defSubrU("progn", ec.progn, 0)
 	ec.defSubrU("condition-case", ec.conditionCase, 2)
+	ec.defSubrU("pimacs-go", ec.pimacsGo, 2)
 }

@@ -22,7 +22,10 @@ type globals struct {
 	listp           lispObject
 	symbolp         lispObject
 	numberOrMarkerp lispObject
+	goChannelp      lispObject
+	integerp        lispObject
 	quote           lispObject
+	progn           lispObject
 	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
@@ -39,6 +42,8 @@ type globals struct {
 	// 4. Misc. symbols
 	errorConditions lispObject
 	errorMessage    lispObject
+	// 5. Pimacs
+	goChannelClosed lispObject
 }
 
 func (ec *execContext) initialDefsSymbols() {
@@ -59,7 +64,10 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.listp, name: "listp"},
 		{loc: &g.symbolp, name: "symbolp"},
 		{loc: &g.numberOrMarkerp, name: "number-or-marker-p"},
+		{loc: &g.goChannelp, name: "pimacs-go-channel-p"},
+		{loc: &g.integerp, name: "integerp"},
 		{loc: &g.quote, name: "quote"},
+		{loc: &g.progn, name: "progn"},
 		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
@@ -76,6 +84,8 @@ func (ec *execContext) initialDefsSymbols() {
 		// 4
 		{loc: &g.errorConditions, name: "error-conditions"},
 		{loc: &g.errorMessage, name: "error-message"},
+		// 5
+		{loc: &g.goChannelClosed, name: "go-channel-closed"},
 	}
 
 	ec.initializeSymbols(syms)

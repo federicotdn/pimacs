@@ -34,7 +34,6 @@ type stackEntry interface {
 
 type execContext struct {
 	stack   []stackEntry
-	inp     *interpreter
 	nil_    lispObject
 	t       lispObject
 	g       globals
