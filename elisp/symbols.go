@@ -26,6 +26,7 @@ type globals struct {
 	integerp        lispObject
 	quote           lispObject
 	progn           lispObject
+	function        lispObject
 	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
@@ -39,9 +40,12 @@ type globals struct {
 	endOfFile              lispObject
 	noCatch                lispObject
 	settingConstant        lispObject
+	invalidReadSyntax      lispObject
 	// 4. Misc. symbols
 	errorConditions lispObject
 	errorMessage    lispObject
+	lambda          lispObject
+	closure         lispObject
 	// 5. Pimacs
 	goChannelClosed lispObject
 }
@@ -68,6 +72,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.integerp, name: "integerp"},
 		{loc: &g.quote, name: "quote"},
 		{loc: &g.progn, name: "progn"},
+		{loc: &g.function, name: "function"},
 		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
@@ -81,9 +86,12 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.endOfFile, name: "end-of-file"},
 		{loc: &g.noCatch, name: "no-catch"},
 		{loc: &g.settingConstant, name: "setting-constant"},
+		{loc: &g.invalidReadSyntax, name: "invalid-read-syntax"},
 		// 4
 		{loc: &g.errorConditions, name: "error-conditions"},
 		{loc: &g.errorMessage, name: "error-message"},
+		{loc: &g.lambda, name: "lambda"},
+		{loc: &g.closure, name: "closure"},
 		// 5
 		{loc: &g.goChannelClosed, name: "go-channel-closed"},
 	}

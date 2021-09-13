@@ -209,6 +209,29 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	return val, nil
 }
 
+func (ec *execContext) function(args lispObject) (lispObject, error) {
+	quoted := xCar(args)
+
+	if xCdr(args) != ec.nil_ {
+		length, err := ec.length(args)
+		if err != nil {
+			return nil, err
+		}
+		return ec.wrongNumberOfArguments(ec.g.function, length)
+	}
+
+	env := xSymbolValue(ec.g.internalInterpreterEnv)
+	if env != ec.nil_ &&
+		consp(quoted) &&
+		xCar(quoted) == ec.g.lambda {
+		cdr := xCdr(quoted)
+
+		return ec.makeCons(ec.g.closure, ec.makeCons(env, cdr)), nil
+	}
+
+	return quoted, nil
+}
+
 func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	num := 0
 
@@ -553,7 +576,7 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 	}
 
 	if tail != ec.nil_ {
-		return nil, fmt.Errorf("plist-put: wrong type argument")
+		return ec.wrongTypeArgument(ec.g.listp, plist)
 	}
 
 	if prev == ec.nil_ {
@@ -585,10 +608,18 @@ func (ec *execContext) plistGet(plist, prop lispObject) (lispObject, error) {
 
 func (ec *execContext) symbolPlist(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return nil, fmt.Errorf("wrong type error")
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
 	}
 
 	return xSymbol(symbol).plist, nil
+}
+
+func (ec *execContext) symbolName(symbol lispObject) (lispObject, error) {
+	if !symbolp(symbol) {
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+	}
+
+	return ec.makeString(xSymbol(symbol).name), nil
 }
 
 func (ec *execContext) get(symbol, propName lispObject) (lispObject, error) {
@@ -695,6 +726,7 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr1("cdr", ec.cdr, 1)
 	ec.defSubr1("length", ec.length, 1)
 	ec.defSubr1("symbol-plist", ec.symbolPlist, 1)
+	ec.defSubr1("symbol-name", ec.symbolName, 1)
 	ec.defSubr2("sleep-for", ec.sleepFor, 1)
 	ec.defSubr2("pimacs-go-channel-send", ec.goChannelSend, 2)
 	ec.defSubr2("cons", ec.cons, 2)
@@ -720,6 +752,7 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubrU("if", ec.if_, 2)
 	ec.defSubrU("while", ec.while, 1)
 	ec.defSubrU("progn", ec.progn, 0)
+	ec.defSubrU("function", ec.function, 1)
 	ec.defSubrU("condition-case", ec.conditionCase, 2)
 	ec.defSubrU("pimacs-go", ec.pimacsGo, 2)
 }

@@ -22,6 +22,7 @@ func (ec *execContext) initialDefsErrors() {
 	ec.putError(ec.g.endOfFile, errorTail, "End of file during parsing")
 	ec.putError(ec.g.noCatch, errorTail, "No catch for tag")
 	ec.putError(ec.g.settingConstant, errorTail, "Attempt to set a constant symbol")
+	ec.putError(ec.g.invalidReadSyntax, errorTail, "Invalid read syntax")
 }
 
 func (ec *execContext) wrongTypeArgument(predicate, value lispObject) (lispObject, error) {

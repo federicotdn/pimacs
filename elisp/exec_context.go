@@ -446,7 +446,21 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 		case c == ')' || c == ']':
 			return nil, c, nil
 		case c == '#':
-			return nil, 0, fmt.Errorf("unimplented read: '%v'", string(c))
+			c = ctx.read()
+
+			switch {
+			case c == '#':
+				return ec.intern(""), 0, nil
+			case c == '\'':
+				body, err := ec.read0(ctx)
+				if err != nil {
+					return nil, 0, err
+				}
+				return ec.makeList(ec.g.function, body), 0, nil
+			default:
+				ctx.unread(c)
+				return ec.read1Result(ec.signal(ec.g.invalidReadSyntax, ec.makeList(ec.makeString(string(c)))))
+			}
 		case c == ';':
 			for {
 				c = ctx.read()

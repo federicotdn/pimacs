@@ -1,5 +1,5 @@
 package elisp
 
 func (ec *execContext) initialDefsVariables() {
-	ec.g.internalInterpreterEnv = ec.nil_
+	xSymbol(ec.g.internalInterpreterEnv).value = ec.nil_
 }
