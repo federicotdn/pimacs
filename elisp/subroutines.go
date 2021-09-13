@@ -657,10 +657,11 @@ func (ec *execContext) pimacsGo(args lispObject) (lispObject, error) {
 		return nil, err
 	}
 
-	newEc := newExecContext()
 	contents := xStringValue(body)
 
 	go func() {
+		newEc := newExecContext()
+
 		for name, channel := range channels {
 			newEc.intern(name).value = newEc.makeVectorLike(vectorLikeTypeGoChannel, channel)
 		}
