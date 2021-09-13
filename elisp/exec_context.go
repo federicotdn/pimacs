@@ -103,7 +103,7 @@ func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 
 	nFloat, err := strconv.ParseFloat(s, 64)
 	if err == nil {
-		return ec.makeFloat(nFloat), nil
+		return ec.makeFloat(lispFp(nFloat)), nil
 	}
 
 	return nil, fmt.Errorf("unknown number format")
@@ -136,7 +136,7 @@ func (ec *execContext) makeCons(car, cdr lispObject) *lispCons {
 	}
 }
 
-func (ec *execContext) makeFloat(value float64) *lispFloat {
+func (ec *execContext) makeFloat(value lispFp) *lispFloat {
 	return &lispFloat{
 		value: value,
 	}
@@ -778,7 +778,7 @@ func (ec *execContext) unbind(target int) {
 	}
 }
 
-func (ec *execContext) fromBool(b bool) (lispObject, error) {
+func (ec *execContext) bool(b bool) (lispObject, error) {
 	if b {
 		return ec.t, nil
 	}

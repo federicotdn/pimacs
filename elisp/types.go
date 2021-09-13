@@ -2,7 +2,9 @@ package elisp
 
 type lispType int
 type vectorLikeType int
+
 type lispInt int64
+type lispFp float64
 
 const (
 	lispTypeSymbol lispType = iota + 1
@@ -55,7 +57,7 @@ type lispInteger struct {
 }
 
 type lispFloat struct {
-	value float64
+	value lispFp
 }
 
 type lispString struct {

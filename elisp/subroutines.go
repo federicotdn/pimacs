@@ -6,31 +6,31 @@ import (
 )
 
 func (ec *execContext) null(object lispObject) (lispObject, error) {
-	return ec.fromBool(object == ec.nil_)
+	return ec.bool(object == ec.nil_)
 }
 
 func (ec *execContext) sequencep(object lispObject) (lispObject, error) {
-	return ec.fromBool(consp(object) || object == ec.nil_ || arrayp(object))
+	return ec.bool(consp(object) || object == ec.nil_ || arrayp(object))
 }
 
 func (ec *execContext) listp(object lispObject) (lispObject, error) {
-	return ec.fromBool(object == ec.nil_ || consp(object))
+	return ec.bool(object == ec.nil_ || consp(object))
 }
 
 func (ec *execContext) symbolp(object lispObject) (lispObject, error) {
-	return ec.fromBool(symbolp(object))
+	return ec.bool(symbolp(object))
 }
 
 func (ec *execContext) numberOrMarkerp(object lispObject) (lispObject, error) {
-	return ec.fromBool(numberp(object))
+	return ec.bool(numberp(object))
 }
 
 func (ec *execContext) integerp(object lispObject) (lispObject, error) {
-	return ec.fromBool(integerp(object))
+	return ec.bool(integerp(object))
 }
 
 func (ec *execContext) goChannelp(object lispObject) (lispObject, error) {
-	return ec.fromBool(vectorLikep(object, vectorLikeTypeGoChannel))
+	return ec.bool(vectorLikep(object, vectorLikeTypeGoChannel))
 }
 
 func (ec *execContext) makeGoChannel(size lispObject) (lispObject, error) {
@@ -328,7 +328,65 @@ func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
-	return ec.fromBool(obj1 == obj2)
+	return ec.bool(obj1 == obj2)
+}
+
+func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
+	if o1 == o2 {
+		return ec.t, nil
+	}
+
+	t1, t2 := o1.getType(), o2.getType()
+	if t1 != t2 {
+		return ec.nil_, nil
+	}
+
+	switch t1 {
+	case lispTypeCons:
+		for ; consp(o1); o1 = xCdr(o1) {
+			if !consp(o2) {
+				return ec.bool(false)
+			}
+
+			equal, err := ec.equal(xCar(o1), xCar(o2))
+			if err != nil {
+				return nil, err
+			}
+
+			if equal == ec.nil_ {
+				return ec.bool(false)
+			}
+
+			o2 = xCdr(o2)
+			if xCdr(o1) == o2 {
+				return ec.bool(true)
+			}
+		}
+
+		return ec.bool(false)
+	case lispTypeFloat:
+		return ec.bool(xFloatValue(o1) == xFloatValue(o2))
+	case lispTypeInteger:
+		return ec.bool(xIntegerValue(o1) == xIntegerValue(o2))
+	case lispTypeString:
+		return ec.bool(xStringValue(o1) == xStringValue(o2))
+	case lispTypeSymbol:
+		// Symbols must match exactly (eq).
+		return ec.bool(false)
+	case lispTypeVectorLike:
+		vec1, vec2 := xVectorLike(o1), xVectorLike(o2)
+		if vec1.vecType != vec2.vecType {
+			return ec.bool(false)
+		}
+
+		if vec1.vecType == vectorLikeTypeGoChannel {
+			return ec.bool(vec1.value == vec2.value)
+		}
+
+		panic("unimplemented: equal")
+	default:
+		panic("unknown object type")
+	}
 }
 
 func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
@@ -497,6 +555,10 @@ func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) 
 		errorSymbol: errorSymbol,
 		data:        ec.makeCons(errorSymbol, data),
 	}
+}
+
+func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
+	return ec.prin1(obj, ec.nil_)
 }
 
 func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
@@ -734,10 +796,12 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr2("set", ec.set, 2)
 	ec.defSubr2("fset", ec.fset, 2)
 	ec.defSubr2("eq", ec.eq, 2)
+	ec.defSubr2("equal", ec.equal, 2)
 	ec.defSubr2("assq", ec.assq, 2)
 	ec.defSubr2("memq", ec.memq, 2)
 	ec.defSubr2("get", ec.get, 2)
 	ec.defSubr2("prin1", ec.prin1, 1)
+	ec.defSubr2("prin1-to-string", ec.prin1ToString, 1)
 	ec.defSubr2("throw", ec.throw, 2).noReturn = true
 	ec.defSubr2("signal", ec.signal, 2).noReturn = true
 	ec.defSubr2("plist-get", ec.plistGet, 2)

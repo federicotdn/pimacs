@@ -204,5 +204,8 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(< 4 2)", "nil", nil},
 		{"(< 4 4)", "nil", nil},
 		{"(symbol-name '##)", `""`, nil},
+		{"(equal 1 1)", "t", nil},
+		{"(equal 1 2)", "nil", nil},
+		{"(equal '(1 2 3) '(1 2 3))", "t", nil},
 	})
 }

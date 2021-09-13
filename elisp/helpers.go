@@ -87,6 +87,10 @@ func xFloat(obj lispObject) *lispFloat {
 	return obj.(*lispFloat)
 }
 
+func xFloatValue(obj lispObject) lispFp {
+	return xFloat(obj).value
+}
+
 func floatp(obj lispObject) bool {
 	return obj.getType() == lispTypeFloat
 }
