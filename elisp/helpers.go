@@ -27,6 +27,14 @@ func xEnsure(obj lispObject, err error) lispObject {
 	return obj
 }
 
+func errorOnly(obj lispObject, err error) error {
+	if obj != nil {
+		terminate("was handed a non-nil Lisp object: %v", obj)
+	}
+
+	return err
+}
+
 func xSymbol(obj lispObject) *lispSymbol {
 	return obj.(*lispSymbol)
 }

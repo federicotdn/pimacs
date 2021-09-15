@@ -288,7 +288,7 @@ func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
 
 func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 	if symbol == ec.nil_ && definition != ec.nil_ {
-		return ec.signal(ec.g.settingConstant, ec.makeList(symbol))
+		return ec.signalN(ec.g.settingConstant, symbol)
 	}
 
 	if !symbolp(symbol) {
@@ -396,7 +396,7 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 
 func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
 	if !ec.catchInStack(tag) {
-		return ec.signal(ec.g.noCatch, ec.makeList(tag, value))
+		return ec.signalN(ec.g.noCatch, tag, value)
 	}
 
 	return nil, &stackJumpTag{
@@ -558,6 +558,11 @@ func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) 
 		errorSymbol: errorSymbol,
 		data:        ec.makeCons(errorSymbol, data),
 	}
+}
+
+func (ec *execContext) signalN(errorSymbol lispObject, args ...lispObject) (lispObject, error) {
+	list := ec.makeList(args...)
+	return ec.signal(errorSymbol, list)
 }
 
 func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {

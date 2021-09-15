@@ -27,6 +27,7 @@ type globals struct {
 	quote           lispObject
 	progn           lispObject
 	function        lispObject
+	read            lispObject
 	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
@@ -41,6 +42,7 @@ type globals struct {
 	noCatch                lispObject
 	settingConstant        lispObject
 	invalidReadSyntax      lispObject
+	pimacsUnimplemented    lispObject
 	// 4. Misc. symbols
 	errorConditions lispObject
 	errorMessage    lispObject
@@ -73,6 +75,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.quote, name: "quote"},
 		{loc: &g.progn, name: "progn"},
 		{loc: &g.function, name: "function"},
+		{loc: &g.read, name: "read"},
 		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
@@ -87,6 +90,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.noCatch, name: "no-catch"},
 		{loc: &g.settingConstant, name: "setting-constant"},
 		{loc: &g.invalidReadSyntax, name: "invalid-read-syntax"},
+		{loc: &g.pimacsUnimplemented, name: "pimacs-unimplemented"},
 		// 4
 		{loc: &g.errorConditions, name: "error-conditions"},
 		{loc: &g.errorMessage, name: "error-message"},

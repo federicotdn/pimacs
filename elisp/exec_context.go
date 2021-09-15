@@ -56,13 +56,21 @@ type readContext struct {
 }
 
 func (jmp *stackJumpTag) Error() string {
-	// TAGS: revise
-	return fmt.Sprintf("stack jump: tag: %v", jmp.tag)
+	format := "stack jump: tag: '%+v'"
+	if symbolp(jmp.tag) {
+		return fmt.Sprintf(format, xSymbol(jmp.tag).name)
+	}
+
+	return fmt.Sprintf(format, jmp.tag)
 }
 
 func (jmp *stackJumpSignal) Error() string {
-	// TAGS: revise
-	return fmt.Sprintf("stack jump: signal: %v", jmp.errorSymbol)
+	format := "stack jump: signal: '%+v'"
+	if symbolp(jmp.errorSymbol) {
+		return fmt.Sprintf(format, xSymbol(jmp.errorSymbol).name)
+	}
+
+	return fmt.Sprintf(format, jmp.errorSymbol)
 }
 
 func (sel *stackEntryLet) tag() stackEntryTag {
@@ -84,20 +92,18 @@ func (ctx *readContext) read() rune {
 }
 
 func (ctx *readContext) unread(c rune) {
-	// TAGS: errors
 	if c == eofRune {
 		return
 	}
 
 	if ctx.i == 0 {
-		panic("nothing to unread")
+		terminate("unbalanced read/unread call with rune: '%v'", c)
 	}
 
 	ctx.i--
 }
 
 func (ec *execContext) stringToNumber(s string) (lispObject, error) {
-	// TAGS: errors
 	nInt, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
 		return ec.makeInteger(lispInt(nInt)), nil
@@ -108,7 +114,7 @@ func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 		return ec.makeFloat(lispFp(nFloat)), nil
 	}
 
-	return nil, fmt.Errorf("unknown number format")
+	return ec.pimacsUnimplemented(ec.g.read, "unknown number format: '%v'", s)
 }
 
 func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
@@ -174,10 +180,10 @@ func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeVa
 }
 
 func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) {
-	// TAGS: incomplete,errors
+	// TAGS: incomplete
 	c := ctx.read()
 	if c == eofRune {
-		return 0, fmt.Errorf("eof")
+		return 0, errorOnly(ec.signalN(ec.g.endOfFile))
 	}
 
 	switch c {
@@ -241,13 +247,12 @@ func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) 
 		return c, nil
 	}
 
-	panic("unimplemented escape code")
+	return 0, errorOnly(ec.pimacsUnimplemented(ec.g.read, "unknown escape code: '\\%v'", c))
 }
 
 func (ec *execContext) defSubr(name string, sub *subroutine) {
-	// TAGS: errors
 	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
-		panic("min args must be smaller or equal to max args")
+		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", sub)
 	}
 	sym := ec.intern(name)
 	vec := ec.makeVectorLike(vectorLikeTypeSubroutine, sub)
@@ -327,10 +332,9 @@ func newExecContext() *execContext {
 }
 
 func (ec *execContext) internSymbol(symbol *lispSymbol) {
-	// TAGS: errors
 	prev, ok := ec.obarray[symbol.name]
 	if ok && prev != symbol {
-		panic("different symbol with that name already interned")
+		ec.terminate("different symbol with that name already interned, name: '%v'", symbol.name)
 	}
 	ec.obarray[symbol.name] = symbol
 }
@@ -346,7 +350,7 @@ func (ec *execContext) intern(name string) *lispSymbol {
 }
 
 func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
-	// TAGS: incomplete,errors
+	// TAGS: incomplete
 	var val lispObject = ec.nil_
 	var tail lispObject = ec.nil_
 
@@ -376,9 +380,9 @@ func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
 					return val, nil
 				}
 
-				return nil, fmt.Errorf("'.' in wrong context")
+				return ec.invalidReadSyntax("'.' in wrong context")
 			default:
-				return nil, fmt.Errorf("invalid list ending: '%v'", string(c))
+				return ec.invalidReadSyntax("invalid list ending: '%v'", string(c))
 			}
 		}
 
@@ -395,7 +399,7 @@ func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
 }
 
 func (ec *execContext) readAtom(c rune, ctx *readContext) (lispObject, error) {
-	// TAGS: incomplete,errors
+	// TAGS: incomplete
 	quoted := false
 	builder := strings.Builder{}
 
@@ -403,7 +407,7 @@ func (ec *execContext) readAtom(c rune, ctx *readContext) (lispObject, error) {
 		if c == '\\' {
 			c = ctx.read()
 			if c == eofRune {
-				return nil, fmt.Errorf("eof reading atom")
+				return ec.signalN(ec.g.endOfFile)
 			}
 
 			quoted = true
@@ -443,14 +447,14 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 	for {
 		c = ctx.read()
 		if c == eofRune {
-			return nil, 0, fmt.Errorf("eof on read1")
+			return ec.read1Result(ec.signalN(ec.g.endOfFile))
 		}
 
 		switch {
 		case c == '(':
 			return ec.read1Result(ec.readList(ctx))
 		case c == '[':
-			return nil, 0, fmt.Errorf("unimplented read: '%v'", string(c))
+			return ec.read1Result(ec.pimacsUnimplemented(ec.g.read, "unknown token: '%v'", c))
 		case c == ')' || c == ']':
 			return nil, c, nil
 		case c == '#':
@@ -467,7 +471,7 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 				return ec.makeList(ec.g.function, body), 0, nil
 			default:
 				ctx.unread(c)
-				return ec.read1Result(ec.signal(ec.g.invalidReadSyntax, ec.makeList(ec.makeString(string(c)))))
+				return ec.read1Result(ec.signalN(ec.g.invalidReadSyntax, ec.makeString(string(c))))
 			}
 		case c == ';':
 			for {
@@ -490,11 +494,11 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 			list := ec.makeList(ec.intern(name), obj)
 			return list, 0, nil
 		case c == ',':
-			return nil, 0, fmt.Errorf("unimplented read: '%v'", string(c))
+			return ec.read1Result(ec.pimacsUnimplemented(ec.g.read, "unknown token: '%v'", c))
 		case c == '?':
 			c = ctx.read()
 			if c == eofRune {
-				return nil, 0, fmt.Errorf("eof reading character")
+				return ec.read1Result(ec.signalN(ec.g.endOfFile))
 			}
 
 			if c == ' ' || c == '\t' {
@@ -520,7 +524,7 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 				return ec.makeInteger(lispInt(c)), 0, nil
 			}
 
-			return nil, 0, fmt.Errorf("invalid syntax for '?'")
+			return ec.read1Result(ec.invalidReadSyntax("invalid syntax for '?'"))
 		case c == '"':
 			builder := strings.Builder{}
 
@@ -545,7 +549,7 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 			}
 
 			if c == eofRune {
-				return nil, c, fmt.Errorf("eof reading string")
+				return ec.read1Result(ec.signalN(ec.g.endOfFile))
 			}
 
 			return ec.makeString(builder.String()), 0, nil
@@ -566,14 +570,13 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 }
 
 func (ec *execContext) read0(ctx *readContext) (lispObject, error) {
-	// TAGS: errors
 	obj, c, err := ec.read1(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	if c != 0 {
-		return nil, fmt.Errorf("unexpected character: '%v'", string(c))
+		return ec.invalidReadSyntax("unexpected character: '%v'", c)
 	}
 
 	return obj, nil
@@ -795,4 +798,9 @@ func (ec *execContext) bool(b bool) (lispObject, error) {
 		return ec.t, nil
 	}
 	return ec.g.nil_, nil
+}
+
+func (ec *execContext) terminate(format string, v ...interface{}) {
+	// TAGS: incomplete
+	terminate(format, v...)
 }

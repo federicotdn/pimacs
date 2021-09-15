@@ -1,5 +1,9 @@
 package elisp
 
+import (
+	"fmt"
+)
+
 func (ec *execContext) putError(sym, tail lispObject, msg string) {
 	xEnsure(ec.put(sym, ec.g.errorConditions, ec.makeCons(sym, tail)))
 	xEnsure(ec.put(sym, ec.g.errorMessage, ec.makeString(msg)))
@@ -23,12 +27,23 @@ func (ec *execContext) initialDefsErrors() {
 	ec.putError(ec.g.noCatch, errorTail, "No catch for tag")
 	ec.putError(ec.g.settingConstant, errorTail, "Attempt to set a constant symbol")
 	ec.putError(ec.g.invalidReadSyntax, errorTail, "Invalid read syntax")
+	ec.putError(ec.g.pimacsUnimplemented, errorTail, "Unimplemented feature")
 }
 
 func (ec *execContext) wrongTypeArgument(predicate, value lispObject) (lispObject, error) {
-	return ec.signal(ec.g.wrongTypeArgument, ec.makeList(predicate, value))
+	return ec.signalN(ec.g.wrongTypeArgument, predicate, value)
 }
 
 func (ec *execContext) wrongNumberOfArguments(fn, count lispObject) (lispObject, error) {
-	return ec.signal(ec.g.wrongNumberofArguments, ec.makeList(fn, count))
+	return ec.signalN(ec.g.wrongNumberofArguments, fn, count)
+}
+
+func (ec *execContext) pimacsUnimplemented(fn lispObject, format string, v ...interface{}) (lispObject, error) {
+	message := ec.makeString(fmt.Sprintf(format, v...))
+	return ec.signalN(ec.g.pimacsUnimplemented, message)
+}
+
+func (ec *execContext) invalidReadSyntax(format string, v ...interface{}) (lispObject, error) {
+	message := ec.makeString(fmt.Sprintf(format, v...))
+	return ec.signalN(ec.g.invalidReadSyntax, message)
 }

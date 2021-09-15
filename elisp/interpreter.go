@@ -1,5 +1,9 @@
 package elisp
 
+import (
+	"fmt"
+)
+
 type Interpreter interface {
 	ReadPrin1(source string) (string, error)
 	ReadEvalPrin1(source string) (string, error)
@@ -7,6 +11,10 @@ type Interpreter interface {
 
 type interpreter struct {
 	ec *execContext
+}
+
+func terminate(format string, v ...interface{}) {
+	panic(fmt.Sprintf(format, v...))
 }
 
 func NewInterpreter() Interpreter {
