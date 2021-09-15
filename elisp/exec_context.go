@@ -183,7 +183,7 @@ func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) 
 	// TAGS: incomplete
 	c := ctx.read()
 	if c == eofRune {
-		return 0, errorOnly(ec.signalN(ec.g.endOfFile))
+		return 0, xErrOnly(ec.signalN(ec.g.endOfFile))
 	}
 
 	switch c {
@@ -247,7 +247,7 @@ func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) 
 		return c, nil
 	}
 
-	return 0, errorOnly(ec.pimacsUnimplemented(ec.g.read, "unknown escape code: '\\%v'", c))
+	return 0, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown escape code: '\\%v'", c))
 }
 
 func (ec *execContext) defSubr(name string, sub *subroutine) {
