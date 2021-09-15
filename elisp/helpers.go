@@ -1,27 +1,8 @@
 package elisp
 
-func xCar(obj lispObject) lispObject {
-	return obj.(*lispCons).car
-}
-
-func xCdr(obj lispObject) lispObject {
-	return obj.(*lispCons).cdr
-}
-
-func xSetCar(cell, newCar lispObject) lispObject {
-	cell.(*lispCons).car = newCar
-	return newCar
-}
-
-func xSetCdr(cell, newCdr lispObject) lispObject {
-	cell.(*lispCons).cdr = newCdr
-	return newCdr
-}
-
 func xEnsure(obj lispObject, err error) lispObject {
-	// TAGS: errors
 	if err != nil {
-		panic(err)
+		terminate("cannot return value due to error: '%v'", err)
 	}
 
 	return obj
@@ -29,14 +10,19 @@ func xEnsure(obj lispObject, err error) lispObject {
 
 func errorOnly(obj lispObject, err error) error {
 	if obj != nil {
-		terminate("was handed a non-nil Lisp object: %v", obj)
+		terminate("was handed a non-nil Lisp object: '%v'", obj)
 	}
 
 	return err
 }
 
 func xSymbol(obj lispObject) *lispSymbol {
-	return obj.(*lispSymbol)
+	val, ok := obj.(*lispSymbol)
+	if !ok {
+		terminate("object is not a symbol: '%v'", obj)
+	}
+
+	return val
 }
 
 func xSymbolValue(obj lispObject) lispObject {
@@ -48,7 +34,30 @@ func symbolp(obj lispObject) bool {
 }
 
 func xCons(obj lispObject) *lispCons {
-	return obj.(*lispCons)
+	val, ok := obj.(*lispCons)
+	if !ok {
+		terminate("object is not a cons: '%v'", obj)
+	}
+
+	return val
+}
+
+func xCar(obj lispObject) lispObject {
+	return xCons(obj).car
+}
+
+func xCdr(obj lispObject) lispObject {
+	return xCons(obj).cdr
+}
+
+func xSetCar(cell, newCar lispObject) lispObject {
+	xCons(cell).car = newCar
+	return newCar
+}
+
+func xSetCdr(cell, newCdr lispObject) lispObject {
+	xCons(cell).cdr = newCdr
+	return newCdr
 }
 
 func consp(obj lispObject) bool {
@@ -56,7 +65,12 @@ func consp(obj lispObject) bool {
 }
 
 func xVectorLike(obj lispObject) *lispVectorLike {
-	return obj.(*lispVectorLike)
+	val, ok := obj.(*lispVectorLike)
+	if !ok {
+		terminate("object is not vector-like: '%v'", obj)
+	}
+
+	return val
 }
 
 func vectorLikep(obj lispObject, vecType vectorLikeType) bool {
@@ -69,7 +83,12 @@ func vectorLikep(obj lispObject, vecType vectorLikeType) bool {
 }
 
 func xString(obj lispObject) *lispString {
-	return obj.(*lispString)
+	val, ok := obj.(*lispString)
+	if !ok {
+		terminate("object is not a string: '%v'", obj)
+	}
+
+	return val
 }
 
 func xStringValue(obj lispObject) string {
@@ -81,7 +100,12 @@ func stringp(obj lispObject) bool {
 }
 
 func xInteger(obj lispObject) *lispInteger {
-	return obj.(*lispInteger)
+	val, ok := obj.(*lispInteger)
+	if !ok {
+		terminate("object is not an integer: '%v'", obj)
+	}
+
+	return val
 }
 
 func xIntegerValue(obj lispObject) lispInt {
@@ -93,7 +117,12 @@ func integerp(obj lispObject) bool {
 }
 
 func xFloat(obj lispObject) *lispFloat {
-	return obj.(*lispFloat)
+	val, ok := obj.(*lispFloat)
+	if !ok {
+		terminate("object is not a float: '%v'", obj)
+	}
+
+	return val
 }
 
 func xFloatValue(obj lispObject) lispFp {
