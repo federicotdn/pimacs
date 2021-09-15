@@ -15,3 +15,6 @@ run:
 
 test:
 	go test -v ./...
+
+code-tags:
+	grep -n -r --exclude Makefile '// TAGS: ' | sed 's/\/\/ TAGS: //' | column -t

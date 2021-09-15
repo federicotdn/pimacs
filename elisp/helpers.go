@@ -19,6 +19,7 @@ func xSetCdr(cell, newCdr lispObject) lispObject {
 }
 
 func xEnsure(obj lispObject, err error) lispObject {
+	// TAGS: errors
 	if err != nil {
 		panic(err)
 	}
@@ -100,6 +101,6 @@ func numberp(obj lispObject) bool {
 }
 
 func arrayp(obj lispObject) bool {
-	// TODO: Incomplete!
+	// TAGS: incomplete
 	return vectorLikep(obj, vectorLikeTypeNormal) || stringp(obj)
 }

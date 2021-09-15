@@ -56,12 +56,12 @@ type readContext struct {
 }
 
 func (jmp *stackJumpTag) Error() string {
-	// TODO: revise
+	// TAGS: revise
 	return fmt.Sprintf("stack jump: tag: %v", jmp.tag)
 }
 
 func (jmp *stackJumpSignal) Error() string {
-	// TODO: revise
+	// TAGS: revise
 	return fmt.Sprintf("stack jump: signal: %v", jmp.errorSymbol)
 }
 
@@ -84,6 +84,7 @@ func (ctx *readContext) read() rune {
 }
 
 func (ctx *readContext) unread(c rune) {
+	// TAGS: errors
 	if c == eofRune {
 		return
 	}
@@ -96,6 +97,7 @@ func (ctx *readContext) unread(c rune) {
 }
 
 func (ec *execContext) stringToNumber(s string) (lispObject, error) {
+	// TAGS: errors
 	nInt, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
 		return ec.makeInteger(lispInt(nInt)), nil
@@ -172,6 +174,7 @@ func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeVa
 }
 
 func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) {
+	// TAGS: incomplete,errors
 	c := ctx.read()
 	if c == eofRune {
 		return 0, fmt.Errorf("eof")
@@ -242,6 +245,7 @@ func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) 
 }
 
 func (ec *execContext) defSubr(name string, sub *subroutine) {
+	// TAGS: errors
 	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
 		panic("min args must be smaller or equal to max args")
 	}
@@ -323,6 +327,7 @@ func newExecContext() *execContext {
 }
 
 func (ec *execContext) internSymbol(symbol *lispSymbol) {
+	// TAGS: errors
 	prev, ok := ec.obarray[symbol.name]
 	if ok && prev != symbol {
 		panic("different symbol with that name already interned")
@@ -341,6 +346,7 @@ func (ec *execContext) intern(name string) *lispSymbol {
 }
 
 func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
+	// TAGS: incomplete,errors
 	var val lispObject = ec.nil_
 	var tail lispObject = ec.nil_
 
@@ -389,6 +395,7 @@ func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
 }
 
 func (ec *execContext) readAtom(c rune, ctx *readContext) (lispObject, error) {
+	// TAGS: incomplete,errors
 	quoted := false
 	builder := strings.Builder{}
 
@@ -429,6 +436,7 @@ func (ec *execContext) read1Result(obj lispObject, err error) (lispObject, rune,
 }
 
 func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
+	// TAGS: incomplete,errors
 	var err error
 	var c rune
 
@@ -558,6 +566,7 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 }
 
 func (ec *execContext) read0(ctx *readContext) (lispObject, error) {
+	// TAGS: errors
 	obj, c, err := ec.read1(ctx)
 	if err != nil {
 		return nil, err
@@ -581,6 +590,7 @@ func (ec *execContext) readFromString(source string) (lispObject, error) {
 }
 
 func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
+	// TAGS: incomplete,errors
 	var err error
 
 	if form.getType() == lispTypeSymbol {
@@ -712,6 +722,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) apply(fn lispObject, args ...lispObject) (lispObject, error) {
+	// TAGS: stub
 	return nil, nil
 }
 
@@ -756,6 +767,7 @@ func (ec *execContext) stackSize() int {
 }
 
 func (ec *execContext) unbind(target int) {
+	// TAGS: errors
 	size := len(ec.stack)
 	if target < 0 || size <= target {
 		panic(fmt.Sprintf("unable to unbind back to %v, size is %v", target, size))

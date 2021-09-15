@@ -106,6 +106,7 @@ func (ec *execContext) initialDefsSymbols() {
 }
 
 func (ec *execContext) initializeSymbols(syms []symbolInit) {
+	// TAGS: errors
 	count := ec.countGlobals()
 	if len(syms) != count {
 		panic(fmt.Sprintf("%v globals exist but got %v initializers", count, len(syms)))

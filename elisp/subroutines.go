@@ -79,6 +79,7 @@ func (ec *execContext) goChannelClose(channel lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) sleepFor(seconds, milliseconds lispObject) (lispObject, error) {
+	// TAGS: revise
 	time.Sleep(time.Duration(xIntegerValue(seconds)) * time.Second)
 	return ec.nil_, nil
 }
@@ -110,6 +111,7 @@ func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
+	// TAGS: incomplete
 	var total lispInt = 0
 	for _, obj := range objs {
 		if !numberp(obj) {
@@ -122,6 +124,7 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
+	// TAGS: incomplete
 	for i := 1; i < len(objs); i++ {
 		if !numberp(objs[i-1]) {
 			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, objs[i-1])
@@ -233,6 +236,7 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) length(obj lispObject) (lispObject, error) {
+	// TAGS: incomplete
 	num := 0
 
 	switch obj.getType() {
@@ -332,6 +336,7 @@ func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
+	// TAGS: incomplete,errors
 	if o1 == o2 {
 		return ec.t, nil
 	}
@@ -391,7 +396,6 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 
 func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
 	if !ec.catchInStack(tag) {
-		// TODO: Revise
 		return ec.signal(ec.g.noCatch, ec.makeList(tag, value))
 	}
 
@@ -432,7 +436,6 @@ func (ec *execContext) unwindProtect(args lispObject) (lispObject, error) {
 
 	unwindErr := ec.progIgnore(xCdr(args))
 	if unwindErr != nil {
-		// TODO: Check if this is correct
 		return nil, unwindErr
 	}
 
@@ -547,10 +550,10 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	}
 
 	return result, nil
-
 }
 
 func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) {
+	// TAGS: incomplete
 	return nil, &stackJumpSignal{
 		errorSymbol: errorSymbol,
 		data:        ec.makeCons(errorSymbol, data),
@@ -562,6 +565,7 @@ func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, erro
 }
 
 func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
+	// TAGS: incomplete,errors
 	lispType := obj.getType()
 	var s string
 
@@ -712,6 +716,7 @@ func (ec *execContext) list(args ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) pimacsGo(args lispObject) (lispObject, error) {
+	// TAGS: revise
 	shared := xCar(args)
 	tail := shared
 
