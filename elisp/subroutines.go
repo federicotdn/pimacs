@@ -262,7 +262,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 	size := ec.stackSize()
-	defer ec.unbind(size)
+	defer ec.stackPopTo(size)
 
 	if !consp(lexical) && lexical != ec.nil_ {
 		lexical = ec.makeList(ec.t)
@@ -336,7 +336,7 @@ func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
-	// TAGS: incomplete,errors
+	// TAGS: incomplete
 	if o1 == o2 {
 		return ec.t, nil
 	}
@@ -388,10 +388,10 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 			return ec.bool(vec1.value == vec2.value)
 		}
 
-		panic("unimplemented: equal")
-	default:
-		panic("unknown object type")
+		return ec.pimacsUnimplemented(ec.g.equal, "unknown vector-like type: '%v'", vec1.vecType)
 	}
+
+	return ec.bool(false)
 }
 
 func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
@@ -413,7 +413,7 @@ func (ec *execContext) catch(args lispObject) (lispObject, error) {
 
 	size := ec.stackSize()
 	ec.stackPushCatch(tag)
-	defer ec.unbind(size)
+	defer ec.stackPopTo(size)
 
 	obj, err := ec.progn(xCdr(args))
 	if err != nil {
@@ -540,7 +540,7 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	}
 
 	size := ec.stackSize()
-	defer ec.unbind(size)
+	defer ec.stackPopTo(size)
 	ec.stackPushLet(handlerVar, value)
 
 	result, err = ec.progn(body)
@@ -570,7 +570,7 @@ func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, erro
 }
 
 func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
-	// TAGS: incomplete,errors
+	// TAGS: incomplete
 	lispType := obj.getType()
 	var s string
 
@@ -582,37 +582,28 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 	case lispTypeString:
 		s = "\"" + xString(obj).value + "\""
 	case lispTypeCons:
-		// TODO: Clean up when string functions are available (don't type-assert)
-		lc := xCons(obj)
-		current := lc
+		s = "("
 
-		carStr, err := ec.prin1(lc.car, ec.nil_)
-		if err != nil {
-			return nil, err
-		}
-		s = "(" + xString(carStr).value
-
-		for {
-			next, ok := current.cdr.(*lispCons)
-			if ok {
-				nextStr, err := ec.prin1(next.car, ec.nil_)
-				if err != nil {
-					return nil, err
-				}
-
-				s += " " + nextStr.(*lispString).value
-				current = next
-			} else {
-				if current.cdr != ec.nil_ {
-					cdrStr, err := ec.prin1(current.cdr, ec.nil_)
-					if err != nil {
-						return nil, err
-					}
-					s += " . " + cdrStr.(*lispString).value
-				}
-
-				break
+		for ; consp(obj); obj = xCdr(obj) {
+			car, err := ec.prin1(xCar(obj), printCharFun)
+			if err != nil {
+				return nil, err
 			}
+
+			s += xStringValue(car)
+
+			if xCdr(obj) != ec.nil_ {
+				s += " "
+			}
+		}
+
+		if obj != ec.nil_ {
+			end, err := ec.prin1(obj, printCharFun)
+			if err != nil {
+				return nil, err
+			}
+
+			s += ". " + xStringValue(end)
 		}
 
 		s += ")"
@@ -620,9 +611,9 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 		s = fmt.Sprint(xFloat(obj).value)
 	case lispTypeVectorLike:
 		vec := xVectorLike(obj)
-		s = fmt.Sprintf("#<vector-like type %v value %v>", vec.vecType, vec.value)
+		s = fmt.Sprintf("#<vector-like type '%v' value '%+v'>", vec.vecType, vec.value)
 	default:
-		panic("unknown type")
+		s = fmt.Sprintf("#<INVALID DATATYPE '%+v'>", obj)
 	}
 
 	return ec.makeString(s), nil

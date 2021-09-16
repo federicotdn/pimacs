@@ -440,7 +440,7 @@ func (ec *execContext) read1Result(obj lispObject, err error) (lispObject, rune,
 }
 
 func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
-	// TAGS: incomplete,errors
+	// TAGS: incomplete
 	var err error
 	var c rune
 
@@ -592,8 +592,23 @@ func (ec *execContext) readFromString(source string) (lispObject, error) {
 	return ec.read0(&ctx)
 }
 
+func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
+	result := []lispObject{}
+	tail := list
+
+	for ; consp(tail); tail = xCdr(tail) {
+		result = append(result, xCar(tail))
+	}
+
+	if tail != ec.nil_ {
+		return nil, xErrOnly(ec.wrongTypeArgument(ec.g.listp, list))
+	}
+
+	return result, nil
+}
+
 func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
-	// TAGS: incomplete,errors
+	// TAGS: incomplete
 	var err error
 
 	if form.getType() == lispTypeSymbol {
@@ -615,7 +630,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 
 		sym := xSymbol(form)
 		if sym.value == ec.g.unbound {
-			return nil, fmt.Errorf("void-variable '%v'", sym.name)
+			return ec.signalN(ec.g.voidVariable, form)
 		}
 
 		return sym.value, nil
@@ -623,70 +638,49 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		return form, nil
 	}
 
-	car := xCar(form)
-	cdr := xCdr(form)
-	original := cdr
+	original_fun := xCar(form)
+	original_args := xCdr(form)
 
-	if car.getType() != lispTypeSymbol {
-		return nil, fmt.Errorf("function is not a symbol: %v", car.getType())
-	} else if car == ec.nil_ {
-		return nil, fmt.Errorf("void-function")
+	if original_fun.getType() != lispTypeSymbol {
+		return ec.pimacsUnimplemented(ec.g.eval, "function is not a symbol")
+	} else if original_fun == ec.nil_ {
+		return ec.signalN(ec.g.voidFunction, original_fun)
 	}
 
-	sym := xSymbol(car)
+	sym := xSymbol(original_fun)
 	fn := sym.function
 
 	if fn.getType() != lispTypeVectorLike {
-		return nil, fmt.Errorf("function must be vector-like")
+		return ec.pimacsUnimplemented(ec.g.eval, "function is not vector-like")
 	}
 
 	vec := xVectorLike(fn)
 	if vec.vecType != vectorLikeTypeSubroutine {
-		return nil, fmt.Errorf("vector must be a subroutine")
+		return ec.pimacsUnimplemented(ec.g.eval, "function is not a subroutine")
 	}
 
 	sub := vec.value.(*subroutine)
 
-	args := []lispObject{}
-	nArgs := 0
-
-	for {
-		if cdr != ec.nil_ && cdr.getType() != lispTypeCons {
-			return nil, fmt.Errorf("wrong type argument: '%v'", cdr.getType())
-		}
-
-		if cdr == ec.nil_ {
-			break
-		}
-
-		nArgs++
-
-		arg := xCar(cdr)
-		var processed lispObject
-
-		if sub.maxArgs != argsUnevalled {
-			processed, err = ec.evalSub(arg)
-			if err != nil {
-				return nil, err
-			}
-
-			args = append(args, processed)
-		}
-
-		cdr = xCdr(cdr)
+	args, err := ec.listToSlice(original_args)
+	if err != nil {
+		return nil, err
 	}
 
-	if nArgs < sub.minArgs {
-		return nil, fmt.Errorf("expected at least %v arguments but got %v", sub.minArgs, len(args))
-	} else if sub.maxArgs >= 0 && nArgs > sub.maxArgs {
-		return nil, fmt.Errorf("expected at most %v arguments but got %v", sub.maxArgs, len(args))
+	if len(args) < sub.minArgs || (sub.maxArgs >= 0 && len(args) > sub.maxArgs) {
+		return ec.signalN(ec.g.wrongNumberofArguments, original_fun, ec.makeInteger(lispInt(len(args))))
 	}
 
-	if sub.maxArgs >= 0 {
-		for nArgs < sub.maxArgs {
-			args = append(args, ec.nil_)
-			nArgs++
+	for i := 0; i < len(args) && sub.maxArgs != argsUnevalled; i++ {
+		evalled, err := ec.evalSub(args[i])
+		if err != nil {
+			return nil, err
 		}
+		args[i] = evalled
+	}
+
+	missing := sub.maxArgs - len(args)
+	for i := 0; i < missing && sub.maxArgs >= 0; i++ {
+		args = append(args, ec.nil_)
 	}
 
 	var result lispObject
@@ -704,9 +698,9 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	case argsMany:
 		result, err = sub.callabem(args...)
 	case argsUnevalled:
-		result, err = sub.callabe1(original)
+		result, err = sub.callabe1(original_args)
 	default:
-		panic("unknown maxargs value")
+		ec.terminate("unknown subroutine maxargs value")
 	}
 
 	if err != nil {
@@ -714,11 +708,11 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	}
 
 	if sub.noReturn {
-		panic("subroutine with noreturn returned value")
+		ec.terminate("subroutine with noreturn returned value")
 	}
 
 	if count != ec.stackSize() {
-		panic("one or more bindings not undone after call")
+		ec.terminate("subroutine did not pop one or more stack items")
 	}
 
 	return result, nil
@@ -769,11 +763,10 @@ func (ec *execContext) stackSize() int {
 	return len(ec.stack)
 }
 
-func (ec *execContext) unbind(target int) {
-	// TAGS: errors
+func (ec *execContext) stackPopTo(target int) {
 	size := len(ec.stack)
 	if target < 0 || size <= target {
-		panic(fmt.Sprintf("unable to unbind back to %v, size is %v", target, size))
+		ec.terminate("unable to pop back to '%v', size is '%v'", target, size)
 	}
 
 	for len(ec.stack) > target {
@@ -784,9 +777,8 @@ func (ec *execContext) unbind(target int) {
 			let := current.(*stackEntryLet)
 			let.symbol.value = let.oldVal
 		case entryCatch:
-			// Nothing to do.
 		default:
-			panic("unknown specBinding tag")
+			ec.terminate("unknown stack item tag: '%v'", current.tag())
 		}
 
 		ec.stack = ec.stack[:len(ec.stack)-1]

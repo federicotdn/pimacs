@@ -1,7 +1,6 @@
 package elisp
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -28,6 +27,8 @@ type globals struct {
 	progn           lispObject
 	function        lispObject
 	read            lispObject
+	equal           lispObject
+	eval            lispObject
 	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
@@ -60,11 +61,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.unbound, name: "unbound", unintern: true},
 		{loc: &g.nil_, name: "nil"},
 		{loc: &g.t, name: "t"},
-		{
-			loc:      &g.internalInterpreterEnv,
-			name:     "internal-interpreter-environment",
-			unintern: true,
-		},
+		{loc: &g.internalInterpreterEnv, name: "internal-interpreter-environment", unintern: true},
 		// 2
 		{loc: &g.sequencep, name: "sequencep"},
 		{loc: &g.listp, name: "listp"},
@@ -76,6 +73,8 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.progn, name: "progn"},
 		{loc: &g.function, name: "function"},
 		{loc: &g.read, name: "read"},
+		{loc: &g.equal, name: "equal"},
+		{loc: &g.eval, name: "eval"},
 		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
@@ -110,22 +109,21 @@ func (ec *execContext) initialDefsSymbols() {
 }
 
 func (ec *execContext) initializeSymbols(syms []symbolInit) {
-	// TAGS: errors
 	count := ec.countGlobals()
 	if len(syms) != count {
-		panic(fmt.Sprintf("%v globals exist but got %v initializers", count, len(syms)))
+		ec.terminate("'%v' globals exist but got '%v' initializers", count, len(syms))
 	}
 
 	names := make(map[string]bool)
 
 	for _, sym := range syms {
 		if sym.name == "" {
-			panic("no symbol name defined")
+			ec.terminate("no symbol name defined")
 		}
 
 		_, ok := names[sym.name]
 		if ok {
-			panic(fmt.Sprintf("repeated symbol name: %v", sym.name))
+			ec.terminate("repeated symbol name: '%v'", sym.name)
 		}
 		names[sym.name] = true
 
@@ -133,7 +131,7 @@ func (ec *execContext) initializeSymbols(syms []symbolInit) {
 		symbol := xSymbol(*sym.loc)
 
 		if ec.g.unbound == nil {
-			panic("unbound not initialized yet")
+			ec.terminate("'unbound' not initialized yet")
 		}
 
 		symbol.value = ec.g.unbound
