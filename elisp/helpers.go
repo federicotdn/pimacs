@@ -82,7 +82,7 @@ func vectorLikep(obj lispObject, vecType vectorLikeType) bool {
 	return vec.vecType == vecType
 }
 
-func subrp(obj lispObject) bool {
+func subroutinep(obj lispObject) bool {
 	return vectorLikep(obj, vectorLikeTypeSubroutine)
 }
 

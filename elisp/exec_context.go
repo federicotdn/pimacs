@@ -651,7 +651,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		fn = xSymbol(fn).function
 	}
 
-	if subrp(fn) {
+	if subroutinep(fn) {
 		return ec.applySubroutine(fn, originalArgs)
 	} else if fn == ec.nil_ {
 		return ec.signalN(ec.g.voidFunction, originalFn)
@@ -667,7 +667,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	if fnCar == ec.g.macro {
 		return ec.pimacsUnimplemented(ec.g.eval, "unknown function type: 'macro'")
 	} else if fnCar == ec.g.lambda || fnCar == ec.g.closure {
-		return ec.pimacsUnimplemented(ec.g.eval, "unknown function type: 'lambda/macro'")
+		return ec.applyLambda(fn, originalArgs)
 	} else {
 		return ec.signalN(ec.g.invalidFunction, originalFn)
 	}
@@ -685,7 +685,40 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 		return ec.signalN(ec.g.wrongNumberofArguments, fn, ec.makeInteger(lispInt(len(args))))
 	}
 
-	for i := 0; i < len(args) && sub.maxArgs != argsUnevalled; i++ {
+	if sub.maxArgs != argsUnevalled {
+		return ec.funcallSubroutine(fn, args...)
+	}
+
+	// Handle case: maxArgs == argsUnevalled
+	count := ec.stackSize()
+	result, err := sub.callabe1(originalArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	if sub.noReturn {
+		ec.terminate("subroutine with noreturn returned value")
+	}
+
+	if count != ec.stackSize() {
+		ec.terminate("subroutine did not pop one or more stack items")
+	}
+
+	return result, nil
+}
+
+func (ec *execContext) funcallSubroutine(fn lispObject, args ...lispObject) (lispObject, error) {
+	sub := xVectorLike(fn).value.(*subroutine)
+
+	if sub.maxArgs == argsUnevalled {
+		return ec.signalN(ec.g.invalidFunction, fn)
+	}
+
+	if len(args) < sub.minArgs || (sub.maxArgs >= 0 && len(args) > sub.maxArgs) {
+		return ec.signalN(ec.g.wrongNumberofArguments, fn, ec.makeInteger(lispInt(len(args))))
+	}
+
+	for i := 0; i < len(args); i++ {
 		evalled, err := ec.evalSub(args[i])
 		if err != nil {
 			return nil, err
@@ -698,6 +731,7 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 		args = append(args, ec.nil_)
 	}
 
+	var err error
 	var result lispObject
 	count := ec.stackSize()
 
@@ -712,8 +746,6 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 		result, err = sub.callabe3(args[0], args[1], args[2])
 	case argsMany:
 		result, err = sub.callabem(args...)
-	case argsUnevalled:
-		result, err = sub.callabe1(originalArgs)
 	default:
 		ec.terminate("unknown subroutine maxargs value")
 	}
@@ -733,7 +765,7 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 	return result, nil
 }
 
-func (ec *execContext) apply(fn lispObject, args ...lispObject) (lispObject, error) {
+func (ec *execContext) applyLambda(fn, originalArgs lispObject) (lispObject, error) {
 	// TAGS: stub
 	return nil, nil
 }
