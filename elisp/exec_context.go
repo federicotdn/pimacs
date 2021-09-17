@@ -665,6 +665,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	}
 
 	if fnCar == ec.g.macro {
+		// TODO: macros
 		return ec.pimacsUnimplemented(ec.g.eval, "unknown function type: 'macro'")
 	} else if fnCar == ec.g.lambda || fnCar == ec.g.closure {
 		return ec.applyLambda(fn, originalArgs)

@@ -711,6 +711,44 @@ func (ec *execContext) list(args ...lispObject) (lispObject, error) {
 	return ec.makeList(args...), nil
 }
 
+func (ec *execContext) apply(args ...lispObject) (lispObject, error) {
+	// TAGS: stub
+	return nil, nil
+}
+
+func (ec *execContext) funcall(args ...lispObject) (lispObject, error) {
+	originalFn := args[0]
+	fn := originalFn
+
+	if symbolp(fn) && fn != ec.nil_ {
+		fn = xSymbol(fn).function
+	}
+
+	if subroutinep(fn) {
+		return ec.funcallSubroutine(fn, args[1:]...)
+	}
+
+	if fn == ec.nil_ {
+		return ec.signalN(ec.g.voidFunction, originalFn)
+	}
+
+	if !consp(fn) {
+		return ec.signalN(ec.g.invalidFunction, originalFn)
+	}
+
+	fnCar := xCar(fn)
+
+	if !symbolp(fnCar) {
+		return ec.signalN(ec.g.invalidFunction, originalFn)
+	}
+
+	if fnCar == ec.g.lambda || fnCar == ec.g.closure {
+		return ec.funcallLambda(fn, args[1:]...)
+	}
+
+	return ec.signalN(ec.g.invalidFunction, originalFn)
+}
+
 func (ec *execContext) pimacsGo(args lispObject) (lispObject, error) {
 	// TAGS: revise
 	shared := xCar(args)
@@ -811,6 +849,8 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubrM("+", ec.plusSign, 0)
 	ec.defSubrM("<", ec.lessThanSign, 1)
 	ec.defSubrM("list", ec.list, 0)
+	ec.defSubrM("funcall", ec.funcall, 1)
+	ec.defSubrM("apply", ec.apply, 1)
 	ec.defSubrU("catch", ec.catch, 1)
 	ec.defSubrU("unwind-protect", ec.unwindProtect, 1)
 	ec.defSubrU("quote", ec.quote, 1)

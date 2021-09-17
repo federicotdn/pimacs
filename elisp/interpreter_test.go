@@ -209,9 +209,15 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(equal 1 2)", "nil", nil},
 		{"(equal '(1 2 3) '(1 2 3))", "t", nil},
 		{"(progn (fset 'foo (function (lambda (x) (+ x 1)))) (foo 1))", "2", nil},
+		{"(progn (fset 'foo (function (lambda (x) (+ x 1)))) (funcall 'foo 1))", "2", nil},
 		{"(progn (fset 'foo (function (lambda () \"foo\"))) (foo 1))", "", anyError},
 		{"(progn (fset 'foo (function (lambda () \"foo\"))) (foo))", `"foo"`, nil},
 		{"(progn (fset 'foo (function (lambda (&optional x) x))) (foo))", "nil", nil},
 		{"(progn (fset 'foo (function (lambda (&rest x) x))) (foo 1 2 3))", "(1 2 3)", nil},
+		{"(funcall '+)", "0", nil},
+		{"(funcall '+ 1 2 3)", "6", nil},
+		{"(funcall '+ 1 2 (+ 1 1))", "5", nil},
+		{"(funcall 'list 1 2)", "(1 2)", nil},
+		{"(funcall 'if t 1)", "", anyError},
 	})
 }

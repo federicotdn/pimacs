@@ -16,6 +16,7 @@ type globals struct {
 	t                      lispObject
 	internalInterpreterEnv lispObject
 	unbound                lispObject
+	lexicalBinding         lispObject
 	// 2. Subroutine symbols
 	sequencep       lispObject
 	listp           lispObject
@@ -30,6 +31,7 @@ type globals struct {
 	read            lispObject
 	equal           lispObject
 	eval            lispObject
+	if_             lispObject
 	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
@@ -67,6 +69,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.nil_, name: "nil"},
 		{loc: &g.t, name: "t"},
 		{loc: &g.internalInterpreterEnv, name: "internal-interpreter-environment", unintern: true},
+		{loc: &g.lexicalBinding, name: "lexical-binding"},
 		// 2
 		{loc: &g.sequencep, name: "sequencep"},
 		{loc: &g.listp, name: "listp"},
@@ -81,6 +84,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.read, name: "read"},
 		{loc: &g.equal, name: "equal"},
 		{loc: &g.eval, name: "eval"},
+		{loc: &g.if_, name: "if"},
 		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
