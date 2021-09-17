@@ -52,6 +52,8 @@ type globals struct {
 	lambda          lispObject
 	closure         lispObject
 	macro           lispObject
+	andRest         lispObject
+	andOptional     lispObject
 	// 5. Pimacs
 	goChannelClosed lispObject
 }
@@ -101,6 +103,8 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.lambda, name: "lambda"},
 		{loc: &g.closure, name: "closure"},
 		{loc: &g.macro, name: "macro"},
+		{loc: &g.andRest, name: "&rest"},
+		{loc: &g.andOptional, name: "&optional"},
 		// 5
 		{loc: &g.goChannelClosed, name: "go-channel-closed"},
 	}

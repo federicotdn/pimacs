@@ -148,6 +148,7 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(+)", "0", nil},
 		{"(+ 1)", "1", nil},
 		{"(+ 1 1)", "2", nil},
+		{"(+ 1 (+ 1 1))", "3", nil},
 		{"(+ 1 nil)", "", anyError},
 		{"(memq 'a '(a b c))", "(a b c)", nil},
 		{"(memq 'a '(a . b))", "(a . b)", nil},
@@ -207,5 +208,10 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(equal 1 1)", "t", nil},
 		{"(equal 1 2)", "nil", nil},
 		{"(equal '(1 2 3) '(1 2 3))", "t", nil},
+		{"(progn (fset 'foo (function (lambda (x) (+ x 1)))) (foo 1))", "2", nil},
+		{"(progn (fset 'foo (function (lambda () \"foo\"))) (foo 1))", "", anyError},
+		{"(progn (fset 'foo (function (lambda () \"foo\"))) (foo))", `"foo"`, nil},
+		{"(progn (fset 'foo (function (lambda (&optional x) x))) (foo))", "nil", nil},
+		{"(progn (fset 'foo (function (lambda (&rest x) x))) (foo 1 2 3))", "(1 2 3)", nil},
 	})
 }

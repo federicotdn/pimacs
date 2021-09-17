@@ -147,7 +147,7 @@ func (ec *execContext) quote(args lispObject) (lispObject, error) {
 		if err != nil {
 			return nil, err
 		}
-		return ec.wrongNumberOfArguments(ec.g.quote, length)
+		return ec.wrongNumberOfArguments(ec.g.quote, xIntegerValue(length))
 	}
 
 	return xCar(args), nil
@@ -220,7 +220,7 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 		if err != nil {
 			return nil, err
 		}
-		return ec.wrongNumberOfArguments(ec.g.function, length)
+		return ec.wrongNumberOfArguments(ec.g.function, xIntegerValue(length))
 	}
 
 	env := xSymbolValue(ec.g.internalInterpreterEnv)

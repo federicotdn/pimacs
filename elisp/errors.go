@@ -35,8 +35,8 @@ func (ec *execContext) wrongTypeArgument(predicate, value lispObject) (lispObjec
 	return ec.signalN(ec.g.wrongTypeArgument, predicate, value)
 }
 
-func (ec *execContext) wrongNumberOfArguments(fn, count lispObject) (lispObject, error) {
-	return ec.signalN(ec.g.wrongNumberofArguments, fn, count)
+func (ec *execContext) wrongNumberOfArguments(fn lispObject, count lispInt) (lispObject, error) {
+	return ec.signalN(ec.g.wrongNumberofArguments, fn, ec.makeInteger(count))
 }
 
 func (ec *execContext) pimacsUnimplemented(fn lispObject, format string, v ...interface{}) (lispObject, error) {

@@ -682,10 +682,18 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 	}
 
 	if len(args) < sub.minArgs || (sub.maxArgs >= 0 && len(args) > sub.maxArgs) {
-		return ec.signalN(ec.g.wrongNumberofArguments, fn, ec.makeInteger(lispInt(len(args))))
+		return ec.wrongNumberOfArguments(fn, lispInt(len(args)))
 	}
 
 	if sub.maxArgs != argsUnevalled {
+		for i := 0; i < len(args); i++ {
+			evalled, err := ec.evalSub(args[i])
+			if err != nil {
+				return nil, err
+			}
+			args[i] = evalled
+		}
+
 		return ec.funcallSubroutine(fn, args...)
 	}
 
@@ -715,15 +723,7 @@ func (ec *execContext) funcallSubroutine(fn lispObject, args ...lispObject) (lis
 	}
 
 	if len(args) < sub.minArgs || (sub.maxArgs >= 0 && len(args) > sub.maxArgs) {
-		return ec.signalN(ec.g.wrongNumberofArguments, fn, ec.makeInteger(lispInt(len(args))))
-	}
-
-	for i := 0; i < len(args); i++ {
-		evalled, err := ec.evalSub(args[i])
-		if err != nil {
-			return nil, err
-		}
-		args[i] = evalled
+		return ec.wrongNumberOfArguments(fn, lispInt(len(args)))
 	}
 
 	missing := sub.maxArgs - len(args)
@@ -766,8 +766,107 @@ func (ec *execContext) funcallSubroutine(fn lispObject, args ...lispObject) (lis
 }
 
 func (ec *execContext) applyLambda(fn, originalArgs lispObject) (lispObject, error) {
-	// TAGS: stub
-	return nil, nil
+	args, err := ec.listToSlice(originalArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < len(args); i++ {
+		evalled, err := ec.evalSub(args[i])
+		if err != nil {
+			return nil, err
+		}
+		args[i] = evalled
+	}
+
+	return ec.funcallLambda(fn, args...)
+}
+
+func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObject, error) {
+	symsLeft := ec.nil_
+	lexEnv := ec.nil_
+	size := ec.stackSize()
+	defer ec.stackPopTo(size)
+
+	if consp(fn) {
+		if xCar(fn) == ec.g.closure {
+			cdr := xCdr(fn) // Drop 'closure'
+			if !consp(cdr) {
+				return ec.signalN(ec.g.invalidFunction, fn)
+			}
+
+			fn = cdr
+			lexEnv = xCar(fn)
+		}
+
+		symsLeft = xCdr(fn)
+		if !consp(symsLeft) {
+			return ec.signalN(ec.g.invalidFunction, fn)
+		}
+
+		symsLeft = xCar(symsLeft)
+	} else {
+		ec.terminate("lambda is not a cons cell")
+	}
+
+	rest, optional := false, false
+	i := 0
+
+	for ; consp(symsLeft); symsLeft = xCdr(symsLeft) {
+		next := xCar(symsLeft)
+
+		if !symbolp(next) {
+			return ec.signalN(ec.g.invalidFunction, fn)
+		}
+
+		if next == ec.g.andRest {
+			if rest {
+				return ec.signalN(ec.g.invalidFunction, fn)
+			}
+			rest = true
+		} else if next == ec.g.andOptional {
+			if optional {
+				return ec.signalN(ec.g.invalidFunction, fn)
+			}
+			optional = true
+		} else {
+			var arg lispObject
+
+			if rest {
+				arg = ec.makeList(args[i:]...)
+				i = len(args)
+			} else if i < len(args) {
+				arg = args[i]
+				i++
+			} else if !optional {
+				return ec.wrongNumberOfArguments(fn, lispInt(len(args)))
+			} else {
+				arg = ec.nil_
+			}
+
+			if lexEnv != ec.nil_ {
+				lexEnv = ec.makeCons(ec.makeCons(next, arg), lexEnv)
+			} else {
+				ec.stackPushLet(next, arg)
+			}
+		}
+	}
+
+	if symsLeft != ec.nil_ {
+		return ec.signalN(ec.g.invalidFunction, fn)
+	} else if i < len(args) {
+		return ec.wrongNumberOfArguments(fn, lispInt(len(args)))
+	}
+
+	if lexEnv != xSymbolValue(ec.g.internalInterpreterEnv) {
+		ec.stackPushLet(ec.g.internalInterpreterEnv, lexEnv)
+	}
+
+	if consp(fn) {
+		return ec.progn(xCdr(xCdr(fn)))
+	}
+
+	return ec.pimacsUnimplemented(ec.g.eval, "unknown lambda body type")
 }
 
 func (ec *execContext) progIgnore(body lispObject) error {
@@ -812,7 +911,7 @@ func (ec *execContext) stackSize() int {
 
 func (ec *execContext) stackPopTo(target int) {
 	size := len(ec.stack)
-	if target < 0 || size <= target {
+	if target < 0 || size < target {
 		ec.terminate("unable to pop back to '%v', size is '%v'", target, size)
 	}
 
