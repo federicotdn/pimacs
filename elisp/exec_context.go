@@ -486,12 +486,12 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 				return nil, 0, err
 			}
 
-			name := "quote"
+			sym := ec.g.quote
 			if c == '`' {
-				name = "`"
+				sym = ec.g.backquote
 			}
 
-			list := ec.makeList(ec.intern(name), obj)
+			list := ec.makeList(sym, obj)
 			return list, 0, nil
 		case c == ',':
 			return ec.read1Result(ec.pimacsUnimplemented(ec.g.read, "unknown token: '%v'", c))

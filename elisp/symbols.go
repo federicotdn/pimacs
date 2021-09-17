@@ -24,6 +24,7 @@ type globals struct {
 	goChannelp      lispObject
 	integerp        lispObject
 	quote           lispObject
+	backquote       lispObject
 	progn           lispObject
 	function        lispObject
 	read            lispObject
@@ -72,6 +73,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.goChannelp, name: "pimacs-go-channel-p"},
 		{loc: &g.integerp, name: "integerp"},
 		{loc: &g.quote, name: "quote"},
+		{loc: &g.backquote, name: "`"},
 		{loc: &g.progn, name: "progn"},
 		{loc: &g.function, name: "function"},
 		{loc: &g.read, name: "read"},
