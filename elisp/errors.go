@@ -21,6 +21,7 @@ func (ec *execContext) initialDefsErrors() {
 	ec.putError(ec.g.wrongTypeArgument, errorTail, "Wrong type argument")
 	ec.putError(ec.g.argsOutOfRange, errorTail, "Args out of range")
 	ec.putError(ec.g.voidFunction, errorTail, "Symbol's function definition is void")
+	ec.putError(ec.g.invalidFunction, errorTail, "Invalid function")
 	ec.putError(ec.g.voidVariable, errorTail, "Symbol's value as variable is void")
 	ec.putError(ec.g.wrongNumberofArguments, errorTail, "Wrong number of arguments")
 	ec.putError(ec.g.endOfFile, errorTail, "End of file during parsing")

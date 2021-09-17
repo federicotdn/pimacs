@@ -611,7 +611,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	// TAGS: incomplete
 	var err error
 
-	if form.getType() == lispTypeSymbol {
+	if symbolp(form) {
 		var lex lispObject
 
 		envVal := xSymbolValue(ec.g.internalInterpreterEnv)
@@ -634,40 +634,55 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		}
 
 		return sym.value, nil
-	} else if form.getType() != lispTypeCons {
+	} else if !consp(form) {
 		return form, nil
 	}
 
-	original_fun := xCar(form)
-	original_args := xCdr(form)
+	originalFn := xCar(form)
+	originalArgs := xCdr(form)
+	fn := originalFn
 
-	if original_fun.getType() != lispTypeSymbol {
-		return ec.pimacsUnimplemented(ec.g.eval, "function is not a symbol")
-	} else if original_fun == ec.nil_ {
-		return ec.signalN(ec.g.voidFunction, original_fun)
+	if !symbolp(fn) {
+		fn, err = ec.function(ec.makeList(fn))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		fn = xSymbol(fn).function
 	}
 
-	sym := xSymbol(original_fun)
-	fn := sym.function
-
-	if fn.getType() != lispTypeVectorLike {
-		return ec.pimacsUnimplemented(ec.g.eval, "function is not vector-like")
+	if subrp(fn) {
+		return ec.applySubroutine(fn, originalArgs)
+	} else if fn == ec.nil_ {
+		return ec.signalN(ec.g.voidFunction, originalFn)
+	} else if !consp(fn) {
+		return ec.signalN(ec.g.invalidFunction, originalFn)
 	}
 
-	vec := xVectorLike(fn)
-	if vec.vecType != vectorLikeTypeSubroutine {
-		return ec.pimacsUnimplemented(ec.g.eval, "function is not a subroutine")
+	fnCar := xCar(fn)
+	if !symbolp(fnCar) {
+		return ec.signalN(ec.g.invalidFunction, originalFn)
 	}
 
-	sub := vec.value.(*subroutine)
+	if fnCar == ec.g.macro {
+		return ec.pimacsUnimplemented(ec.g.eval, "unknown function type: 'macro'")
+	} else if fnCar == ec.g.lambda || fnCar == ec.g.closure {
+		return ec.pimacsUnimplemented(ec.g.eval, "unknown function type: 'lambda/macro'")
+	} else {
+		return ec.signalN(ec.g.invalidFunction, originalFn)
+	}
+}
 
-	args, err := ec.listToSlice(original_args)
+func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject, error) {
+	sub := xVectorLike(fn).value.(*subroutine)
+
+	args, err := ec.listToSlice(originalArgs)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(args) < sub.minArgs || (sub.maxArgs >= 0 && len(args) > sub.maxArgs) {
-		return ec.signalN(ec.g.wrongNumberofArguments, original_fun, ec.makeInteger(lispInt(len(args))))
+		return ec.signalN(ec.g.wrongNumberofArguments, fn, ec.makeInteger(lispInt(len(args))))
 	}
 
 	for i := 0; i < len(args) && sub.maxArgs != argsUnevalled; i++ {
@@ -698,7 +713,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	case argsMany:
 		result, err = sub.callabem(args...)
 	case argsUnevalled:
-		result, err = sub.callabe1(original_args)
+		result, err = sub.callabe1(originalArgs)
 	default:
 		ec.terminate("unknown subroutine maxargs value")
 	}

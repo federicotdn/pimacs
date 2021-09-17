@@ -37,6 +37,7 @@ type globals struct {
 	wrongTypeArgument      lispObject
 	argsOutOfRange         lispObject
 	voidFunction           lispObject
+	invalidFunction        lispObject
 	voidVariable           lispObject
 	wrongNumberofArguments lispObject
 	endOfFile              lispObject
@@ -49,6 +50,7 @@ type globals struct {
 	errorMessage    lispObject
 	lambda          lispObject
 	closure         lispObject
+	macro           lispObject
 	// 5. Pimacs
 	goChannelClosed lispObject
 }
@@ -83,6 +85,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.wrongTypeArgument, name: "wrong-type-argument"},
 		{loc: &g.argsOutOfRange, name: "args-out-of-range"},
 		{loc: &g.voidFunction, name: "void-function"},
+		{loc: &g.invalidFunction, name: "invalid-function"},
 		{loc: &g.voidVariable, name: "void-variable"},
 		{loc: &g.wrongNumberofArguments, name: "wrong-number-of-arguments"},
 		{loc: &g.endOfFile, name: "end-of-file"},
@@ -95,6 +98,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.errorMessage, name: "error-message"},
 		{loc: &g.lambda, name: "lambda"},
 		{loc: &g.closure, name: "closure"},
+		{loc: &g.macro, name: "macro"},
 		// 5
 		{loc: &g.goChannelClosed, name: "go-channel-closed"},
 	}

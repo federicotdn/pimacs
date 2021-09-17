@@ -82,6 +82,10 @@ func vectorLikep(obj lispObject, vecType vectorLikeType) bool {
 	return vec.vecType == vecType
 }
 
+func subrp(obj lispObject) bool {
+	return vectorLikep(obj, vectorLikeTypeSubroutine)
+}
+
 func xString(obj lispObject) *lispString {
 	val, ok := obj.(*lispString)
 	if !ok {
