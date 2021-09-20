@@ -235,6 +235,21 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 	return quoted, nil
 }
 
+func (ec *execContext) listLength(obj lispObject) (int, error) {
+	tail := obj
+	num := 0
+
+	for ; consp(tail); tail = xCdr(tail) {
+		num += 1
+	}
+
+	if tail != ec.nil_ {
+		return 0, xErrOnly(ec.wrongTypeArgument(ec.g.listp, obj))
+	}
+
+	return num, nil
+}
+
 func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	// TAGS: incomplete
 	num := 0
@@ -243,13 +258,10 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	case lispTypeString:
 		num = len(xString(obj).value)
 	case lispTypeCons:
-		tail := obj
-		for ; consp(tail); tail = xCdr(tail) {
-			num += 1
-		}
-
-		if tail != ec.nil_ {
-			return ec.wrongTypeArgument(ec.g.listp, obj)
+		var err error
+		num, err = ec.listLength(obj)
+		if err != nil {
+			return nil, err
 		}
 	default:
 		if obj != ec.nil_ {
@@ -712,8 +724,14 @@ func (ec *execContext) list(args ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) apply(args ...lispObject) (lispObject, error) {
-	// TAGS: stub
-	return nil, nil
+	argsSlice, err := ec.listToSlice(args[len(args)-1])
+	if err != nil {
+		return nil, err
+	}
+
+	finalArgs := append(args[:len(args)-1], argsSlice...)
+
+	return ec.funcall(finalArgs...)
 }
 
 func (ec *execContext) funcall(args ...lispObject) (lispObject, error) {

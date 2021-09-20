@@ -219,5 +219,11 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(funcall '+ 1 2 (+ 1 1))", "5", nil},
 		{"(funcall 'list 1 2)", "(1 2)", nil},
 		{"(funcall 'if t 1)", "", anyError},
+		{"(apply 'cons)", "", anyError},
+		{"(apply 'cons '(1 2))", "(1 . 2)", nil},
+		{"(apply 'cons '(1))", "", anyError},
+		{"(apply '+ 1 '(2 3 4))", "10", nil},
+		{"(apply 'if '(t 1)", "", anyError},
+		{"(apply 'eval '(t))", "t", nil},
 	})
 }
