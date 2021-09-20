@@ -665,8 +665,24 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	}
 
 	if fnCar == ec.g.macro {
-		// TODO: macros
-		return ec.pimacsUnimplemented(ec.g.eval, "unknown function type: 'macro'")
+		val := ec.t
+		if xSymbolValue(ec.g.internalInterpreterEnv) == ec.nil_ {
+			val = ec.nil_
+		}
+
+		count := ec.stackSize()
+		ec.stackPushLet(ec.g.lexicalBinding, val)
+
+		args := []lispObject{xCdr(fn), originalArgs}
+		exp, err := ec.funcall(args...)
+
+		ec.stackPopTo(count)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return ec.evalSub(exp)
 	} else if fnCar == ec.g.lambda || fnCar == ec.g.closure {
 		return ec.applyLambda(fn, originalArgs)
 	} else {
@@ -699,7 +715,6 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 	}
 
 	// Handle case: maxArgs == argsUnevalled
-	count := ec.stackSize()
 	result, err := sub.callabe1(originalArgs)
 	if err != nil {
 		return nil, err
@@ -707,10 +722,6 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 
 	if sub.noReturn {
 		ec.terminate("subroutine with noreturn returned value")
-	}
-
-	if count != ec.stackSize() {
-		ec.terminate("subroutine did not pop one or more stack items")
 	}
 
 	return result, nil

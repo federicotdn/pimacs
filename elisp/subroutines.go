@@ -719,6 +719,11 @@ func (ec *execContext) put(symbol, propName, value lispObject) (lispObject, erro
 	return value, nil
 }
 
+func (ec *execContext) defalias(symbol, definition, docstring lispObject) (lispObject, error) {
+	// TAGS: incomplete
+	return ec.fset(symbol, definition)
+}
+
 func (ec *execContext) list(args ...lispObject) (lispObject, error) {
 	return ec.makeList(args...), nil
 }
@@ -864,6 +869,7 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubr2("plist-get", ec.plistGet, 2)
 	ec.defSubr3("plist-put", ec.plistPut, 3)
 	ec.defSubr3("put", ec.put, 3)
+	ec.defSubr3("defalias", ec.defalias, 2)
 	ec.defSubrM("+", ec.plusSign, 0)
 	ec.defSubrM("<", ec.lessThanSign, 1)
 	ec.defSubrM("list", ec.list, 0)
