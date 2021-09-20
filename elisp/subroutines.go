@@ -25,6 +25,10 @@ func (ec *execContext) numberOrMarkerp(object lispObject) (lispObject, error) {
 	return ec.bool(numberp(object))
 }
 
+func (ec *execContext) charOrStringp(object lispObject) (lispObject, error) {
+	return ec.bool(characterp(object) || stringp(object))
+}
+
 func (ec *execContext) integerp(object lispObject) (lispObject, error) {
 	return ec.bool(integerp(object))
 }
@@ -577,11 +581,42 @@ func (ec *execContext) signalN(errorSymbol lispObject, args ...lispObject) (lisp
 	return ec.signal(errorSymbol, list)
 }
 
-func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
-	return ec.prin1(obj, ec.nil_)
+func (ec *execContext) printString(str, printCharFn lispObject) error {
+	// TAGS: incomplete,revise
+	if printCharFn == ec.nil_ {
+		_, err := ec.insert(str)
+		return err
+	}
+
+	if xSymbolValue(ec.g.nonInteractive) == ec.t && printCharFn == ec.t {
+		fmt.Printf("%v", str)
+		return nil
+	}
+
+	if printCharFn == ec.t {
+		return xErrOnly(ec.pimacsUnimplemented(ec.g.prin1, "unknown print char function"))
+	}
+
+	_, err := ec.funcall(printCharFn, str)
+	return err
 }
 
-func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
+func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
+	// TAGS: revise
+	buf := &buffer{}
+	prev := ec.currentBuffer
+	ec.currentBuffer = buf
+	defer func() { ec.currentBuffer = prev }()
+
+	_, err := ec.prin1(obj, ec.nil_)
+	if err != nil {
+		return nil, err
+	}
+
+	return ec.bufferString()
+}
+
+func (ec *execContext) prin1(obj, printCharFn lispObject) (lispObject, error) {
 	// TAGS: incomplete
 	lispType := obj.getType()
 	var s string
@@ -597,7 +632,7 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 		s = "("
 
 		for ; consp(obj); obj = xCdr(obj) {
-			car, err := ec.prin1(xCar(obj), printCharFun)
+			car, err := ec.prin1ToString(xCar(obj), printCharFn)
 			if err != nil {
 				return nil, err
 			}
@@ -610,7 +645,7 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 		}
 
 		if obj != ec.nil_ {
-			end, err := ec.prin1(obj, printCharFun)
+			end, err := ec.prin1ToString(obj, printCharFn)
 			if err != nil {
 				return nil, err
 			}
@@ -628,7 +663,12 @@ func (ec *execContext) prin1(obj, printCharFun lispObject) (lispObject, error) {
 		s = fmt.Sprintf("#<INVALID DATATYPE '%+v'>", obj)
 	}
 
-	return ec.makeString(s), nil
+	err := ec.printString(ec.makeString(s), printCharFn)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj, nil
 }
 
 func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error) {
@@ -772,75 +812,13 @@ func (ec *execContext) funcall(args ...lispObject) (lispObject, error) {
 	return ec.signalN(ec.g.invalidFunction, originalFn)
 }
 
-func (ec *execContext) pimacsGo(args lispObject) (lispObject, error) {
-	// TAGS: revise
-	shared := xCar(args)
-	tail := shared
-
-	channels := make(map[string]chan lispObject)
-
-	for ; consp(tail); tail = xCdr(tail) {
-		elem := xCar(tail)
-
-		if !consp(elem) || !consp(xCdr(elem)) {
-			return ec.wrongTypeArgument(ec.g.listp, elem)
-		}
-
-		symbol := xCar(elem)
-		value, err := ec.evalSub(xCar(xCdr(elem)))
-		if err != nil {
-			return nil, err
-		}
-
-		if !symbolp(symbol) {
-			return ec.wrongTypeArgument(ec.g.symbolp, symbol)
-		}
-
-		if !vectorLikep(value, vectorLikeTypeGoChannel) {
-			return ec.wrongTypeArgument(ec.g.goChannelp, value)
-		}
-
-		channels[xSymbol(symbol).name] = xVectorLike(value).value.(chan lispObject)
-	}
-
-	if tail != ec.nil_ {
-		return ec.wrongTypeArgument(ec.g.listp, shared)
-	}
-
-	body, err := ec.prin1(ec.makeCons(ec.g.progn, xCdr(args)), ec.nil_)
-	if err != nil {
-		return nil, err
-	}
-
-	contents := xStringValue(body)
-
-	go func() {
-		newEc := newExecContext()
-
-		for name, channel := range channels {
-			newEc.intern(name).value = newEc.makeVectorLike(vectorLikeTypeGoChannel, channel)
-		}
-
-		obj, err := newEc.readFromString(contents)
-		if err != nil {
-			panic(err)
-		}
-
-		_, err = newEc.evalSub(obj)
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	return ec.nil_, nil
-}
-
-func (ec *execContext) initialDefsFunctions() {
+func (ec *execContext) initialDefsSubroutines() {
 	ec.defSubr1("null", ec.null, 1)
 	ec.defSubr1("sequencep", ec.sequencep, 1)
 	ec.defSubr1("listp", ec.listp, 1)
 	ec.defSubr1("symbolp", ec.symbolp, 1)
 	ec.defSubr1("number-or-marker-p", ec.numberOrMarkerp, 1)
+	ec.defSubr1("char-or-string-p", ec.charOrStringp, 1)
 	ec.defSubr1("integerp", ec.numberOrMarkerp, 1)
 	ec.defSubr1("pimacs-go-channel-p", ec.goChannelp, 1)
 	ec.defSubr1("pimacs-make-go-channel", ec.makeGoChannel, 1)
@@ -883,5 +861,4 @@ func (ec *execContext) initialDefsFunctions() {
 	ec.defSubrU("progn", ec.progn, 0)
 	ec.defSubrU("function", ec.function, 1)
 	ec.defSubrU("condition-case", ec.conditionCase, 2)
-	ec.defSubrU("pimacs-go", ec.pimacsGo, 2)
 }

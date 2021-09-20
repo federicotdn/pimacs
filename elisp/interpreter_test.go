@@ -225,5 +225,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(apply '+ 1 '(2 3 4))", "10", nil},
 		{"(apply 'if '(t 1)", "", anyError},
 		{"(apply 'eval '(t))", "t", nil},
+		{`(progn (insert "foo") (buffer-string))`, `"foo"`, nil},
 	})
 }

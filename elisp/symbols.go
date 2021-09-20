@@ -10,7 +10,7 @@ type symbolInit struct {
 	unintern bool
 }
 
-type globals struct {
+type lispGlobals struct {
 	// 1. Essential runtime objects
 	nil_                   lispObject
 	t                      lispObject
@@ -22,6 +22,7 @@ type globals struct {
 	listp           lispObject
 	symbolp         lispObject
 	numberOrMarkerp lispObject
+	charOrStringp   lispObject
 	goChannelp      lispObject
 	integerp        lispObject
 	quote           lispObject
@@ -32,6 +33,7 @@ type globals struct {
 	equal           lispObject
 	eval            lispObject
 	if_             lispObject
+	prin1           lispObject
 	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
@@ -56,7 +58,9 @@ type globals struct {
 	macro           lispObject
 	andRest         lispObject
 	andOptional     lispObject
-	// 5. Pimacs
+	// 5. Variables
+	nonInteractive lispObject
+	// 6. Pimacs
 	goChannelClosed lispObject
 }
 
@@ -75,6 +79,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.listp, name: "listp"},
 		{loc: &g.symbolp, name: "symbolp"},
 		{loc: &g.numberOrMarkerp, name: "number-or-marker-p"},
+		{loc: &g.charOrStringp, name: "char-or-string-p"},
 		{loc: &g.goChannelp, name: "pimacs-go-channel-p"},
 		{loc: &g.integerp, name: "integerp"},
 		{loc: &g.quote, name: "quote"},
@@ -85,6 +90,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.equal, name: "equal"},
 		{loc: &g.eval, name: "eval"},
 		{loc: &g.if_, name: "if"},
+		{loc: &g.prin1, name: "prin1"},
 		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
@@ -110,6 +116,8 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.andRest, name: "&rest"},
 		{loc: &g.andOptional, name: "&optional"},
 		// 5
+		{loc: &g.nonInteractive, name: "noninteractive"},
+		// 6
 		{loc: &g.goChannelClosed, name: "go-channel-closed"},
 	}
 

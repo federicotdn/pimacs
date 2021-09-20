@@ -33,11 +33,12 @@ type stackEntry interface {
 }
 
 type execContext struct {
-	stack   []stackEntry
-	nil_    lispObject
-	t       lispObject
-	g       globals
-	obarray map[string]*lispSymbol
+	stack         []stackEntry
+	nil_          lispObject
+	t             lispObject
+	g             lispGlobals
+	obarray       map[string]*lispSymbol
+	currentBuffer *buffer
 }
 
 type stackEntryLet struct {
@@ -322,11 +323,13 @@ func newExecContext() *execContext {
 
 	ec.obarray = make(map[string]*lispSymbol)
 	ec.stack = []stackEntry{}
+	ec.currentBuffer = &buffer{}
 
-	ec.initialDefsSymbols()   // symbols.go
-	ec.initialDefsErrors()    // errors.gmo
-	ec.initialDefsVariables() // variables.go
-	ec.initialDefsFunctions() // functions.go
+	ec.initialDefsSymbols()     // symbols.go
+	ec.initialDefsErrors()      // errors.gmo
+	ec.initialDefsVariables()   // variables.go
+	ec.initialDefsSubroutines() // subroutines.go
+	ec.initialDefsBuffer()      // buffer.go
 
 	return &ec
 }
@@ -673,8 +676,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		count := ec.stackSize()
 		ec.stackPushLet(ec.g.lexicalBinding, val)
 
-		args := []lispObject{xCdr(fn), originalArgs}
-		exp, err := ec.funcall(args...)
+		exp, err := ec.funcall(xCdr(fn), originalArgs)
 
 		ec.stackPopTo(count)
 

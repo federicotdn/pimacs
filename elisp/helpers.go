@@ -2,7 +2,7 @@ package elisp
 
 func xEnsure(obj lispObject, err error) lispObject {
 	if err != nil {
-		terminate("cannot return value due to error: '%v'", err)
+		terminate("cannot return value due to error: '%+v'", err)
 	}
 
 	return obj
@@ -10,7 +10,7 @@ func xEnsure(obj lispObject, err error) lispObject {
 
 func xErrOnly(obj lispObject, err error) error {
 	if obj != nil {
-		terminate("was handed a non-nil Lisp object: '%v'", obj)
+		terminate("was handed a non-nil Lisp object: '%+v'", obj)
 	}
 
 	return err
@@ -19,7 +19,7 @@ func xErrOnly(obj lispObject, err error) error {
 func xSymbol(obj lispObject) *lispSymbol {
 	val, ok := obj.(*lispSymbol)
 	if !ok {
-		terminate("object is not a symbol: '%v'", obj)
+		terminate("object is not a symbol: '%+v'", obj)
 	}
 
 	return val
@@ -36,7 +36,7 @@ func symbolp(obj lispObject) bool {
 func xCons(obj lispObject) *lispCons {
 	val, ok := obj.(*lispCons)
 	if !ok {
-		terminate("object is not a cons: '%v'", obj)
+		terminate("object is not a cons: '%+v'", obj)
 	}
 
 	return val
@@ -67,7 +67,7 @@ func consp(obj lispObject) bool {
 func xVectorLike(obj lispObject) *lispVectorLike {
 	val, ok := obj.(*lispVectorLike)
 	if !ok {
-		terminate("object is not vector-like: '%v'", obj)
+		terminate("object is not vector-like: '%+v'", obj)
 	}
 
 	return val
@@ -86,10 +86,14 @@ func subroutinep(obj lispObject) bool {
 	return vectorLikep(obj, vectorLikeTypeSubroutine)
 }
 
+func bufferp(obj lispObject) bool {
+	return vectorLikep(obj, vectorLikeTypeBuffer)
+}
+
 func xString(obj lispObject) *lispString {
 	val, ok := obj.(*lispString)
 	if !ok {
-		terminate("object is not a string: '%v'", obj)
+		terminate("object is not a string: '%+v'", obj)
 	}
 
 	return val
@@ -106,7 +110,7 @@ func stringp(obj lispObject) bool {
 func xInteger(obj lispObject) *lispInteger {
 	val, ok := obj.(*lispInteger)
 	if !ok {
-		terminate("object is not an integer: '%v'", obj)
+		terminate("object is not an integer: '%+v'", obj)
 	}
 
 	return val
@@ -116,6 +120,10 @@ func xIntegerValue(obj lispObject) lispInt {
 	return xInteger(obj).value
 }
 
+func xIntegerRune(obj lispObject) rune {
+	return rune(xInteger(obj).value)
+}
+
 func integerp(obj lispObject) bool {
 	return obj.getType() == lispTypeInteger
 }
@@ -123,7 +131,7 @@ func integerp(obj lispObject) bool {
 func xFloat(obj lispObject) *lispFloat {
 	val, ok := obj.(*lispFloat)
 	if !ok {
-		terminate("object is not a float: '%v'", obj)
+		terminate("object is not a float: '%+v'", obj)
 	}
 
 	return val
@@ -139,6 +147,10 @@ func floatp(obj lispObject) bool {
 
 func numberp(obj lispObject) bool {
 	return integerp(obj) || floatp(obj)
+}
+
+func characterp(obj lispObject) bool {
+	return integerp(obj) && xIntegerValue(obj) <= maxChar
 }
 
 func arrayp(obj lispObject) bool {

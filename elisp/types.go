@@ -20,6 +20,7 @@ const (
 const (
 	vectorLikeTypeNormal vectorLikeType = iota + 1
 	vectorLikeTypeSubroutine
+	vectorLikeTypeBuffer
 	vectorLikeTypeGoChannel
 )
 
@@ -38,6 +39,10 @@ type subroutine struct {
 	minArgs  int
 	maxArgs  int
 	noReturn bool
+}
+
+type buffer struct {
+	contents string
 }
 
 type lispSymbol struct {
