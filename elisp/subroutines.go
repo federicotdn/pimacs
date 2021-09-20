@@ -589,7 +589,7 @@ func (ec *execContext) printString(str, printCharFn lispObject) error {
 	}
 
 	if xSymbolValue(ec.g.nonInteractive) == ec.t && printCharFn == ec.t {
-		fmt.Printf("%v", str)
+		fmt.Printf("%v", xStringValue(str))
 		return nil
 	}
 

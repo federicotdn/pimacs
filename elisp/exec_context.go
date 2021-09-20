@@ -1,10 +1,14 @@
 package elisp
 
 import (
+	"embed"
 	"fmt"
 	"strconv"
 	"strings"
 )
+
+//go:embed scripts
+var scripts embed.FS
 
 const (
 	eofRune rune = -1
@@ -330,6 +334,14 @@ func newExecContext() *execContext {
 	ec.initialDefsVariables()   // variables.go
 	ec.initialDefsSubroutines() // subroutines.go
 	ec.initialDefsBuffer()      // buffer.go
+
+	contents, err := scripts.ReadFile("scripts/pimacs/base.el")
+	if err != nil {
+		ec.terminate("open script error: '%v'", err)
+	}
+
+	obj := xEnsure(ec.readFromString(string(contents)))
+	xEnsure(ec.evalSub(obj))
 
 	return &ec
 }

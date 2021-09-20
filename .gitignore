@@ -15,5 +15,5 @@
 # vendor/
 
 # pimacs
-pimacs
+/pimacs
 test.el
