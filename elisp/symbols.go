@@ -21,6 +21,7 @@ type lispGlobals struct {
 	sequencep       lispObject
 	listp           lispObject
 	symbolp         lispObject
+	stringp         lispObject
 	numberOrMarkerp lispObject
 	charOrStringp   lispObject
 	goChannelp      lispObject
@@ -78,6 +79,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.sequencep, name: "sequencep"},
 		{loc: &g.listp, name: "listp"},
 		{loc: &g.symbolp, name: "symbolp"},
+		{loc: &g.stringp, name: "stringp"},
 		{loc: &g.numberOrMarkerp, name: "number-or-marker-p"},
 		{loc: &g.charOrStringp, name: "char-or-string-p"},
 		{loc: &g.goChannelp, name: "pimacs-go-channel-p"},

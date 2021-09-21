@@ -21,6 +21,10 @@ func (ec *execContext) symbolp(object lispObject) (lispObject, error) {
 	return ec.bool(symbolp(object))
 }
 
+func (ec *execContext) stringp(object lispObject) (lispObject, error) {
+	return ec.bool(stringp(object))
+}
+
 func (ec *execContext) numberOrMarkerp(object lispObject) (lispObject, error) {
 	return ec.bool(numberp(object))
 }
@@ -601,6 +605,20 @@ func (ec *execContext) printString(str, printCharFn lispObject) error {
 	return err
 }
 
+func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, error) {
+	if !stringp(str) {
+		return ec.wrongTypeArgument(ec.g.stringp, str)
+	}
+
+	result, ctx, err := ec.readInternalStart(str, start, end)
+	if err != nil {
+		return nil, err
+	}
+
+	pos := ec.makeInteger(lispInt(ctx.position()))
+	return ec.cons(result, pos)
+}
+
 func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
 	// TAGS: revise
 	buf := &buffer{}
@@ -817,6 +835,7 @@ func (ec *execContext) initialDefsSubroutines() {
 	ec.defSubr1("sequencep", ec.sequencep, 1)
 	ec.defSubr1("listp", ec.listp, 1)
 	ec.defSubr1("symbolp", ec.symbolp, 1)
+	ec.defSubr1("stringp", ec.stringp, 1)
 	ec.defSubr1("number-or-marker-p", ec.numberOrMarkerp, 1)
 	ec.defSubr1("char-or-string-p", ec.charOrStringp, 1)
 	ec.defSubr1("integerp", ec.numberOrMarkerp, 1)

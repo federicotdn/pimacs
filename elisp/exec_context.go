@@ -54,7 +54,13 @@ type stackEntryCatch struct {
 	catchTag lispObject
 }
 
-type readContext struct {
+type readContext interface {
+	read() rune
+	unread(rune)
+	position() int
+}
+
+type readContextString struct {
 	source string
 	runes  []rune
 	i      int
@@ -86,7 +92,7 @@ func (sec *stackEntryCatch) tag() stackEntryTag {
 	return entryCatch
 }
 
-func (ctx *readContext) read() rune {
+func (ctx *readContextString) read() rune {
 	if ctx.i == len(ctx.runes) {
 		return eofRune
 	}
@@ -96,7 +102,7 @@ func (ctx *readContext) read() rune {
 	return r
 }
 
-func (ctx *readContext) unread(c rune) {
+func (ctx *readContextString) unread(c rune) {
 	if c == eofRune {
 		return
 	}
@@ -106,6 +112,10 @@ func (ctx *readContext) unread(c rune) {
 	}
 
 	ctx.i--
+}
+
+func (ctx *readContextString) position() int {
+	return ctx.i
 }
 
 func (ec *execContext) stringToNumber(s string) (lispObject, error) {
@@ -184,7 +194,7 @@ func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeVa
 	}
 }
 
-func (ec *execContext) readEscape(ctx *readContext, stringp bool) (rune, error) {
+func (ec *execContext) readEscape(ctx readContext, stringp bool) (rune, error) {
 	// TAGS: incomplete
 	c := ctx.read()
 	if c == eofRune {
@@ -340,8 +350,9 @@ func newExecContext() *execContext {
 		ec.terminate("open script error: '%v'", err)
 	}
 
-	obj := xEnsure(ec.readFromString(string(contents)))
-	xEnsure(ec.evalSub(obj))
+	source := ec.makeString(string(contents))
+	result, _, err := ec.readInternalStart(source, ec.nil_, ec.nil_)
+	xEnsure(ec.evalSub(xEnsure(result, err)))
 
 	return &ec
 }
@@ -364,7 +375,7 @@ func (ec *execContext) intern(name string) *lispSymbol {
 	return sym
 }
 
-func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
+func (ec *execContext) readList(ctx readContext) (lispObject, error) {
 	// TAGS: incomplete
 	var val lispObject = ec.nil_
 	var tail lispObject = ec.nil_
@@ -413,7 +424,7 @@ func (ec *execContext) readList(ctx *readContext) (lispObject, error) {
 	}
 }
 
-func (ec *execContext) readAtom(c rune, ctx *readContext) (lispObject, error) {
+func (ec *execContext) readAtom(c rune, ctx readContext) (lispObject, error) {
 	// TAGS: incomplete
 	quoted := false
 	builder := strings.Builder{}
@@ -454,7 +465,7 @@ func (ec *execContext) read1Result(obj lispObject, err error) (lispObject, rune,
 	return obj, 0, err
 }
 
-func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
+func (ec *execContext) read1(ctx readContext) (lispObject, rune, error) {
 	// TAGS: incomplete
 	var err error
 	var c rune
@@ -584,7 +595,7 @@ func (ec *execContext) read1(ctx *readContext) (lispObject, rune, error) {
 	}
 }
 
-func (ec *execContext) read0(ctx *readContext) (lispObject, error) {
+func (ec *execContext) read0(ctx readContext) (lispObject, error) {
 	obj, c, err := ec.read1(ctx)
 	if err != nil {
 		return nil, err
@@ -597,14 +608,24 @@ func (ec *execContext) read0(ctx *readContext) (lispObject, error) {
 	return obj, nil
 }
 
-func (ec *execContext) readFromString(source string) (lispObject, error) {
-	ctx := readContext{
-		source: source,
-		runes:  []rune(source),
-		i:      0,
+func (ec *execContext) readInternalStart(source, start, end lispObject) (lispObject, readContext, error) {
+	var ctx readContext
+
+	switch source.getType() {
+	case lispTypeString:
+		str := xStringValue(source)
+
+		ctx = &readContextString{
+			source: str,
+			runes:  []rune(str),
+			i:      0,
+		}
+	default:
+		return nil, nil, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown source type"))
 	}
 
-	return ec.read0(&ctx)
+	result, err := ec.read0(ctx)
+	return result, ctx, err
 }
 
 func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
