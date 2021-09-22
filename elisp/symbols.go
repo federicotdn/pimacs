@@ -18,23 +18,24 @@ type lispGlobals struct {
 	unbound                lispObject
 	lexicalBinding         lispObject
 	// 2. Subroutine symbols
-	sequencep       lispObject
-	listp           lispObject
-	symbolp         lispObject
-	stringp         lispObject
-	numberOrMarkerp lispObject
-	charOrStringp   lispObject
-	goChannelp      lispObject
-	integerp        lispObject
-	quote           lispObject
-	backquote       lispObject
-	progn           lispObject
-	function        lispObject
-	read            lispObject
-	equal           lispObject
-	eval            lispObject
-	if_             lispObject
-	prin1           lispObject
+	sequencep          lispObject
+	listp              lispObject
+	symbolp            lispObject
+	stringp            lispObject
+	numberOrMarkerp    lispObject
+	charOrStringp      lispObject
+	goChannelp         lispObject
+	integerp           lispObject
+	quote              lispObject
+	backquote          lispObject
+	progn              lispObject
+	function           lispObject
+	read               lispObject
+	equal              lispObject
+	eval               lispObject
+	if_                lispObject
+	prin1              lispObject
+	readFromMinibuffer lispObject
 	// 3. Errors
 	error_                 lispObject
 	quit                   lispObject
@@ -59,8 +60,11 @@ type lispGlobals struct {
 	macro           lispObject
 	andRest         lispObject
 	andOptional     lispObject
+	readChar        lispObject
 	// 5. Variables
 	nonInteractive lispObject
+	standardInput  lispObject
+	standardOutput lispObject
 	// 6. Pimacs
 	goChannelClosed lispObject
 }
@@ -93,6 +97,7 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.eval, name: "eval"},
 		{loc: &g.if_, name: "if"},
 		{loc: &g.prin1, name: "prin1"},
+		{loc: &g.readFromMinibuffer, name: "read-from-minibuffer"},
 		// 3
 		{loc: &g.error_, name: "error"},
 		{loc: &g.quit, name: "quit"},
@@ -117,8 +122,11 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.macro, name: "macro"},
 		{loc: &g.andRest, name: "&rest"},
 		{loc: &g.andOptional, name: "&optional"},
+		{loc: &g.readChar, name: "read-char"},
 		// 5
 		{loc: &g.nonInteractive, name: "noninteractive"},
+		{loc: &g.standardInput, name: "standard-input"},
+		{loc: &g.standardOutput, name: "standard-output"},
 		// 6
 		{loc: &g.goChannelClosed, name: "go-channel-closed"},
 	}

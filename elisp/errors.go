@@ -31,6 +31,11 @@ func (ec *execContext) initialDefsErrors() {
 	ec.putError(ec.g.pimacsUnimplemented, errorTail, "Unimplemented feature")
 }
 
+func (ec *execContext) signalN(errorSymbol lispObject, args ...lispObject) (lispObject, error) {
+	list := ec.makeList(args...)
+	return ec.signal(errorSymbol, list)
+}
+
 func (ec *execContext) wrongTypeArgument(predicate, value lispObject) (lispObject, error) {
 	return ec.signalN(ec.g.wrongTypeArgument, predicate, value)
 }

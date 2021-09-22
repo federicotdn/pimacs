@@ -28,6 +28,11 @@ type lispFn0 func() (lispObject, error)
 type lispFn1 func(lispObject) (lispObject, error)
 type lispFn2 func(lispObject, lispObject) (lispObject, error)
 type lispFn3 func(lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn4 func(lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn5 func(lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn6 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn7 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn8 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
 type lispFnM func(...lispObject) (lispObject, error)
 
 type subroutine struct {
@@ -35,6 +40,11 @@ type subroutine struct {
 	callabe1 lispFn1
 	callabe2 lispFn2
 	callabe3 lispFn3
+	callabe4 lispFn4
+	callabe5 lispFn5
+	callabe6 lispFn6
+	callabe7 lispFn7
+	callabe8 lispFn8
 	callabem lispFnM
 	minArgs  int
 	maxArgs  int

@@ -64,6 +64,7 @@ type readContextString struct {
 	source string
 	runes  []rune
 	i      int
+	end    int
 }
 
 func (jmp *stackJumpTag) Error() string {
@@ -93,7 +94,7 @@ func (sec *stackEntryCatch) tag() stackEntryTag {
 }
 
 func (ctx *readContextString) read() rune {
-	if ctx.i == len(ctx.runes) {
+	if ctx.i == ctx.end {
 		return eofRune
 	}
 
@@ -312,6 +313,56 @@ func (ec *execContext) defSubr3(name string, fn lispFn3, minArgs int) *subroutin
 	return sub
 }
 
+func (ec *execContext) defSubr4(name string, fn lispFn4, minArgs int) *subroutine {
+	sub := &subroutine{
+		callabe4: fn,
+		minArgs:  minArgs,
+		maxArgs:  4,
+	}
+	ec.defSubr(name, sub)
+	return sub
+}
+
+func (ec *execContext) defSubr5(name string, fn lispFn5, minArgs int) *subroutine {
+	sub := &subroutine{
+		callabe5: fn,
+		minArgs:  minArgs,
+		maxArgs:  5,
+	}
+	ec.defSubr(name, sub)
+	return sub
+}
+
+func (ec *execContext) defSubr6(name string, fn lispFn6, minArgs int) *subroutine {
+	sub := &subroutine{
+		callabe6: fn,
+		minArgs:  minArgs,
+		maxArgs:  6,
+	}
+	ec.defSubr(name, sub)
+	return sub
+}
+
+func (ec *execContext) defSubr7(name string, fn lispFn7, minArgs int) *subroutine {
+	sub := &subroutine{
+		callabe7: fn,
+		minArgs:  minArgs,
+		maxArgs:  7,
+	}
+	ec.defSubr(name, sub)
+	return sub
+}
+
+func (ec *execContext) defSubr8(name string, fn lispFn8, minArgs int) *subroutine {
+	sub := &subroutine{
+		callabe8: fn,
+		minArgs:  minArgs,
+		maxArgs:  8,
+	}
+	ec.defSubr(name, sub)
+	return sub
+}
+
 func (ec *execContext) defSubrM(name string, fn lispFnM, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabem: fn,
@@ -344,6 +395,7 @@ func newExecContext() *execContext {
 	ec.initialDefsVariables()   // variables.go
 	ec.initialDefsSubroutines() // subroutines.go
 	ec.initialDefsBuffer()      // buffer.go
+	ec.initialDefsMinibuffer()  // minibuffer.go
 
 	contents, err := scripts.ReadFile("scripts/pimacs/base.el")
 	if err != nil {
@@ -608,17 +660,52 @@ func (ec *execContext) read0(ctx readContext) (lispObject, error) {
 	return obj, nil
 }
 
-func (ec *execContext) readInternalStart(source, start, end lispObject) (lispObject, readContext, error) {
+func (ec *execContext) readInternalStart(stream, start, end lispObject) (lispObject, readContext, error) {
 	var ctx readContext
 
-	switch source.getType() {
+	switch stream.getType() {
 	case lispTypeString:
-		str := xStringValue(source)
+		length, err := ec.length(stream)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		lengthInt := int(xIntegerValue(length))
+		startInt := 0
+		endInt := lengthInt
+
+		if integerp(start) {
+			startInt = int(xIntegerValue(start))
+
+			if startInt < 0 {
+				startInt += lengthInt
+			}
+		} else if start != ec.nil_ {
+			return nil, nil, xErrOnly(ec.wrongTypeArgument(ec.g.integerp, start))
+		}
+
+		if integerp(end) {
+			endInt = int(xIntegerValue(end))
+
+			if endInt < 0 {
+				endInt += lengthInt
+			}
+
+		} else if end != ec.nil_ {
+			return nil, nil, xErrOnly(ec.wrongTypeArgument(ec.g.integerp, end))
+		}
+
+		if !(0 <= startInt && startInt <= endInt && endInt <= lengthInt) {
+			return nil, nil, xErrOnly(ec.signalN(ec.g.argsOutOfRange, stream, start, end))
+		}
+
+		str := xStringValue(stream)
 
 		ctx = &readContextString{
 			source: str,
 			runes:  []rune(str),
-			i:      0,
+			i:      startInt,
+			end:    endInt,
 		}
 	default:
 		return nil, nil, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown source type"))
@@ -791,10 +878,24 @@ func (ec *execContext) funcallSubroutine(fn lispObject, args ...lispObject) (lis
 		result, err = sub.callabe2(args[0], args[1])
 	case 3:
 		result, err = sub.callabe3(args[0], args[1], args[2])
+	case 4:
+		result, err = sub.callabe4(args[0], args[1], args[2], args[3])
+	case 5:
+		result, err = sub.callabe5(args[0], args[1], args[2], args[3], args[4])
+	case 6:
+		result, err = sub.callabe6(args[0], args[1], args[2], args[3], args[4], args[5])
+	case 7:
+		result, err = sub.callabe7(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+	case 8:
+		result, err = sub.callabe8(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
 	case argsMany:
 		result, err = sub.callabem(args...)
 	default:
 		ec.terminate("unknown subroutine maxargs value")
+	}
+
+	if count != ec.stackSize() {
+		ec.terminate("subroutine did not pop one or more stack items")
 	}
 
 	if err != nil {
@@ -803,10 +904,6 @@ func (ec *execContext) funcallSubroutine(fn lispObject, args ...lispObject) (lis
 
 	if sub.noReturn {
 		ec.terminate("subroutine with noreturn returned value")
-	}
-
-	if count != ec.stackSize() {
-		ec.terminate("subroutine did not pop one or more stack items")
 	}
 
 	return result, nil

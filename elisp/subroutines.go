@@ -280,6 +280,23 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 	return ec.makeInteger(lispInt(num)), nil
 }
 
+func (ec *execContext) read(stream lispObject) (lispObject, error) {
+	if stream == ec.nil_ {
+		stream = xSymbolValue(ec.g.standardInput)
+	}
+
+	if stream == ec.t {
+		stream = ec.g.readChar
+	}
+
+	if stream == ec.g.readChar {
+		return ec.funcall(ec.g.readFromMinibuffer, ec.makeString("Lisp expression: "))
+	}
+
+	result, _, err := ec.readInternalStart(stream, ec.nil_, ec.nil_)
+	return result, err
+}
+
 func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 	size := ec.stackSize()
 	defer ec.stackPopTo(size)
@@ -580,11 +597,6 @@ func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) 
 	}
 }
 
-func (ec *execContext) signalN(errorSymbol lispObject, args ...lispObject) (lispObject, error) {
-	list := ec.makeList(args...)
-	return ec.signal(errorSymbol, list)
-}
-
 func (ec *execContext) printString(str, printCharFn lispObject) error {
 	// TAGS: incomplete,revise
 	if printCharFn == ec.nil_ {
@@ -846,6 +858,7 @@ func (ec *execContext) initialDefsSubroutines() {
 	ec.defSubr1("car", ec.car, 1)
 	ec.defSubr1("cdr", ec.cdr, 1)
 	ec.defSubr1("length", ec.length, 1)
+	ec.defSubr1("read", ec.read, 0)
 	ec.defSubr1("symbol-plist", ec.symbolPlist, 1)
 	ec.defSubr1("symbol-name", ec.symbolName, 1)
 	ec.defSubr2("sleep-for", ec.sleepFor, 1)
@@ -867,6 +880,7 @@ func (ec *execContext) initialDefsSubroutines() {
 	ec.defSubr3("plist-put", ec.plistPut, 3)
 	ec.defSubr3("put", ec.put, 3)
 	ec.defSubr3("defalias", ec.defalias, 2)
+	ec.defSubr3("read-from-string", ec.readFromString, 1)
 	ec.defSubrM("+", ec.plusSign, 0)
 	ec.defSubrM("<", ec.lessThanSign, 1)
 	ec.defSubrM("list", ec.list, 0)
