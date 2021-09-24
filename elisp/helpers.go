@@ -90,6 +90,11 @@ func bufferp(obj lispObject) bool {
 	return vectorLikep(obj, vectorLikeTypeBuffer)
 }
 
+func xBuffer(obj lispObject) *buffer {
+	vec := obj.(*lispVectorLike)
+	return vec.value.(*buffer)
+}
+
 func xString(obj lispObject) *lispString {
 	val, ok := obj.(*lispString)
 	if !ok {

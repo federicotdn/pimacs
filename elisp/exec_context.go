@@ -20,7 +20,12 @@ type stackEntryTag int
 const (
 	entryLet stackEntryTag = iota + 1
 	entryCatch
+	entryCurrentBuffer
 )
+
+type stackEntry interface {
+	tag() stackEntryTag
+}
 
 type stackJumpTag struct {
 	tag   lispObject
@@ -30,10 +35,6 @@ type stackJumpTag struct {
 type stackJumpSignal struct {
 	errorSymbol lispObject
 	data        lispObject
-}
-
-type stackEntry interface {
-	tag() stackEntryTag
 }
 
 type execContext struct {
@@ -52,6 +53,10 @@ type stackEntryLet struct {
 
 type stackEntryCatch struct {
 	catchTag lispObject
+}
+
+type stackEntryCurrentBuffer struct {
+	prevCurrentBuffer *buffer
 }
 
 type readContext interface {
@@ -91,6 +96,10 @@ func (sel *stackEntryLet) tag() stackEntryTag {
 
 func (sec *stackEntryCatch) tag() stackEntryTag {
 	return entryCatch
+}
+
+func (secb *stackEntryCurrentBuffer) tag() stackEntryTag {
+	return entryCurrentBuffer
 }
 
 func (ctx *readContextString) read() rune {
@@ -394,6 +403,7 @@ func newExecContext() *execContext {
 	ec.initialDefsErrors()      // errors.gmo
 	ec.initialDefsVariables()   // variables.go
 	ec.initialDefsSubroutines() // subroutines.go
+	ec.initialDefsPrint()       // print.go
 	ec.initialDefsBuffer()      // buffer.go
 	ec.initialDefsMinibuffer()  // minibuffer.go
 
@@ -1034,6 +1044,14 @@ func (ec *execContext) stackPushCatch(tag lispObject) {
 	})
 }
 
+func (ec *execContext) stackPushCurrentBuffer(buf *buffer) {
+	ec.stack = append(ec.stack, &stackEntryCurrentBuffer{
+		prevCurrentBuffer: ec.currentBuffer,
+	})
+
+	ec.currentBuffer = buf
+}
+
 func (ec *execContext) catchInStack(tag lispObject) bool {
 	for _, binding := range ec.stack {
 		if binding.tag() != entryCatch {
@@ -1067,6 +1085,8 @@ func (ec *execContext) stackPopTo(target int) {
 			let := current.(*stackEntryLet)
 			let.symbol.value = let.oldVal
 		case entryCatch:
+		case entryCurrentBuffer:
+			ec.currentBuffer = current.(*stackEntryCurrentBuffer).prevCurrentBuffer
 		default:
 			ec.terminate("unknown stack item tag: '%v'", current.tag())
 		}

@@ -597,26 +597,6 @@ func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) 
 	}
 }
 
-func (ec *execContext) printString(str, printCharFn lispObject) error {
-	// TAGS: incomplete,revise
-	if printCharFn == ec.nil_ {
-		_, err := ec.insert(str)
-		return err
-	}
-
-	if xSymbolValue(ec.g.nonInteractive) == ec.t && printCharFn == ec.t {
-		fmt.Printf("%v", xStringValue(str))
-		return nil
-	}
-
-	if printCharFn == ec.t {
-		return xErrOnly(ec.pimacsUnimplemented(ec.g.prin1, "unknown print char function"))
-	}
-
-	_, err := ec.funcall(printCharFn, str)
-	return err
-}
-
 func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, error) {
 	if !stringp(str) {
 		return ec.wrongTypeArgument(ec.g.stringp, str)
@@ -629,76 +609,6 @@ func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, e
 
 	pos := ec.makeInteger(lispInt(ctx.position()))
 	return ec.cons(result, pos)
-}
-
-func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
-	// TAGS: revise
-	buf := &buffer{}
-	prev := ec.currentBuffer
-	ec.currentBuffer = buf
-	defer func() { ec.currentBuffer = prev }()
-
-	_, err := ec.prin1(obj, ec.nil_)
-	if err != nil {
-		return nil, err
-	}
-
-	return ec.bufferString()
-}
-
-func (ec *execContext) prin1(obj, printCharFn lispObject) (lispObject, error) {
-	// TAGS: incomplete
-	lispType := obj.getType()
-	var s string
-
-	switch lispType {
-	case lispTypeSymbol:
-		s = xSymbol(obj).name
-	case lispTypeInteger:
-		s = fmt.Sprint(xIntegerValue(obj))
-	case lispTypeString:
-		s = "\"" + xString(obj).value + "\""
-	case lispTypeCons:
-		s = "("
-
-		for ; consp(obj); obj = xCdr(obj) {
-			car, err := ec.prin1ToString(xCar(obj), printCharFn)
-			if err != nil {
-				return nil, err
-			}
-
-			s += xStringValue(car)
-
-			if xCdr(obj) != ec.nil_ {
-				s += " "
-			}
-		}
-
-		if obj != ec.nil_ {
-			end, err := ec.prin1ToString(obj, printCharFn)
-			if err != nil {
-				return nil, err
-			}
-
-			s += ". " + xStringValue(end)
-		}
-
-		s += ")"
-	case lispTypeFloat:
-		s = fmt.Sprint(xFloat(obj).value)
-	case lispTypeVectorLike:
-		vec := xVectorLike(obj)
-		s = fmt.Sprintf("#<vector-like type '%v' value '%+v'>", vec.vecType, vec.value)
-	default:
-		s = fmt.Sprintf("#<INVALID DATATYPE '%+v'>", obj)
-	}
-
-	err := ec.printString(ec.makeString(s), printCharFn)
-	if err != nil {
-		return nil, err
-	}
-
-	return obj, nil
 }
 
 func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error) {
@@ -872,8 +782,6 @@ func (ec *execContext) initialDefsSubroutines() {
 	ec.defSubr2("assq", ec.assq, 2)
 	ec.defSubr2("memq", ec.memq, 2)
 	ec.defSubr2("get", ec.get, 2)
-	ec.defSubr2("prin1", ec.prin1, 1)
-	ec.defSubr2("prin1-to-string", ec.prin1ToString, 1)
 	ec.defSubr2("throw", ec.throw, 2).noReturn = true
 	ec.defSubr2("signal", ec.signal, 2).noReturn = true
 	ec.defSubr2("plist-get", ec.plistGet, 2)
