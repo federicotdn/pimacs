@@ -24,7 +24,6 @@ type lispGlobals struct {
 	stringp            lispObject
 	numberOrMarkerp    lispObject
 	charOrStringp      lispObject
-	goChannelp         lispObject
 	integerp           lispObject
 	quote              lispObject
 	backquote          lispObject
@@ -65,11 +64,9 @@ type lispGlobals struct {
 	nonInteractive lispObject
 	standardInput  lispObject
 	standardOutput lispObject
-	// 6. Pimacs
-	goChannelClosed lispObject
 }
 
-func (ec *execContext) initialDefsSymbols() {
+func (ec *execContext) createSymbols() {
 	g := &ec.g
 
 	syms := []symbolInit{
@@ -86,7 +83,6 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.stringp, name: "stringp"},
 		{loc: &g.numberOrMarkerp, name: "number-or-marker-p"},
 		{loc: &g.charOrStringp, name: "char-or-string-p"},
-		{loc: &g.goChannelp, name: "pimacs-go-channel-p"},
 		{loc: &g.integerp, name: "integerp"},
 		{loc: &g.quote, name: "quote"},
 		{loc: &g.backquote, name: "`"},
@@ -127,8 +123,6 @@ func (ec *execContext) initialDefsSymbols() {
 		{loc: &g.nonInteractive, name: "noninteractive"},
 		{loc: &g.standardInput, name: "standard-input"},
 		{loc: &g.standardOutput, name: "standard-output"},
-		// 6
-		{loc: &g.goChannelClosed, name: "go-channel-closed"},
 	}
 
 	ec.initializeSymbols(syms)
@@ -169,7 +163,7 @@ func (ec *execContext) initializeSymbols(syms []symbolInit) {
 		symbol.value = ec.g.unbound
 
 		if !sym.unintern {
-			ec.internSymbol(symbol)
+			ec.internNewSymbol(symbol)
 		}
 	}
 

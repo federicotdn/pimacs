@@ -119,7 +119,9 @@ func (ec *execContext) prin1(obj, printCharFn lispObject) (lispObject, error) {
 	return obj, nil
 }
 
-func (ec *execContext) initialDefsPrint() {
+func (ec *execContext) symbolsOfPrint() {
 	ec.defSubr2("prin1", ec.prin1, 1)
 	ec.defSubr2("prin1-to-string", ec.prin1ToString, 1)
+
+	ec.defVar(ec.g.standardOutput, ec.t)
 }

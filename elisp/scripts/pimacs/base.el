@@ -3,9 +3,9 @@
 
   (fset 'run-me (function (lambda () (prin1 "Hello!\n" t))))
 
-  (while t
-    (set 'exp (read))
-    (set 'res (eval exp))
-    (prin1 res t))
+  ;; (while t
+  ;;   (set 'exp (read))
+  ;;   (set 'res (eval exp))
+  ;;   (prin1 res t))
 
   )

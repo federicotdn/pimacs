@@ -30,6 +30,6 @@ func (ec *execContext) readFromMinibuffer(prompt, initialContents, keymap, read,
 	return xCar(result), nil
 }
 
-func (ec *execContext) initialDefsMinibuffer() {
+func (ec *execContext) symbolsOfMinibuffer() {
 	ec.defSubr7("read-from-minibuffer", ec.readFromMinibuffer, 1)
 }

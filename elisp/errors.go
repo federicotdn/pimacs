@@ -9,7 +9,7 @@ func (ec *execContext) putError(sym, tail lispObject, msg string) {
 	xEnsure(ec.put(sym, ec.g.errorMessage, ec.makeString(msg)))
 }
 
-func (ec *execContext) initialDefsErrors() {
+func (ec *execContext) symbolsOfErrors() {
 	errorTail := ec.makeList(ec.g.error_)
 
 	xEnsure(ec.put(ec.g.error_, ec.g.errorConditions, ec.makeList(ec.g.error_)))

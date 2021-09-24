@@ -19,7 +19,7 @@ func (ec *execContext) bufferString() (lispObject, error) {
 	return ec.makeString(ec.currentBuffer.contents), nil
 }
 
-func (ec *execContext) initialDefsBuffer() {
+func (ec *execContext) symbolsOfBuffer() {
 	ec.defSubr0("buffer-string", ec.bufferString)
 	ec.defSubrM("insert", ec.insert, 0)
 }
