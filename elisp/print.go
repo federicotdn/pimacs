@@ -24,7 +24,7 @@ func (ec *execContext) printString(str string, printCharFn lispObject) error {
 	return err
 }
 
-func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag bool) (lispObject, error) {
+func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag bool) error {
 	// TAGS: incomplete
 	lispType := obj.getType()
 	var s string
@@ -41,32 +41,38 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 			s = xString(obj).value
 		}
 	case lispTypeCons:
-		// TODO: This should not use prin1ToString, but printString directly.
-		s = "("
+		err := ec.printString("(", printCharFn)
+		if err != nil {
+			return err
+		}
 
 		for ; consp(obj); obj = xCdr(obj) {
-			car, err := ec.prin1ToString(xCar(obj), printCharFn)
+			err := ec.printInternal(xCar(obj), printCharFn, escapeFlag)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
-			s += xStringValue(car)
-
 			if xCdr(obj) != ec.nil_ {
-				s += " "
+				err = ec.printString(" ", printCharFn)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
 		if obj != ec.nil_ {
-			end, err := ec.prin1ToString(obj, printCharFn)
+			err = ec.printString(". ", printCharFn)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
-			s += ". " + xStringValue(end)
+			err = ec.printInternal(obj, printCharFn, escapeFlag)
+			if err != nil {
+				return err
+			}
 		}
 
-		s += ")"
+		return ec.printString(")", printCharFn)
 	case lispTypeFloat:
 		s = fmt.Sprint(xFloat(obj).value)
 	case lispTypeVectorLike:
@@ -78,10 +84,10 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 
 	err := ec.printString(s, printCharFn)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return obj, nil
+	return nil
 }
 
 func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
@@ -122,7 +128,7 @@ func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, new
 		}
 	}
 
-	_, err := ec.printInternal(obj, printCharFn, escapeFlag)
+	err := ec.printInternal(obj, printCharFn, escapeFlag)
 	if err != nil {
 		return nil, err
 	}
