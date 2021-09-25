@@ -35,7 +35,11 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 	case lispTypeInteger:
 		s = fmt.Sprint(xIntegerValue(obj))
 	case lispTypeString:
-		s = "\"" + xString(obj).value + "\""
+		if escapeFlag {
+			s = "\"" + xString(obj).value + "\""
+		} else {
+			s = xString(obj).value
+		}
 	case lispTypeCons:
 		// TODO: This should not use prin1ToString, but printString directly.
 		s = "("
@@ -81,19 +85,19 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 }
 
 func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
-	size := ec.stackSize()
-	ec.stackPushCurrentBuffer(&buffer{})
-	defer ec.stackPopTo(size)
+	// TAGS: revise
+	buf := &buffer{}
+	vec := ec.makeVectorLike(vectorLikeTypeBuffer, buf)
 
-	_, err := ec.printInternal(obj, ec.nil_, noEscape == ec.nil_)
+	_, err := ec.prin1(obj, vec)
 	if err != nil {
 		return nil, err
 	}
 
-	return ec.bufferString()
+	return ec.makeString(buf.contents), nil
 }
 
-func (ec *execContext) prin1(obj, printCharFn lispObject) (lispObject, error) {
+func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, newlines bool) (lispObject, error) {
 	// TAGS: incomplete
 	if printCharFn == ec.nil_ {
 		printCharFn = xSymbolValue(ec.g.standardOutput)
@@ -111,16 +115,44 @@ func (ec *execContext) prin1(obj, printCharFn lispObject) (lispObject, error) {
 		printCharFn = ec.nil_
 	}
 
-	_, err := ec.printInternal(obj, printCharFn, true)
+	if newlines {
+		err := ec.printString("\n", printCharFn)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err := ec.printInternal(obj, printCharFn, escapeFlag)
 	if err != nil {
 		return nil, err
+	}
+
+	if newlines {
+		err := ec.printString("\n", printCharFn)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return obj, nil
 }
 
+func (ec *execContext) prin1(obj, printCharFn lispObject) (lispObject, error) {
+	return ec.printGeneric(obj, printCharFn, true, false)
+}
+
+func (ec *execContext) print_(obj, printCharFn lispObject) (lispObject, error) {
+	return ec.printGeneric(obj, printCharFn, true, true)
+}
+
+func (ec *execContext) princ(obj, printCharFn lispObject) (lispObject, error) {
+	return ec.printGeneric(obj, printCharFn, false, false)
+}
+
 func (ec *execContext) symbolsOfPrint() {
 	ec.defSubr2("prin1", ec.prin1, 1)
+	ec.defSubr2("print", ec.print_, 1)
+	ec.defSubr2("princ", ec.princ, 1)
 	ec.defSubr2("prin1-to-string", ec.prin1ToString, 1)
 
 	ec.defVar(ec.g.standardOutput, ec.t)

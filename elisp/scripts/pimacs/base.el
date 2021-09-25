@@ -6,6 +6,7 @@
   ;; (while t
   ;;   (set 'exp (read))
   ;;   (set 'res (eval exp))
-  ;;   (prin1 res t))
+  ;;   (princ res t)
+  ;;   (princ "\n" t))
 
   )
