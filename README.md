@@ -1,5 +1,7 @@
-# pimacs
-Pimacs
+<p align="center">
+  <img alt="pimacs" src="https://github.com/federicotdn/pimacs/raw/main/etc/logo.png" width="50%">
+  <br/>
+</p>
 
 ## Comment tags meanings
 - `incomplete`: Code implements some functionality, but 100% of what it should.
