@@ -20,7 +20,7 @@ You can also use `./pimacs --load myfile.el` to execute an Emacs Lisp script.
 
 Note that many, many Emacs Lisp functions and macros are **not** implemented. You can, however, use the following (among others):
 ```
-if while eval funcall apply quote function
+if while eval funcall apply quote function progn
 unwind-protect condition-case throw signal
 prin1 prin1-to-string print princ
 intern read-from-string read
@@ -30,6 +30,29 @@ cons list + <
 ```
 
 Note that some of these may be only partially implemented.
+
+### Examples
+Set a variable and read it:
+```
+> (set 'greeting "hello")
+"hello"
+> greeting
+"hello"
+```
+
+Create a function and call it:
+```
+> (fset 'twice (function (lambda (x) (+ x x))))
+(lambda (x) (+ x x))
+> (twice 21)
+42
+```
+
+Try out a nonlocal exit:
+```
+> (catch 'test (throw 'test 123))
+123
+```
 
 ## Design and general notes
 This section contains many of the design choices and discoveries made while implementing Pimacs, in no particular order. Note that some of my assumptions of how GNU Emacs works may be wrong or outdated.
@@ -59,7 +82,7 @@ Todo. (`xCdr` and friends)
 Todo.
 
 ### Compatibility with GNU Emacs
-Todo.
+Todo. (pimacs extensions `pimacs-*`)
 
 ### Build system
 Todo. (single binary result, build tools)
