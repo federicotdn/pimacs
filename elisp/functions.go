@@ -66,25 +66,25 @@ func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.g.listp, list)
 	}
 
-	return ec.g.nil_, nil
+	return ec.nil_, nil
 }
 
 func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 	// TAGS: incomplete
 	if o1 == o2 {
-		return ec.t, nil
+		return ec.true_()
 	}
 
 	t1, t2 := o1.getType(), o2.getType()
 	if t1 != t2 {
-		return ec.nil_, nil
+		return ec.false_()
 	}
 
 	switch t1 {
 	case lispTypeCons:
 		for ; consp(o1); o1 = xCdr(o1) {
 			if !consp(o2) {
-				return ec.bool(false)
+				return ec.false_()
 			}
 
 			equal, err := ec.equal(xCar(o1), xCar(o2))
@@ -93,16 +93,16 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 			}
 
 			if equal == ec.nil_ {
-				return ec.bool(false)
+				return ec.false_()
 			}
 
 			o2 = xCdr(o2)
 			if xCdr(o1) == o2 {
-				return ec.bool(true)
+				return ec.true_()
 			}
 		}
 
-		return ec.bool(false)
+		return ec.false_()
 	case lispTypeFloat:
 		return ec.bool(xFloatValue(o1) == xFloatValue(o2))
 	case lispTypeInteger:
@@ -111,17 +111,17 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 		return ec.bool(xStringValue(o1) == xStringValue(o2))
 	case lispTypeSymbol:
 		// Symbols must match exactly (eq).
-		return ec.bool(false)
+		return ec.false_()
 	case lispTypeVectorLike:
 		vec1, vec2 := xVectorLike(o1), xVectorLike(o2)
 		if vec1.vecType != vec2.vecType {
-			return ec.bool(false)
+			return ec.false_()
 		}
 
 		return ec.pimacsUnimplemented(ec.g.equal, "unknown vector-like type: '%v'", vec1.vecType)
 	}
 
-	return ec.bool(false)
+	return ec.false_()
 }
 
 func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error) {

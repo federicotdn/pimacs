@@ -407,7 +407,15 @@ func (ec *execContext) bool(b bool) (lispObject, error) {
 	if b {
 		return ec.t, nil
 	}
-	return ec.g.nil_, nil
+	return ec.nil_, nil
+}
+
+func (ec *execContext) true_() (lispObject, error) {
+	return ec.t, nil
+}
+
+func (ec *execContext) false_() (lispObject, error) {
+	return ec.nil_, nil
 }
 
 func (ec *execContext) terminate(format string, v ...interface{}) {
