@@ -68,7 +68,7 @@ The normal understanding of what "the stack" is in any C program. Function calls
 #### Handler stack
 This stack is implemented using a doubly-linked list, and it keeps track of the handlers needed to implement the `catch`/`throw` and `condition-case`/`signal` mechanisms (non-local exits).
 
-Each element of the handler stack is a structure with a set of fields. One of those fields, of type `sys_jmp_buf` and called `jmp`, is used to actually record the calling environment so that it can be 'restored' later. Here's a simplified version of the data structure used:
+Each element of the handler stack is a structure with a set of fields. One of those fields, of type `sys_jmp_buf` and called `jmp`, is used to actually record the calling environment so that it can be restored later via `longjmp`. Here's a simplified version of the data structure used:
 ```c
 enum handlertype { CATCHER, CONDITION_CASE, CATCHER_ALL };
 
@@ -108,7 +108,7 @@ In diagram form, let's say we have the following code:
 (catch 'foo
   (catch 'bar
     (catch 'baz
-      (throw 'foo nil))))
+      (throw 'bar nil))))
 ```
 
 When the `throw` is about to be called, the handler stack would then look like this:
@@ -119,6 +119,21 @@ When the `throw` is about to be called, the handler stack would then look like t
 | { handler for 'foo } |
 |______________________|
 ```
+
+The sequence of events before and after `throw` is called would be (starting with an empty stack):
+1. `catch 'foo` is called. An entry is pushed to the handler stack (`foo` tag).
+2. `catch 'bar` is called. An entry is pushed to the handler stack (`bar` tag).
+3. `catch 'baz` is called. An entry is pushed to the handler stack (`baz` tag).
+4. `throw 'bar` is called.
+5. We iterate through the stack top-to-bottom until we find a handler with `bar`.
+6. The handler entry is found (#2).
+7. Use `longjmp` to restore the program environment back to when `catch 'bar` was called.
+8. We are now back inside the call to `catch 'bar`. Remove the stack entry we added (`bar` tag) and all above it.
+9. Function returns normally.
+10. We are now back inside the call to `catch 'foo`. Remove the stack entry we added (`foo` tag) and all above it. 
+11. Function returns normally. Handler stack is now empty.
+
+Note how the `baz` handler was removed by jumping back to the call to `catch 'bar` - it removed all elements up to and including the entry it itself added.
 
 Something important to note is that when an entry is added to the handler stack, the entry will also contain the current `specpdl` index (`pdlcount` field). When we pop back through the handler stack either with `throw` or `signal`, the `specpdl` stack entries are also popped as well, until the index specified in the handler stack entry. In other words, the `specpdl` stack is also restored to the state it was in when the corresponding `catch` or `condition-case` was called.
 
