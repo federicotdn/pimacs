@@ -114,9 +114,8 @@ func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, new
 	}
 
 	if bufferp(printCharFn) {
-		size := ec.stackSize()
+		defer ec.stackPopTo(ec.stackSize())
 		ec.stackPushCurrentBuffer(xBuffer(printCharFn))
-		defer ec.stackPopTo(size)
 
 		printCharFn = ec.nil_
 	}

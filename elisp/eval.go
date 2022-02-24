@@ -126,8 +126,7 @@ func (ec *execContext) applyLambda(fn, originalArgs lispObject) (lispObject, err
 func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObject, error) {
 	symsLeft := ec.nil_
 	lexEnv := ec.nil_
-	size := ec.stackSize()
-	defer ec.stackPopTo(size)
+	defer ec.stackPopTo(ec.stackSize())
 
 	if consp(fn) {
 		if xCar(fn) == ec.g.closure {
@@ -271,14 +270,14 @@ func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) catch(args lispObject) (lispObject, error) {
+	defer ec.stackPopTo(ec.stackSize())
+
 	tag, err := ec.evalSub(xCar(args))
 	if err != nil {
 		return nil, err
 	}
 
-	size := ec.stackSize()
 	ec.stackPushCatch(tag)
-	defer ec.stackPopTo(size)
 
 	obj, err := ec.progn(xCdr(args))
 	if err != nil {
@@ -404,8 +403,7 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 		handlerVar = ec.g.internalInterpreterEnv
 	}
 
-	size := ec.stackSize()
-	defer ec.stackPopTo(size)
+	defer ec.stackPopTo(ec.stackSize())
 	ec.stackPushLet(handlerVar, value)
 
 	result, err = ec.progn(body)
@@ -521,8 +519,7 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
-	size := ec.stackSize()
-	defer ec.stackPopTo(size)
+	defer ec.stackPopTo(ec.stackSize())
 
 	if !consp(lexical) && lexical != ec.nil_ {
 		lexical = ec.makeList(ec.t)
@@ -600,13 +597,10 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 			val = ec.nil_
 		}
 
-		count := ec.stackSize()
+		defer ec.stackPopTo(ec.stackSize())
 		ec.stackPushLet(ec.g.lexicalBinding, val)
 
 		exp, err := ec.funcall(xCdr(fn), originalArgs)
-
-		ec.stackPopTo(count)
-
 		if err != nil {
 			return nil, err
 		}

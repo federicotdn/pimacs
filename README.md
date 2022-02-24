@@ -195,12 +195,19 @@ Todo.
 Todo. (panics)
 
 ### Registering subroutines
+Todo.
 
 ### Macros and source code generation
 Todo. (`make-docfile`, `globals.h`)
 
 ### Documentation strings
 Todo. (`go:embed` + gen script, const strings)
+
+Emacs:
+1) make-docfile (reads source files)
+2) etc/DOC generated will all documentation texts
+3) loadup.el: calls Snarf-documentation
+4) doc.c: Snarf-documentation loads documentation texts
 
 ### Garbage collection
 Todo.
