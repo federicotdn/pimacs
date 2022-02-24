@@ -173,7 +173,7 @@ The sequence of events before and after `throw` is called would be (starting wit
 4. `throw 'bar` is called.
 5. We iterate through the stack top-to-bottom until we find a handler with `bar`.
 6. The handler entry is found (#2).
-7. Use `longjmp` to restore the program environment back to when `catch 'bar` was called.
+7. First, unwind the `specpdl` stack to the index specified in the entry. Then, use `longjmp` to restore the program environment back to when `catch 'bar` was called.
 8. We are now back inside the call to `catch 'bar`. Remove the stack entry we added (`bar` tag) and all above it.
 9. `catch` function returns normally.
 10. We are now back inside the call to `catch 'foo`. Remove the stack entry we added (`foo` tag) and all above it. 
