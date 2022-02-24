@@ -48,7 +48,7 @@ Create a function and call it:
 42
 ```
 
-Try out a nonlocal exit:
+Try out a non-local exit:
 ```elisp
 > (catch 'test (throw 'test 123))
 123
@@ -57,53 +57,104 @@ Try out a nonlocal exit:
 ## Design and general notes
 This section contains many of the design choices and discoveries made while implementing Pimacs, in no particular order. Note that some of my assumptions of how Emacs works may be wrong or outdated. Feel free to suggest corrections in a pull request.
 
+Here, I also try to compare the implementation differences between Emacs and Pimacs, and why they might be interesting.
+
 ### Stacks - Emacs
-As the comment in the Emacs file `lisp.h` explains, Emacs Lisp uses three stacks for its runtime.
+As the comment in the Emacs file `lisp.h` explains, Emacs Lisp uses three stacks for its runtime (in Emacs). It is useful to understand how they work, as Pimacs uses a slghtly different setup, but attempts to replicate the same functionality.
 
 #### C stack
 The normal understanding of what "the stack" is in any C program. Function calls, stack-allocated variables, etc.
 
 #### `specpdl` stack
+As the comment in `lisp.h` explains, "the `specpdl` stack keeps track of backtraces, unwind-protects and dynamic let-bindings". It is backed by an array.
+
+Each entry of the `specpdl` stack is a `union` that may contain different fields depending on what the entry type is. The type easiest to understand is `SPECPDL_LET`. As the comment in the source says, it represents "a plain and simple dynamic let-binding".
+
+For each entry type, there are is specific code executed when the entry is pushed to the stack, and specific code executed when the entry is popped from the stack. In the case of pushing a `SPECPDL_LET` entry, first the specified symbol's current value is recorded in the entry itself, and then the symbol's value is set to the new one. When popping the entry, the symbol's value is restored to its original value. If a piece of code accesses the symbol's value between after the push but before the pop, it will receive the new value.
+
+Below is an example of the `specpdl` stack being used to bind the (dynamic) value of a symbol `foo`.
+```c
+void example_function ()
+{
+  specpdl_ref count = SPECPDL_INDEX ();
+
+  // Symbol foo's value is 42 (for example)
+
+  specbind (Qfoo, Qt);
+  // Now, foo's value is t
+
+  // For any code executed by inner_function,
+  // foo's value will be t
+  inner_function ();
+
+  unbind_to (count, Qnil);
+  // foo's value is now 42 again (i.e. the
+  // original value)
+}
+```
+
+At the beginning of `example_function`, the current `specpdl` stack index is stored so that we can unwind it back to the same point again when the function ends.
+Then, `specbind` is called to set the value of symbol `foo` to `t`. Internally, `specbind` will push a `SPECPDL_LET` entry to the stack. This entry contains the symbol's original value. Then, it will set the symbol's value to the new one (`t`, in this case).
+Now, any code that accesses `foo`'s value will receive `t` as a result. This includes, in this example, `inner_function`, or any functions called by it.
+At the end of `example_function`, we undo the let-binding by calling `unbind_to`. For this to work, we need to specify up to what point of the `specpdl` stack entries should be popped. Internally, `unbind_to` will execute the cleanup code associated with each entry type. As mentioned before, for `SPECPDL_LET` this involves restoring the symbol's original value.
+
+It is important to note that it is the C programmer's responsibility to ensure that the `specpdl` stack is restored to its original state at the end of the function or block. As far as I'm aware there is no mechanism that assists the programmer in ensuring they remember this.
 
 #### Handler stack
-This stack is implemented using a doubly-linked list, and it keeps track of the handlers needed to implement the `catch`/`throw` and `condition-case`/`signal` mechanisms (non-local exits).
+This stack is implemented using a doubly-linked list, and it keeps track of the information needed to implement the `catch`/`throw` and `condition-case`/`signal` mechanisms (non-local exits).
 
-Each element of the handler stack is a structure with a set of fields. One of those fields, of type `sys_jmp_buf` and called `jmp`, is used to actually record the calling environment so that it can be restored later via `longjmp`. Here's a simplified version of the data structure used:
+Each entry of the handler stack is a data structure with a set of fields. Here's a simplified version of the structure used:
 ```c
 enum handlertype { CATCHER, CONDITION_CASE, CATCHER_ALL };
 
 struct handler
 {
-  // Handler type
+  // Handler type:
+  // Most importantly, distinguishes between entries set up
+  // by `catch` vs. entries set up by `condition-case`.
   enum handlertype type;
 
-  // Tag
+  // Tag:
+  // When using `catch`, specifies the tag used.
   Lisp_Object tag_or_ch;
 
-  // Linked list links
+  // Linked list links:
+  // Needed in order to implement a doubly-linked list.
   struct handler *next;
   struct handler *nextfree;
 
-  // Environment to restore when popping here
+  // Environment:
+  // This is where Emacs actually stores the program environment
+  // so that it can be restored later on. It is populated using
+  // the `setjmp` function, and restored using `longjmp`.
   sys_jmp_buf jmp;
 
-  // Index of specpdl when this entry was added
+  // specpdl index:
+  // When a new handler stack entry is added, the current specpdl
+  // index is recorded as well.
   specpdl_ref pdlcount;
 
-  // (Some fields omitted)
+  // ... (Some fields omitted)
 };
 ```
 
-And then, a pointer is used to point to the top of the stack:
+See [`setjmp` and `longjmp`](https://en.wikipedia.org/wiki/Setjmp.h) for more information on how these two functions work.
+
+Finally, a pointer is used to point to the top of the stack. This is the way Emacs accesses the handler stack during runtime.
 ```c
 struct handler *m_handlerlist;
 ```
 
-How this is used: for example, the `catch` function pushes a new entry to the handler stack, by calling `setjmp` and storing the associated environment in the stack entry's `jmp`. The tag used to call `catch` is also stored in the stack entry.
+How is the handler stack actually used? An example: when called, the `catch` function pushes a new entry to the handler stack. The fields of the new entry are populated like so:
+- `type` = `CATCHER`
+- `tag_or_ch` = value of the tag (e.g. `'done`)
+- `jmp` = value set by calling `setjmp`
+- `pdlcount` = value of the current `specpdl` stack index
+- ... (some fields ommitted)
 
-Later, when `throw` is called, the stack is iterated top-to-bottom, looking for an entry with a matching tag. When one is found, its `jmp` property is used to call `longjmp`, thus restoring the program environment to when the matching `catch` was called. The handler stack itself is also restored to the configuration it had before `catch` was called - whether a corresponding `throw` was called or not.
+Later, when `throw` is finally called, the stack is iterated top-to-bottom, looking for an entry with a matching tag (`tag_or_ch`). When one is found, its `jmp` property is used to call `longjmp`, thus restoring the program environment to when the matching `catch` was called. At the same time, the `pdlcount` property is used to unwind the `specpdl` stack back to the same configuration it had when `catch` was called. The handler stack itself is also restored to the configuration it had before `catch` was called - all of this happens whether a corresponding `throw` was called or not.
 
-In diagram form, let's say we have the following code:
+A more specific example, in diagram form. Let's say we have the following code:
 ```elisp
 (catch 'foo
   (catch 'bar
@@ -111,7 +162,7 @@ In diagram form, let's say we have the following code:
       (throw 'bar nil))))
 ```
 
-When the `throw` is about to be called, the handler stack would then look like this:
+When `throw` is about to be called, the handler stack would then look like this:
 
 ```
 | { handler for 'baz } |
@@ -120,7 +171,7 @@ When the `throw` is about to be called, the handler stack would then look like t
 |______________________|
 ```
 
-The sequence of events before and after `throw` is called would be (starting with an empty stack):
+The sequence of events before and after `throw` is called would be (starting with an empty handler stack):
 1. `catch 'foo` is called. An entry is pushed to the handler stack (`foo` tag).
 2. `catch 'bar` is called. An entry is pushed to the handler stack (`bar` tag).
 3. `catch 'baz` is called. An entry is pushed to the handler stack (`baz` tag).
@@ -129,20 +180,32 @@ The sequence of events before and after `throw` is called would be (starting wit
 6. The handler entry is found (#2).
 7. Use `longjmp` to restore the program environment back to when `catch 'bar` was called.
 8. We are now back inside the call to `catch 'bar`. Remove the stack entry we added (`bar` tag) and all above it.
-9. Function returns normally.
+9. `catch` function returns normally.
 10. We are now back inside the call to `catch 'foo`. Remove the stack entry we added (`foo` tag) and all above it. 
-11. Function returns normally. Handler stack is now empty.
+11. `catch` function returns normally. Handler stack is now empty.
 
 Note how the `baz` handler was removed by jumping back to the call to `catch 'bar` - it removed all elements up to and including the entry it itself added.
 
-Something important to note is that when an entry is added to the handler stack, the entry will also contain the current `specpdl` index (`pdlcount` field). When we pop back through the handler stack either with `throw` or `signal`, the `specpdl` stack entries are also popped as well, until the index specified in the handler stack entry. In other words, the `specpdl` stack is also restored to the state it was in when the corresponding `catch` or `condition-case` was called.
-
-See: [`setjmp` and `longjmp`](https://en.wikipedia.org/wiki/Setjmp.h) for more information.
-
 ### Stacks - Pimacs
+#### Go stack
+Todo.
+
+#### `execContext` stack
+Todo. (`defer` of `stackPopTo`)
+
+### The `lispObject` type
+Todo.
+
+### Fatal error handling
+Todo. (panics)
+
+### Registering subroutines
 
 ### Macros and source code generation
 Todo. (`make-docfile`, `globals.h`)
+
+### Documentation strings
+Todo. (`go:embed` + gen script, const strings)
 
 ### Garbage collection
 Todo.
@@ -152,9 +215,6 @@ Todo. (multiple interpreter instances, channels)
 
 ### Usage of `go:embed`
 Todo.
-
-### Fatal error handling
-Todo. (panics)
 
 ### Helper functions
 Todo. (`xCdr` and friends)
