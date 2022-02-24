@@ -124,11 +124,11 @@ func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
 		}
 
 		if xIntegerValue(objs[i-1]) >= xIntegerValue(objs[i]) {
-			return ec.nil_, nil
+			return ec.false_()
 		}
 	}
 
-	return ec.t, nil
+	return ec.true_()
 }
 
 func (ec *execContext) symbolsOfData() {
