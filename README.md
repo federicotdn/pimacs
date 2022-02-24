@@ -105,7 +105,7 @@ This stack is implemented using a doubly-linked list, and it keeps track of the 
 
 Each entry of the handler stack is a data structure with a set of fields. Here's a simplified version of the structure used:
 ```c
-enum handlertype { CATCHER, CONDITION_CASE, CATCHER_ALL };
+enum handlertype { CATCHER, CONDITION_CASE /* ... (Some values omitted) */ };
 
 struct handler
 {
@@ -117,11 +117,6 @@ struct handler
   // Tag:
   // When using `catch`, specifies the tag used.
   Lisp_Object tag_or_ch;
-
-  // Linked list links:
-  // Needed in order to implement a doubly-linked list.
-  struct handler *next;
-  struct handler *nextfree;
 
   // Environment:
   // This is where Emacs actually stores the program environment
