@@ -5,20 +5,20 @@
 
 ## Summary
 
-A very incomplete and experimental implementation of an Emacs Lisp interpreter, written in Go.
+A very incomplete and experimental implementation of an Elisp (Emacs Lisp) interpreter, written in Go.
 
 ## Project goals
 - Practice Go development.
-- Learn more about the Emacs internals, particularly the Emacs Lisp interpreter.
+- Learn more about the Emacs internals, particularly the Elisp interpreter.
 - Learn about Lisp interpreter design in general.
 - Practice reading C code.
 - Learn about lower level functions such as `setjmp`, `longjmp`, etc.
 
 ## Usage
 Assuming you have the Go compiler installed, simply use `make build` to compile Pimacs, and then `./pimacs` to start the REPL.
-You can also use `./pimacs --load myfile.el` to execute an Emacs Lisp script.
+You can also use `./pimacs --load myfile.el` to execute an Elisp script.
 
-Note that many, many Emacs Lisp functions and macros are **not** implemented. You can, however, use the following (among others):
+Note that many, many Elisp functions and macros are **not** implemented. You can, however, use the following (among others):
 ```
 if while eval funcall apply quote function progn
 unwind-protect condition-case throw signal
@@ -59,8 +59,82 @@ This section contains many of the design choices and discoveries made while impl
 
 Here, I also try to compare the implementation differences between Emacs and Pimacs, and why they might be interesting.
 
+### `execContext` and `lispObject`
+The two central types to Pimacs' Elisp interpreter are `execContext` and `lispObject`.
+
+The `execContext` structure contains all the state necessary to keep the interpreter working, such as the execution context stack (explained further on), the `obarray`, and all statically-defined symbols. The structure also contains other fields. `execContext` is defined in `exec_context.go`.
+
+Similar to Emacs itself, the `lispObject` interface represents any valid Elisp object inside the interpreter. Only one function is required to fullfill the interface, with signature `getType() lispType` (i.e. the Elisp object must be able to provide a value representing its type). `lispType` is just an `int`. `lispObject` is defined in `types.go`.
+
+### Subroutines
+In Emacs, many Elisp functions are defined in C (such as `concat` or `+`). Special forms (such as `if` or `while`) are also defined in C. All of these together combined are referred to as "subroutines". The main difference between the two groups is that for special forms, arguments are not evaluated before being passed to them. This makes sense; for example, `if` needs to receive both the `then` and `else` expressions and decide which one to evaluate depending on the condition. If both expressions were evaulated before being handed to the `if`, that wouldn't be very useful! Apart from this, the mechanisms for implementing Elisp functions / special forms in C are quite similar.
+
+In Emacs, these Elisp functions and special forms are built using C functions plus a collection of macros.
+
+In Pimacs, Elisp functions and special forms are implemented using methods on the `execContext` structure, plus a manual call to a dedicated method for effectively registering the function or special form. The implementation method must return `(lispObject, error)`, and can accept either 0, 1, 2 all the way to 8 `lispObject` arguments, or otherwise `...lispObject`. These are then the valid signatures:
+```go
+type lispFn0 func() (lispObject, error)
+type lispFn1 func(lispObject) (lispObject, error)
+type lispFn2 func(lispObject, lispObject) (lispObject, error)
+type lispFn3 func(lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn4 func(lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn5 func(lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn6 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn7 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn8 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFnM func(...lispObject) (lispObject, error)
+```
+(8 was chosen as this is what Emacs uses as well)
+
+Let's take a look at an example subroutine. Here's `car`:
+```go
+func (ec *execContext) car(obj lispObject) (lispObject, error) {
+	if obj == ec.nil_ {
+		return ec.nil_, nil
+	}
+
+	if !consp(obj) {
+		return ec.wrongTypeArgument(ec.g.listp, obj)
+	}
+	return xCons(obj).car, nil
+}
+```
+
+The subroutine must also be registered in the execution context, on startup:
+```go
+// Somewhere in the interpreter startup code
+ec.defSubr1("car", ec.car, 1)
+```
+
+The arguments used are: `"car"` (name of the subroutine on the Elisp side), `ec.car` (the implementation method), and `1` (the minimum number of arguments this subroutine requires). `defSubr1` is used in particular because the method's signature accepts exactly 1 `lispObject`.
+
+Note the usage of `ec.nil_` - this represents `nil` within the Elisp interpreter. It is not the Go `nil`!
+
+Another example, here's `memq`:
+```go
+func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
+	tail := list
+	for ; consp(tail); tail = xCdr(tail) {
+		if xCar(tail) == elt {
+			return tail, nil
+		}
+	}
+
+	if tail != ec.nil_ {
+		return ec.wrongTypeArgument(ec.g.listp, list)
+	}
+
+	return ec.nil_, nil
+}
+```
+
+And it is registered like so:
+```go
+ec.defSubr2("memq", ec.memq, 2)
+```
+
 ### Stacks - Emacs
-As the comment in the Emacs file `lisp.h` explains, Emacs Lisp uses three stacks for its runtime (in Emacs). It is useful to understand how they work, as Pimacs uses a slghtly different setup, but attempts to replicate the same functionality.
+As the comment in the Emacs file `lisp.h` explains, Elisp uses three stacks for its runtime (in Emacs). It is useful to understand how they work, as Pimacs uses a slghtly different setup, but attempts to replicate the same functionality.
 
 #### C stack
 The normal understanding of what "the stack" is in any C program. Function calls, stack-allocated variables, etc.
@@ -182,20 +256,84 @@ The sequence of events before and after `throw` is called would be (starting wit
 Note how the `baz` handler was removed by jumping back to the call to `catch 'bar` - it removed all elements up to and including the entry it itself added.
 
 ### Stacks - Pimacs
+Pimacs only uses two stacks to implement the same behaviour as Emacs does.
+
 #### Go stack
-Todo.
+The normal understanding of what the Go stack is (stack-allocated variables, function calls, etc.).
 
-#### `execContext` stack
-Todo. (`defer` of `stackPopTo`)
+Go's ability to return multiple values in a function call is used to implement Elisp's non-local exits.
 
-### The `lispObject` type
+As mentioned before, in Pimacs, all subroutines must return `(lispObject, error)`. The usage of `error` here replaces Emacs' usage of `longjmp` for non-local exits. When a subroutine returns a non-nil `error`, other subroutines are expected to forward the `error` up the stack. This is, for better or for worse, a very common pattern in Go. A very specific set of subroutines - such as `catch` - can act on these `error` instances. This way, the implementation achieves something like what Emacs does, but following closely Go coding conventions.
+
+So in one way, one could say that in Pimacs the Go stack replaces Emacs' handler stack. Let's take a look at the same code example as before, but now in Pimacs:
+```elisp
+(catch 'foo
+  (catch 'bar
+    (catch 'baz
+      (throw 'bar nil))))
+```
+
+When we reach `throw`, the Go function call stack will look like this:
+```
+| <  call to throw   > |
+| <call to catch 'baz> |
+| <call to catch 'bar> |
+| <call to catch 'foo> |
+|______________________|
+```
+
+The implementation of `throw` is extremely simple:
+```go
+func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
+    // ...
+	return nil, &stackJumpTag{tag: tag, value: value}
+}
+```
+
+And the implementation of `catch` boils down to:
+```go
+func (ec *execContext) catch(args lispObject) (lispObject, error) {
+	tag, _ := ec.evalSub(xCar(args))
+	obj, err := ec.progn(xCdr(args)) // Evaluate body
+
+	if err != nil {
+        // Somewhere down the stack, someone returned a non-nil error
+		jmp, ok := err.(*stackJumpTag)
+        
+		if !ok {
+            // The error does not come from a throw, just send it up the stack
+			return nil, err
+		}
+
+		if jmp.tag == tag {
+            // The error is a throw, and matches the tag for this catch!
+            // Therefore, this catch evaluates to the value specified in the throw
+			return jmp.value, nil
+		}
+
+        // Error is a throw, but tag does not match
+        // Send it up the stack
+		return nil, err
+	}
+
+	return obj, nil
+}
+```
+
+#### Execution context stack
+As mentioned before, the `execContext` structure contains all the state belonging to the Elisp interpreter. One of the fields of this structure is called `stack` (the "execution context stack").
+
+The execution context stack is an array of type `[]stackEntry`. Each entry can have a different type (that must implement `stackEntry`), and depending on the type each entry will contain different fields.
+
+Entries with type `stackEntryLet` correspond, more or less, to Emacs' `SPECPDL_LET` stack entries. That is, they are used for dynamic let-bindings of symbol values.
+
+Entries with type `stackEntryCatch` are used to record the presence of a call to `catch`. Interestingly though, these entries are not central to how the `catch`/`throw` mechanism works in Pimacs.
+
+### Global variables
 Todo.
 
 ### Fatal error handling
 Todo. (panics)
-
-### Registering subroutines
-Todo.
 
 ### Macros and source code generation
 Todo. (`make-docfile`, `globals.h`)
