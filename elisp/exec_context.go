@@ -375,6 +375,18 @@ func (ec *execContext) catchInStack(tag lispObject) bool {
 	return false
 }
 
+// unwind returns an anonymous function that when called
+// will unwind the execution context stack to the point
+// where it was when unwind was called.
+// The most common way of invoking this function is:
+// defer ec.unwind()()
+func (ec *execContext) unwind() func() {
+	size := ec.stackSize()
+	return func() {
+		ec.stackPopTo(size)
+	}
+}
+
 func (ec *execContext) stackSize() int {
 	return len(ec.stack)
 }
