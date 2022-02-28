@@ -276,25 +276,25 @@ The execution context stack is an array of type `[]stackEntry`. Each entry can h
 
 Entries with type `stackEntryLet` correspond, more or less, to Emacs' `SPECPDL_LET` stack entries. That is, they are used for dynamic let-bindings of symbol values.
 
-Entries with type `stackEntryCatch` are used to record the presence of a call to `catch`. Interestingly though, these entries are not central to how the `catch`/`throw` mechanism works in Pimacs, because the mechanism itself is implemented using the methods' normal return value (see previous section).
+Entries with type `stackEntryCatch` are used to record the presence of a call to `catch`. Interestingly though, these entries are not central to how the `catch`/`throw` mechanism works in Pimacs, because the mechanism itself is implemented using the methods' normal return value (see previous section). Why do these entries need to exist, then? The reason is because `throw` actually behaves differently depending on whether a `catch` has been set up or not. If there is no corresponding `catch`, `throw` will signal an error instead of doing the usual `longjmp` back to the corresponding `catch`. To do this, it needs to inspect the stack to see what the context is. In Emacs, this is done by looking in the handler stack. On Pimacs, this is done by looking in the execution context stack.
 
 More entry types will be added as they become necessary.
 
-### Global variables
+## Global variables
 There are no global variables in the Pimacs code - everything is contained within the `execContext` structure. This should make it easier to understand the current state of the interpreter. It also allows for starting multiple interpreters under the same process or goroutine quite easily.
 
-### Fatal error handling
+## Fatal error handling
 When an error occurs - that the Pimacs developers did not foresee or handle correctly - a fatal error is raised. This is currently implemented using `panic`, which I think makes most sense in the contexts of the tools that Go offers.
 
 Note that errors made by Pimacs _users_ are not considered to be fatal: for example, if the user executes `(+ "foo" 42)`, this will result in an error (technically, a call to `signal`) entirely within the interpreter. The top-level REPL function will handle this error (e.g. print it on screen), and allow the user to continue entering more code.
 
-### Debugger
+## Debugger
 Pimacs does not have a debugger. This would probably be not very trivial to add, and I'm curious as to what changes would be necessary to make in order to add it. Maybe some of the assumptions I made when building the initial interpreter could be proven not to work when a debugger needs to be added.
 
-### Macros and source code generation
+## Macros and source code generation
 Emacs C source code contains a lot of macro use. Some of the most interesting ones are defined in `lisp.h`. For example, `FOR_EACH_TAIL` allows for iterating through each tail of a list, and it even handles cyclical lists correctly by using a specific algorithm.
 
-### Documentation strings
+## Documentation strings
 Todo. (`go:embed` + gen script, const strings)
 
 Emacs:
@@ -303,26 +303,23 @@ Emacs:
 3) loadup.el: calls Snarf-documentation
 4) doc.c: Snarf-documentation loads documentation texts
 
-### Garbage collection
+## Garbage collection
 Todo.
 
-### Concurrency with goroutines
+## Concurrency with goroutines
 Todo. (multiple interpreter instances, channels)
 
-### Usage of `go:embed`
+## Usage of `go:embed`
 Todo.
 
-### Helper functions
+## Helper functions
 Todo. (`xCdr` and friends)
 
-### User interface
+## User interface
 Todo.
 
-### Compatibility with Emacs
+## Compatibility with Emacs
 Todo. (pimacs extensions `pimacs-*`)
 
-### Build system
+## Build system
 Todo. (single binary result, build tools)
-
-## Tests
-Use `make test` to run the test suite.

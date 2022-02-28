@@ -57,6 +57,9 @@ Try out a non-local exit:
 ## Design and general notes
 In order to read about the design choices for Pimacs, how it works internally, and how it is different from Emacs' Elisp interpreter, see the [design.md](etc/design.md) document.
 
+## Tests
+Use `make test` to run the test suite.
+
 ## Comment Tags
 Since there is so much code to write, some functions contain tags within comments that specify what is missing or what should be done in order to consider the function implementation as complete.
 
