@@ -5,7 +5,7 @@
 
 ## Summary
 
-A very incomplete and experimental implementation of an Elisp (Emacs Lisp) interpreter, written in Go.
+A partial, experimental implementation of an Elisp (Emacs Lisp) interpreter, written in Go.
 
 ## Project goals
 - Practice Go development.
