@@ -233,37 +233,37 @@ The implementation of `throw` is extremely simple:
 ```go
 func (ec *execContext) throw(tag, value lispObject) (lispObject, error) {
     // ...
-	return nil, &stackJumpTag{tag: tag, value: value}
+    return nil, &stackJumpTag{tag: tag, value: value}
 }
 ```
 
 And the implementation of `catch` boils down to:
 ```go
 func (ec *execContext) catch(args lispObject) (lispObject, error) {
-	tag, _ := ec.evalSub(xCar(args))
-	obj, err := ec.progn(xCdr(args)) // Evaluate body
+    tag, _ := ec.evalSub(xCar(args))
+    obj, err := ec.progn(xCdr(args)) // Evaluate body
 
-	if err != nil {
+    if err != nil {
         // Somewhere up the stack, someone returned a non-nil error
-		jmp, ok := err.(*stackJumpTag)
+        jmp, ok := err.(*stackJumpTag)
         
-		if !ok {
+        if !ok {
             // The error does not come from a throw, just send it down the stack
-			return nil, err
-		}
+            return nil, err
+        }
 
-		if jmp.tag == tag {
+        if jmp.tag == tag {
             // The error is a throw, and matches the tag for this catch!
             // Therefore, this catch evaluates to the value specified in the throw
-			return jmp.value, nil
-		}
+            return jmp.value, nil
+        }
 
         // Error is a throw, but tag does not match
         // Send it down the stack
-		return nil, err
-	}
+        return nil, err
+    }
 
-	return obj, nil
+    return obj, nil
 }
 ```
 
