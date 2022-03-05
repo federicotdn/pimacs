@@ -52,6 +52,8 @@ type subroutine struct {
 
 type buffer struct {
 	contents string
+	live     bool
+	name     string
 }
 
 type lispSymbol struct {

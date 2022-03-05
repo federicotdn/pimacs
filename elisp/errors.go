@@ -36,6 +36,11 @@ func (ec *execContext) signalN(errorSymbol lispObject, args ...lispObject) (lisp
 	return ec.signal(errorSymbol, list)
 }
 
+func (ec *execContext) signalError(format string, v ...interface{}) (lispObject, error) {
+	message := ec.makeString(fmt.Sprintf(format, v...))
+	return ec.signalN(ec.g.error_, message)
+}
+
 func (ec *execContext) wrongTypeArgument(predicate, value lispObject) (lispObject, error) {
 	return ec.signalN(ec.g.wrongTypeArgument, predicate, value)
 }

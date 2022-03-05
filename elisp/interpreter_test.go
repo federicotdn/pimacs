@@ -226,5 +226,14 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(apply 'if '(t 1)", "", anyError},
 		{"(apply 'eval '(t))", "t", nil},
 		{`(progn (insert "foo") (buffer-string))`, `"foo"`, nil},
+		{`(buffer-name (current-buffer))`, `"*scratch*"`, nil},
+		{`(nconc)`, `nil`, nil},
+		{`(nconc 1)`, `1`, nil},
+		{`(nconc nil)`, `nil`, nil},
+		{`(nconc '(1 2 3) '(4 5 6))`, `(1 2 3 4 5 6)`, nil},
+		{`(nconc '(1 2 3) nil '(4 5 6))`, `(1 2 3 4 5 6)`, nil},
+		{`(nconc '(1 2 3) '(4 5 6) 7)`, `(1 2 3 4 5 6 . 7)`, nil},
+		{`(nconc (cons 1 2) '(4 5 6))`, `(1 4 5 6)`, nil},
+		{`(length (buffer-list))`, `1`, nil},
 	})
 }

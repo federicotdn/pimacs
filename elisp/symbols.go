@@ -20,11 +20,13 @@ type lispGlobals struct {
 	// 2. Subroutine symbols
 	sequencep          lispObject
 	listp              lispObject
+	consp              lispObject
 	symbolp            lispObject
 	stringp            lispObject
 	numberOrMarkerp    lispObject
 	charOrStringp      lispObject
 	integerp           lispObject
+	bufferp            lispObject
 	quote              lispObject
 	backquote          lispObject
 	progn              lispObject
@@ -79,11 +81,13 @@ func (ec *execContext) createSymbols() {
 		// 2
 		{loc: &g.sequencep, name: "sequencep"},
 		{loc: &g.listp, name: "listp"},
+		{loc: &g.consp, name: "consp"},
 		{loc: &g.symbolp, name: "symbolp"},
 		{loc: &g.stringp, name: "stringp"},
 		{loc: &g.numberOrMarkerp, name: "number-or-marker-p"},
 		{loc: &g.charOrStringp, name: "char-or-string-p"},
 		{loc: &g.integerp, name: "integerp"},
+		{loc: &g.bufferp, name: "bufferp"},
 		{loc: &g.quote, name: "quote"},
 		{loc: &g.backquote, name: "`"},
 		{loc: &g.progn, name: "progn"},

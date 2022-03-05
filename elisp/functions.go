@@ -54,6 +54,31 @@ func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 	return ec.nil_, nil
 }
 
+func (ec *execContext) assoc(key, alist, testFn lispObject) (lispObject, error) {
+	// TAGS: incomplete
+	tail := alist
+	for ; consp(tail); tail = xCdr(tail) {
+		element := xCar(tail)
+
+		if consp(element) {
+			equal, err := ec.equal(xCar(element), key)
+			if err != nil {
+				return nil, err
+			}
+
+			if equal == ec.t {
+				return element, nil
+			}
+		}
+	}
+
+	if tail != ec.nil_ {
+		return ec.wrongTypeArgument(ec.g.listp, alist)
+	}
+
+	return ec.nil_, nil
+}
+
 func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
 	tail := list
 	for ; consp(tail); tail = xCdr(tail) {
@@ -196,13 +221,55 @@ func (ec *execContext) put(symbol, propName, value lispObject) (lispObject, erro
 	return value, nil
 }
 
+func (ec *execContext) nconc(args ...lispObject) (lispObject, error) {
+	val := ec.nil_
+
+	for i, tem := range args {
+		if tem == ec.nil_ {
+			continue
+		}
+
+		if val == ec.nil_ {
+			val = tem
+		}
+
+		if i+1 == len(args) {
+			// Break off early in last iteration
+			break
+		}
+
+		if !consp(tem) {
+			return ec.wrongTypeArgument(ec.g.consp, tem)
+		}
+
+		var tail lispObject
+		for aux := tem; consp(aux); aux = xCdr(aux) {
+			tail = aux
+		}
+
+		tem = args[i+1]
+		_, err := ec.setCdr(tail, tem)
+		if err != nil {
+			return nil, err
+		}
+
+		if tem == ec.nil_ {
+			args[i+1] = tail
+		}
+	}
+
+	return val, nil
+}
+
 func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr1("length", ec.length, 1)
 	ec.defSubr2("equal", ec.equal, 2)
 	ec.defSubr2("assq", ec.assq, 2)
+	ec.defSubr3("assoc", ec.assoc, 2)
 	ec.defSubr2("memq", ec.memq, 2)
 	ec.defSubr2("get", ec.get, 2)
 	ec.defSubr3("put", ec.put, 3)
 	ec.defSubr2("plist-get", ec.plistGet, 2)
 	ec.defSubr3("plist-put", ec.plistPut, 3)
+	ec.defSubrM("nconc", ec.nconc, 0)
 }

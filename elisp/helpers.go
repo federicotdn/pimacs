@@ -1,5 +1,7 @@
 package elisp
 
+import "fmt"
+
 func xEnsure(obj lispObject, err error) lispObject {
 	if err != nil {
 		terminate("cannot return value due to error: '%+v'", err)
@@ -82,17 +84,30 @@ func vectorLikep(obj lispObject, vecType vectorLikeType) bool {
 	return vec.vecType == vecType
 }
 
+func xSubroutine(obj lispObject) *subroutine {
+	vec := xVectorLike(obj)
+	if vec.vecType != vectorLikeTypeSubroutine {
+		terminate("object is not a subroutine: '%+v'", obj)
+	}
+
+	return vec.value.(*subroutine)
+}
+
 func subroutinep(obj lispObject) bool {
 	return vectorLikep(obj, vectorLikeTypeSubroutine)
 }
 
-func bufferp(obj lispObject) bool {
-	return vectorLikep(obj, vectorLikeTypeBuffer)
+func xBuffer(obj lispObject) *buffer {
+	vec := xVectorLike(obj)
+	if vec.vecType != vectorLikeTypeBuffer {
+		terminate("object is not a buffer: '%+v'", obj)
+	}
+
+	return vec.value.(*buffer)
 }
 
-func xBuffer(obj lispObject) *buffer {
-	vec := obj.(*lispVectorLike)
-	return vec.value.(*buffer)
+func bufferp(obj lispObject) bool {
+	return vectorLikep(obj, vectorLikeTypeBuffer)
 }
 
 func xString(obj lispObject) *lispString {
@@ -161,4 +176,38 @@ func characterp(obj lispObject) bool {
 func arrayp(obj lispObject) bool {
 	// TAGS: incomplete
 	return vectorLikep(obj, vectorLikeTypeNormal) || stringp(obj)
+}
+
+func sChars(obj lispObject) int {
+	return len(xString(obj).value)
+}
+
+func debugRepr(obj lispObject) string {
+	switch obj.getType() {
+	case lispTypeCons:
+		return fmt.Sprintf("CONS(%v, %v)", debugRepr(xCar(obj)), debugRepr(xCdr(obj)))
+	case lispTypeFloat:
+		return fmt.Sprintf("FLOAT(%v)", xFloatValue(obj))
+	case lispTypeString:
+		return fmt.Sprintf("STRING(%v)", xStringValue(obj))
+	case lispTypeInteger:
+		return fmt.Sprintf("INTEGER(%v)", xIntegerValue(obj))
+	case lispTypeVectorLike:
+		val := xVectorLike(obj)
+
+		switch val.vecType {
+		case vectorLikeTypeNormal:
+			return "VECTOR()"
+		case vectorLikeTypeBuffer:
+			buf := xBuffer(obj)
+			return fmt.Sprintf("BUFFER(name=%v, live=%v)", buf.name, buf.live)
+		case vectorLikeTypeSubroutine:
+			subr := xSubroutine(obj)
+			return fmt.Sprintf("SUBROUTINE(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
+		default:
+			panic("unknown vector-like type")
+		}
+	default:
+		panic("unknown object type")
+	}
 }

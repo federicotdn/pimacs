@@ -92,10 +92,13 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 
 func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
 	// TAGS: revise
-	buf := &buffer{}
-	vec := ec.makeVectorLike(vectorLikeTypeBuffer, buf)
 
-	_, err := ec.prin1(obj, vec)
+	// Should this buffer be created via get-buffer-create?
+	// Needs to be hidden from buffer list though
+	buf := ec.createBuffer(" prin1")
+	bufObj := ec.makeBuffer(buf)
+
+	_, err := ec.prin1(obj, bufObj)
 	if err != nil {
 		return nil, err
 	}
@@ -114,8 +117,12 @@ func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, new
 	}
 
 	if bufferp(printCharFn) {
-		defer ec.stackPopTo(ec.stackSize())
-		ec.stackPushCurrentBuffer(xBuffer(printCharFn))
+		defer ec.unwind()()
+		ec.stackPushCurrentBuffer()
+		_, err := ec.setBuffer(printCharFn)
+		if err != nil {
+			return nil, err
+		}
 
 		printCharFn = ec.nil_
 	}

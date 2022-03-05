@@ -24,10 +24,12 @@ if while eval funcall apply quote function progn
 unwind-protect condition-case throw signal
 prin1 prin1-to-string print princ
 intern read-from-string read
-length equal assq memq get put plist-get plist-put
-null car cdr symbol-plist symbol-name set fset eq defalias
-cons list + <
+length equal assq memq get put plist-get plist-put nconc
+null symbol-plist symbol-name set fset eq defalias
+setcar setcdr car cdr cons list + <
+current-buffer get-buffer set-buffer buffer-string insert
 ```
+(and additionally, many predicate functions e.g. `stringp`, `consp`, etc.)
 
 Note that some of these may be only partially implemented.
 

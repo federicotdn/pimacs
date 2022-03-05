@@ -337,9 +337,9 @@ In order to declare a variable:
 3. Call `defVar` somewhere during the interpreter initialization process.
 
 In order to declare a subroutine (function or special form):
-1. Add it to `lispGlobals`.
-2. Initialize it in `createSymbols`.
-3. Call `defSubrX` somewhere during the interpreter initialization process.
+1. Create the corresponding Go method.
+2. Call `defSubrX` somewhere during the interpreter initialization process.
+3. If static access to the corresponding symbol is needed, add it to `lispGlobals` and initialize it in `createSymbols`. In most cases, static access is not needed.
 
 In order to declare an error:
 1. Add it to `lispGlobals`.
@@ -347,31 +347,50 @@ In order to declare an error:
 3. Call `putError` somewhere in `errors.go`.
 
 ## Documentation strings
-Todo. (`go:embed` + gen script, const strings)
+As mentioned in the previous section, somewhere in the Emacs build process, a file called `etc/DOC` is generated. This file contains the documentation of all variables and subroutines defined in C code (in C, they are written as comments - `make-docfile` picks those up). When Emacs starts up, it reads this file and then sets each element's documentation string to the indicated one (actually, it does this during the build process and not when starting up, but more on that later).
 
-Emacs:
-1) make-docfile (reads source files)
-2) etc/DOC generated will all documentation texts
-3) loadup.el: calls Snarf-documentation
-4) doc.c: Snarf-documentation loads documentation texts
+The process in Emacs then looks a bit like this:
+1) `make-docfile` is run, which reads C source files.
+2) `etc/DOC` is then generated will all documentation texts.
+3) When `loadup.el` is loaded, it calls a function called `Snarf-documentation`.
+4) `Snarf-documentation` (defined in `doc.c`) reads the documentation texts and sets them accordingly to each Lisp object.
+
+In Pimacs, this functionality is not implemented yet. There are different ways this could be done:
+- Use the same `etc/DOC` file Emacs generates and stick it into the Go binary using `go:embed`. During startup, read this file.
+- Create a new property in the `subroutine` structure called `documentation`, and populate it somehow with a Go string. The problem with this is that there would be no easy way of keeping the method declarations and their corresponding documentation strings together (in the source file) in a neat way. Also, this would be kind of ugly because the documentation would be created as strings, not as Go comments.
+- Parse the Go code somehow (a script or separate Go program?), picking up Go comments for each method, and generate something similar to `etc/DOC`. Use `go:embed` to stick this file into the Go binary and read it on interpreter startup. The (big) advantage here is that normal Go comments would be used to document methods. The disadvantage would be making the build process slightly more complicated. If I had to implement this option, I would ensure Pimacs could be built without the `etc/DOC` file actually existing or it being empty - it would just skip loading documentation strings, in those cases.
+
+## Build process
+Required reading: [Building Emacs](https://www.gnu.org/software/emacs/manual/html_node/elisp/Building-Emacs.html).
+
+TL;DR: When compiling Emacs, the first step is to actually generate a bare Emacs binary called `temacs`. This is then run, all Lisp files and other resources are loaded, and then the program's state is dumped - somehow - into a file. The final `emacs` binary is a combination of `temacs` plus this dumped file. This is done to avoid Emacs having to load all Lisp files and resources from scratch during each startup.
+
+The build process for Pimacs is currently just `go build`. This produces a single static binary. Ideally, this should remain like this - if I had to include additional resources or files, I would use `go:embed` to store them directly in the binary file. I have already experimented with this by storing a single `base.el` file inside the Pimacs binary, and then reading it during startup as if it were a normal Elisp source file. Also, the concept of the build process just being "Go code -> compiler -> binary" would be nice to maintain.
+
+## Bytecode
+Pimacs does not have a bytecode interpreter, but it would be interesting to add one. Unsure if the bytecode format should be the same as Emacs' (it would definitely make many things simpler).
+
+## Native Elisp compilation
+Some context [here](https://old.reddit.com/r/emacs/comments/myej3z/the_nativecompilation_branch_was_just_merged_into/). Not sure what the analogous would be in Go.
 
 ## Garbage collection
-Todo.
+Being written in Go, Pimacs uses Go's garbage collector. This massively simplifies a lot of the implementation work for the interpreter. The Go garbage collector is also extremely battle-tested and is obviously much better than anything I could've coded myself.
 
-## Concurrency with goroutines
-Todo. (multiple interpreter instances, channels)
+## Concurrency with goroutines & channels
+Given that all the interpreter state is inside `execContext`, it is quite easy to just start a new goroutine using `go`, create a new `execContext` there, and then start evaluating Elisp code on that separate goroutine.
 
-## Usage of `go:embed`
-Todo.
+I have experimented with creating an Elisp function called `pimacs-go` that takes `BODY` argument, and evaluates it on a new goroutine. Together with that, I added a new Elisp data type that is backed by a Go channel, together with two functions: `pimacs-go-channel-send` and `pimacs-go-channel-receive` (corresponding to `ch<-` and `<-ch` respectively). The implementation can be found around [this file](https://github.com/federicotdn/pimacs/blob/4488276ecbad2de75f67b1b798380dc9d48eddb2/elisp/subroutines.go), but I've since removed it since it was too janky and improvised. However, this would be interesting to re-visit in the future, since it is one of Go's strongest aspects, and it would be very useful to make use of it from the Elisp side.
+
+Some difficult questions for this topic are still to be answered, such as how much state should `execContext` instances in different goroutines share.
 
 ## Helper functions
 Todo. (`xCdr` and friends)
+
+## Project structure
+Todo. (similar to Emacs for less confusion and easier porting/searching)
 
 ## User interface
 Todo.
 
 ## Compatibility with Emacs
 Todo. (pimacs extensions `pimacs-*`)
-
-## Build system
-Todo. (single binary result, build tools)

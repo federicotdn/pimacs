@@ -13,7 +13,7 @@ type stackEntryTag int
 const (
 	entryLet stackEntryTag = iota + 1
 	entryCatch
-	entryCurrentBuffer
+	entryFnLispObject
 )
 
 type stackEntry interface {
@@ -31,12 +31,13 @@ type stackJumpSignal struct {
 }
 
 type execContext struct {
-	stack         []stackEntry
-	nil_          lispObject
-	t             lispObject
-	g             lispGlobals
-	obarray       map[string]*lispSymbol
-	currentBuffer *buffer
+	stack      []stackEntry
+	nil_       lispObject
+	t          lispObject
+	g          lispGlobals
+	obarray    map[string]*lispSymbol
+	currentBuf *buffer
+	buffers    lispObject
 }
 
 type stackEntryLet struct {
@@ -48,8 +49,9 @@ type stackEntryCatch struct {
 	catchTag lispObject
 }
 
-type stackEntryCurrentBuffer struct {
-	prevCurrentBuffer *buffer
+type stackEntryFnLispObject struct {
+	function func(lispObject)
+	arg      lispObject
 }
 
 func (jmp *stackJumpTag) Error() string {
@@ -62,24 +64,36 @@ func (jmp *stackJumpTag) Error() string {
 }
 
 func (jmp *stackJumpSignal) Error() string {
-	format := "stack jump: signal: '%+v'"
-	if symbolp(jmp.errorSymbol) {
-		return fmt.Sprintf(format, xSymbol(jmp.errorSymbol).name)
+	format := "stack jump: signal: '%+v' '%+v'"
+	message := "<unknown>"
+
+	if consp(jmp.data) {
+		data := xCdr(jmp.data)
+		if consp(data) {
+			first := xCar(data)
+			if stringp(first) {
+				message = xStringValue(first)
+			}
+		}
 	}
 
-	return fmt.Sprintf(format, jmp.errorSymbol)
+	if symbolp(jmp.errorSymbol) {
+		return fmt.Sprintf(format, xSymbol(jmp.errorSymbol).name, message)
+	}
+
+	return fmt.Sprintf(format, jmp.errorSymbol, message)
 }
 
-func (sel *stackEntryLet) tag() stackEntryTag {
+func (se *stackEntryLet) tag() stackEntryTag {
 	return entryLet
 }
 
-func (sec *stackEntryCatch) tag() stackEntryTag {
+func (se *stackEntryCatch) tag() stackEntryTag {
 	return entryCatch
 }
 
-func (secb *stackEntryCurrentBuffer) tag() stackEntryTag {
-	return entryCurrentBuffer
+func (se *stackEntryFnLispObject) tag() stackEntryTag {
+	return entryFnLispObject
 }
 
 func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
@@ -146,6 +160,10 @@ func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeVa
 		vecType: vecType,
 		value:   value,
 	}
+}
+
+func (ec *execContext) makeBuffer(buf *buffer) *lispVectorLike {
+	return ec.makeVectorLike(vectorLikeTypeBuffer, buf)
 }
 
 func (ec *execContext) defSubr(name string, sub *subroutine) {
@@ -282,11 +300,10 @@ func (ec *execContext) defVar(symbol, value lispObject) {
 }
 
 func newExecContext() *execContext {
-	ec := execContext{}
-
-	ec.obarray = make(map[string]*lispSymbol)
-	ec.stack = []stackEntry{}
-	ec.currentBuffer = &buffer{}
+	ec := execContext{
+		obarray: make(map[string]*lispSymbol),
+		stack:   []stackEntry{},
+	}
 
 	ec.createSymbols()       // symbols.go
 	ec.symbolsOfErrors()     // errors.gmo
@@ -300,6 +317,8 @@ func newExecContext() *execContext {
 	ec.symbolsOfMinibuffer() // minibuffer.go
 
 	ec.defVar(ec.g.nonInteractive, ec.t)
+
+	ec.initBuffer() // buffer.go
 
 	contents, err := scripts.ReadFile("scripts/pimacs/base.el")
 	if err != nil {
@@ -352,12 +371,16 @@ func (ec *execContext) stackPushCatch(tag lispObject) {
 	})
 }
 
-func (ec *execContext) stackPushCurrentBuffer(buf *buffer) {
-	ec.stack = append(ec.stack, &stackEntryCurrentBuffer{
-		prevCurrentBuffer: ec.currentBuffer,
-	})
+func (ec *execContext) stackPushCurrentBuffer() {
+	arg := ec.currentBufferInternal()
+	ec.stackPushFnLispObject(ec.setBufferIfLive, arg)
+}
 
-	ec.currentBuffer = buf
+func (ec *execContext) stackPushFnLispObject(function func(lispObject), arg lispObject) {
+	ec.stack = append(ec.stack, &stackEntryFnLispObject{
+		function: function,
+		arg:      arg,
+	})
 }
 
 func (ec *execContext) catchInStack(tag lispObject) bool {
@@ -405,8 +428,9 @@ func (ec *execContext) stackPopTo(target int) {
 			let := current.(*stackEntryLet)
 			let.symbol.value = let.oldVal
 		case entryCatch:
-		case entryCurrentBuffer:
-			ec.currentBuffer = current.(*stackEntryCurrentBuffer).prevCurrentBuffer
+		case entryFnLispObject:
+			entry := current.(*stackEntryFnLispObject)
+			entry.function(entry.arg)
 		default:
 			ec.terminate("unknown stack item tag: '%v'", current.tag())
 		}

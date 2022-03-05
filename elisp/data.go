@@ -32,6 +32,10 @@ func (ec *execContext) integerp(object lispObject) (lispObject, error) {
 	return ec.bool(integerp(object))
 }
 
+func (ec *execContext) bufferp(object lispObject) (lispObject, error) {
+	return ec.bool(bufferp(object))
+}
+
 func (ec *execContext) car(obj lispObject) (lispObject, error) {
 	if obj == ec.nil_ {
 		return ec.nil_, nil
@@ -52,6 +56,22 @@ func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.g.listp, obj)
 	}
 	return xCons(obj).cdr, nil
+}
+
+func (ec *execContext) setCar(obj, newCar lispObject) (lispObject, error) {
+	if !consp(obj) {
+		return ec.wrongTypeArgument(ec.g.consp, obj)
+	}
+	xSetCar(obj, newCar)
+	return newCar, nil
+}
+
+func (ec *execContext) setCdr(obj, newCdr lispObject) (lispObject, error) {
+	if !consp(obj) {
+		return ec.wrongTypeArgument(ec.g.consp, obj)
+	}
+	xSetCdr(obj, newCdr)
+	return newCdr, nil
 }
 
 func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
@@ -140,8 +160,11 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1("number-or-marker-p", ec.numberOrMarkerp, 1)
 	ec.defSubr1("char-or-string-p", ec.charOrStringp, 1)
 	ec.defSubr1("integerp", ec.numberOrMarkerp, 1)
+	ec.defSubr1("bufferp", ec.bufferp, 1)
 	ec.defSubr1("car", ec.car, 1)
 	ec.defSubr1("cdr", ec.cdr, 1)
+	ec.defSubr2("setcar", ec.setCar, 2)
+	ec.defSubr2("setcdr", ec.setCdr, 2)
 	ec.defSubr1("symbol-plist", ec.symbolPlist, 1)
 	ec.defSubr1("symbol-name", ec.symbolName, 1)
 	ec.defSubr2("set", ec.set, 2)
