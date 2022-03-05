@@ -16,7 +16,7 @@ Similar to Emacs itself, the `lispObject` interface represents any valid Elisp o
 ## Subroutines
 In Emacs, many Elisp functions are defined in C (such as `concat` or `+`). Special forms (such as `if` or `while`) are also defined in C. All of these together combined are referred to as "subroutines". The main difference between the two groups is that for special forms, arguments are not evaluated before being passed to them. This makes sense; for example, `if` needs to receive both the `then` and `else` expressions and decide which one to evaluate depending on the condition. If both expressions were evaulated before being handed to the `if`, that wouldn't be very useful! Apart from this, the mechanisms for implementing Elisp functions / special forms in C are quite similar.
 
-In Emacs, these Elisp functions and special forms are built using C functions plus a collection of macros.
+So then, resumed: in Emacs Elisp functions and special forms are built using C functions plus a collection of C macros.
 
 In Pimacs, Elisp functions and special forms are implemented using methods on the `execContext` structure, plus a manual call to a dedicated method for effectively registering the function or special form. The implementation method must return `(lispObject, error)`, and can accept either 0, 1, 2 all the way to 8 `lispObject` arguments, or otherwise `...lispObject`. These are then the valid signatures:
 ```go
@@ -379,18 +379,50 @@ Being written in Go, Pimacs uses Go's garbage collector. This massively simplifi
 ## Concurrency with goroutines & channels
 Given that all the interpreter state is inside `execContext`, it is quite easy to just start a new goroutine using `go`, create a new `execContext` there, and then start evaluating Elisp code on that separate goroutine.
 
-I have experimented with creating an Elisp function called `pimacs-go` that takes `BODY` argument, and evaluates it on a new goroutine. Together with that, I added a new Elisp data type that is backed by a Go channel, together with two functions: `pimacs-go-channel-send` and `pimacs-go-channel-receive` (corresponding to `ch<-` and `<-ch` respectively). The implementation can be found around [this file](https://github.com/federicotdn/pimacs/blob/4488276ecbad2de75f67b1b798380dc9d48eddb2/elisp/subroutines.go), but I've since removed it since it was too janky and improvised. However, this would be interesting to re-visit in the future, since it is one of Go's strongest aspects, and it would be very useful to make use of it from the Elisp side.
+I have experimented with creating an Elisp function called `pimacs-go` that takes a `BODY` argument, and evaluates it on a new goroutine. Together with that, I added a new Elisp data type that is backed by a Go channel, together with two functions: `pimacs-go-channel-send` and `pimacs-go-channel-receive` (corresponding to `ch<-` and `<-ch` respectively). The implementation can be found around [this file](https://github.com/federicotdn/pimacs/blob/4488276ecbad2de75f67b1b798380dc9d48eddb2/elisp/subroutines.go), but I've since removed it since it was too janky and improvised. However, this would be interesting to re-visit in the future, since it is one of Go's strongest aspects, and it would be very useful to make use of it from the Elisp side.
 
 Some difficult questions for this topic are still to be answered, such as how much state should `execContext` instances in different goroutines share.
 
 ## Helper functions
-Todo. (`xCdr` and friends)
+The `helpers.go` file contains a collection of functions that make writing Pimacs code a bit easier.
+
+In Emacs, these would be the `CONSP`, `XCONS`, `XCAR`, (...) macros.
+
+In Pimacs, these are simply Go functions that can be called for checking the type of a `lispObject`, or for accessing attributes of specific types (e.g. the function value of a symbol). It is worth noting that these helpers are not methods on `execContext`, but rather simple functions, so they can be called without needing to use `ec.<name>`.
+
+Some of the helper functions' names begin with an `x`. This means that when calling the helper, **all arguments must meet some preconditions or else the helper may `panic`.** This is important because it means the Pimacs programmer must carry out these checks in order to use the helpers correctly. A `panic` is not a situation Pimacs can recover from (for now, at least). Therefore, a `panic` resulting from a helper call implies a wrong assumption that the Pimacs programmer has made.
+
+Some examples. We can look at the predicate `symbolp` helper, and `xSymbol` as well. The following code is not correct, as it may `panic` depending on what type of Lisp object `obj` actually is:
+```go
+obj, _ := ec.someFunction()
+
+// Set the symbol's data value to t
+xSymbol(obj).value = ec.t
+
+// But if obj is not a symbol, the above will panic!
+```
+
+This would be the correct, equivalent code:
+```go
+obj, _ := ec.someFunction()
+
+if symbolp(obj) {
+    // Set the symbol's data value to t
+    xSymbol(obj).value = ec.t
+}
+```
+
+Other helpers include:
+- `xEnsure`: Takes in the result of calling a subroutine (i.e. `(lispObject, error)`) and returns only the `lispObject` - discarding the error only if it is `nil`. Otherwise, it `panic`s.
+- `xErrOnly`: The opposite of `xEnsure`. Only returns the `error`, if the `lispObject` is `nil` (Go `nil`, not Elisp `nil`). If the `lispObject` is not `nil`, it `panic`s.
 
 ## Project structure
-Todo. (similar to Emacs for less confusion and easier porting/searching)
+Currently, the project structure is as similar to Emacs' as possible, in order to make porting of code easier. Some names have been slightly modified though; for example `alloc.c` is `allocation.go`, and `fns.c` is `functions.go`.
 
 ## User interface
-Todo.
+If the project ever reaches enough maturity in order for it to have a user interface, it would be interesting to take an approach similar to [xi-editor's](https://github.com/xi-editor/xi-editor). This would mean that all Elisp functions relating to manipulation of the UI would actually be communicating via some protocol with a frontend. The frontend could be implemented in different ways, e.g. TUI, native (GTK, Qt) or Web technologies.
 
 ## Compatibility with Emacs
-Todo. (pimacs extensions `pimacs-*`)
+The current main design guide for Pimacs is to implement an Elisp interpreter that allows for running any Elisp script without modifications. This means that Pimacs needs to implement functions, special forms and variables using Emacs' current implementation as a guide. The version of Emacs in question is, for the moment, just whatever is on the `master` branch. This is not ideal since this implies the target implementation is constantly moving.
+
+If Pimacs adds any extra functionality, it is namespaced with `pimacs-` or `pimacs--` in order to make the distinction with the Emacs codebase clearer.

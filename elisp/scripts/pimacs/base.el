@@ -1,7 +1,3 @@
 (progn
-  (set 'welcome-message "Welcome to Pimacs!")
-
-  (fset 'run-me (function (lambda () (prin1 "Hello!\n" t))))
-
-
-  )
+  (set 'pimacs-welcome-message "Welcome to Pimacs!")
+  (fset 'pimacs-greet-fn (function (lambda () (progn (princ "Hello!\n" t) nil)))))

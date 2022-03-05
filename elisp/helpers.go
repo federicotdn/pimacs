@@ -123,6 +123,10 @@ func xStringValue(obj lispObject) string {
 	return xString(obj).value
 }
 
+func xStringChars(obj lispObject) int {
+	return len(xStringValue(obj))
+}
+
 func stringp(obj lispObject) bool {
 	return obj.getType() == lispTypeString
 }
@@ -141,7 +145,7 @@ func xIntegerValue(obj lispObject) lispInt {
 }
 
 func xIntegerRune(obj lispObject) rune {
-	return rune(xInteger(obj).value)
+	return rune(xIntegerValue(obj))
 }
 
 func integerp(obj lispObject) bool {
@@ -176,10 +180,6 @@ func characterp(obj lispObject) bool {
 func arrayp(obj lispObject) bool {
 	// TAGS: incomplete
 	return vectorLikep(obj, vectorLikeTypeNormal) || stringp(obj)
-}
-
-func sChars(obj lispObject) int {
-	return len(xString(obj).value)
 }
 
 func debugRepr(obj lispObject) string {

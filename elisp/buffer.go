@@ -96,7 +96,7 @@ func (ec *execContext) getBufferCreate(bufferOrName, inhibitBufferHooks lispObje
 		return obj, nil
 	}
 
-	if sChars(bufferOrName) == 0 {
+	if xStringChars(bufferOrName) == 0 {
 		return ec.signalError("Empty string for buffer name is not allowed")
 	}
 
