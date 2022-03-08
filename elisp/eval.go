@@ -154,7 +154,8 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 	rest, optional := false, false
 	i := 0
 
-	for ; consp(symsLeft); symsLeft = xCdr(symsLeft) {
+	iter := ec.iterate(symsLeft)
+	for ; iter.hasNext(); symsLeft = iter.next() {
 		next := xCar(symsLeft)
 
 		if !symbolp(next) {
@@ -192,6 +193,10 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 				ec.stackPushLet(next, arg)
 			}
 		}
+	}
+
+	if iter.circular() {
+		return iter.error()
 	}
 
 	if symsLeft != ec.nil_ {
@@ -315,8 +320,9 @@ func (ec *execContext) clauseHandlesConditions(clause, errConditions lispObject)
 		clauseConditions = ec.makeList(clauseConditions)
 	}
 
-	for cond := clauseConditions; consp(cond); cond = xCdr(cond) {
-		condName := xCar(cond)
+	iter := ec.iterate(clauseConditions)
+	for ; iter.hasNext(); clauseConditions = iter.next() {
+		condName := xCar(clauseConditions)
 		found, err := ec.memq(condName, errConditions)
 		if err != nil {
 			return false, err
@@ -325,6 +331,10 @@ func (ec *execContext) clauseHandlesConditions(clause, errConditions lispObject)
 		if found != ec.nil_ || condName == ec.t {
 			return true, nil
 		}
+	}
+
+	if iter.hasError() {
+		return false, xErrOnly(iter.error())
 	}
 
 	return false, nil
@@ -341,8 +351,9 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.g.symbolp, variable)
 	}
 
-	for tail := handlers; consp(tail); tail = xCdr(tail) {
-		tem := xCar(tail)
+	iter := ec.iterate(handlers)
+	for ; iter.hasNext(); handlers = iter.next() {
+		tem := xCar(handlers)
 		clauses = append(clauses, tem)
 
 		if tem == ec.nil_ {
@@ -354,6 +365,10 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 		}
 
 		return nil, fmt.Errorf("invalid type handler")
+	}
+
+	if iter.hasError() {
+		return iter.error()
 	}
 
 	result, err := ec.evalSub(bodyForm)
@@ -484,7 +499,8 @@ func (ec *execContext) while(args lispObject) (lispObject, error) {
 func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	val := ec.nil_
 
-	for ; consp(body); body = xCdr(body) {
+	iter := ec.iterate(body)
+	for ; iter.hasNext(); body = iter.next() {
 		var err error
 
 		form := xCar(body)
@@ -492,6 +508,10 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if iter.hasError() {
+		return iter.error()
 	}
 
 	return val, nil

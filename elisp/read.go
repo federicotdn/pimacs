@@ -464,10 +464,19 @@ func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, e
 	return ec.cons(result, pos)
 }
 
+func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispObject) (lispObject, error) {
+	if !stringp(file) {
+		return ec.wrongTypeArgument(ec.g.stringp, file)
+	}
+
+	return nil, nil
+}
+
 func (ec *execContext) symbolsOfRead() {
 	ec.defSubr2("intern", ec.intern, 1)
 	ec.defSubr3("read-from-string", ec.readFromString, 1)
 	ec.defSubr1("read", ec.read, 0)
+	ec.defSubr5("load", ec.load, 1)
 
 	ec.defVar(ec.g.standardInput, ec.t)
 	ec.defVar(ec.g.lexicalBinding, ec.nil_)

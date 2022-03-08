@@ -20,6 +20,7 @@ type lispGlobals struct {
 	// 2. Subroutine symbols
 	sequencep          lispObject
 	listp              lispObject
+	plistp             lispObject
 	consp              lispObject
 	symbolp            lispObject
 	stringp            lispObject
@@ -53,6 +54,7 @@ type lispGlobals struct {
 	settingConstant        lispObject
 	invalidReadSyntax      lispObject
 	pimacsUnimplemented    lispObject
+	circularList           lispObject
 	// 4. Misc. symbols
 	errorConditions lispObject
 	errorMessage    lispObject
@@ -81,6 +83,7 @@ func (ec *execContext) createSymbols() {
 		// 2
 		{loc: &g.sequencep, name: "sequencep"},
 		{loc: &g.listp, name: "listp"},
+		{loc: &g.plistp, name: "plistp"},
 		{loc: &g.consp, name: "consp"},
 		{loc: &g.symbolp, name: "symbolp"},
 		{loc: &g.stringp, name: "stringp"},
@@ -114,6 +117,7 @@ func (ec *execContext) createSymbols() {
 		{loc: &g.settingConstant, name: "setting-constant"},
 		{loc: &g.invalidReadSyntax, name: "invalid-read-syntax"},
 		{loc: &g.pimacsUnimplemented, name: "pimacs-unimplemented"},
+		{loc: &g.circularList, name: "circular-list"},
 		// 4
 		{loc: &g.errorConditions, name: "error-conditions"},
 		{loc: &g.errorMessage, name: "error-message"},

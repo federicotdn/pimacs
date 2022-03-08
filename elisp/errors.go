@@ -29,6 +29,7 @@ func (ec *execContext) symbolsOfErrors() {
 	ec.putError(ec.g.settingConstant, errorTail, "Attempt to set a constant symbol")
 	ec.putError(ec.g.invalidReadSyntax, errorTail, "Invalid read syntax")
 	ec.putError(ec.g.pimacsUnimplemented, errorTail, "Unimplemented feature")
+	ec.putError(ec.g.circularList, errorTail, "List contains a loop")
 }
 
 func (ec *execContext) signalN(errorSymbol lispObject, args ...lispObject) (lispObject, error) {

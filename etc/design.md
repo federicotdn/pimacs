@@ -426,3 +426,8 @@ If the project ever reaches enough maturity in order for it to have a user inter
 The current main design guide for Pimacs is to implement an Elisp interpreter that allows for running any Elisp script without modifications. This means that Pimacs needs to implement functions, special forms and variables using Emacs' current implementation as a guide. The version of Emacs in question is, for the moment, just whatever is on the `master` branch. This is not ideal since this implies the target implementation is constantly moving.
 
 If Pimacs adds any extra functionality, it is namespaced with `pimacs-` or `pimacs--` in order to make the distinction with the Emacs codebase clearer.
+
+## Testing
+A very basic set of tests are implemented in `interpreter_test.go`. However, these tests are a bit of a hassle to write, since all Elisp code must be written in strings, as well as the desired outputs.
+
+Ideally, Pimacs should be able to load Emacs' [ERT](https://www.gnu.org/software/emacs/manual/html_node/ert/), and then just use the same set of Elisp test files.

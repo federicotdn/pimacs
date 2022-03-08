@@ -71,8 +71,11 @@ func (jmp *stackJumpSignal) Error() string {
 		data := xCdr(jmp.data)
 		if consp(data) {
 			first := xCar(data)
+
 			if stringp(first) {
 				message = xStringValue(first)
+			} else if symbolp(first) {
+				message = xSymbol(first).name
 			}
 		}
 	}
@@ -164,6 +167,72 @@ func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeVa
 
 func (ec *execContext) makeBuffer(buf *buffer) *lispVectorLike {
 	return ec.makeVectorLike(vectorLikeTypeBuffer, buf)
+}
+
+type listIter struct {
+	tail      lispObject
+	listHead  lispObject
+	err       error
+	ec        *execContext
+	predicate lispObject
+	hasCycle  bool
+}
+
+func (ec *execContext) iterate(tail lispObject) *listIter {
+	li := &listIter{
+		tail:      tail,
+		listHead:  tail,
+		ec:        ec,
+		predicate: ec.g.listp,
+	}
+
+	// We may have been given already an object that is not a list
+	li.checkTailType()
+
+	return li
+}
+
+func (li *listIter) withPredicate(predicate lispObject) *listIter {
+	li.predicate = predicate
+	return li
+}
+
+func (li *listIter) hasNext() bool {
+	return consp(li.tail) && !li.hasError()
+}
+
+func (li *listIter) checkTailType() {
+	if !consp(li.tail) && li.tail != li.ec.nil_ {
+		// List does not end with nil.
+		// Signal using list start, not tail!
+		li.err = xErrOnly(li.ec.wrongTypeArgument(li.ec.g.listp, li.head()))
+	}
+}
+
+func (li *listIter) next() lispObject {
+	// TODO: incomplete
+	// Need cycle detection still.
+	li.tail = xCdr(li.tail)
+
+	li.checkTailType()
+
+	return li.tail
+}
+
+func (li *listIter) head() lispObject {
+	return li.listHead
+}
+
+func (li *listIter) hasError() bool {
+	return li.err != nil
+}
+
+func (li *listIter) circular() bool {
+	return li.hasCycle
+}
+
+func (li *listIter) error() (lispObject, error) {
+	return nil, li.err
 }
 
 func (ec *execContext) defSubr(name string, sub *subroutine) {
@@ -342,14 +411,14 @@ func (ec *execContext) internNewSymbol(symbol *lispSymbol) {
 
 func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
 	result := []lispObject{}
-	tail := list
 
-	for ; consp(tail); tail = xCdr(tail) {
-		result = append(result, xCar(tail))
+	iter := ec.iterate(list)
+	for ; iter.hasNext(); list = iter.next() {
+		result = append(result, xCar(list))
 	}
 
-	if tail != ec.nil_ {
-		return nil, xErrOnly(ec.wrongTypeArgument(ec.g.listp, list))
+	if iter.hasError() {
+		return nil, xErrOnly(iter.error())
 	}
 
 	return result, nil

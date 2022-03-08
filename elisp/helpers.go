@@ -192,6 +192,8 @@ func debugRepr(obj lispObject) string {
 		return fmt.Sprintf("STRING(%v)", xStringValue(obj))
 	case lispTypeInteger:
 		return fmt.Sprintf("INTEGER(%v)", xIntegerValue(obj))
+	case lispTypeSymbol:
+		return fmt.Sprintf("SYMBOL(%v)", xSymbol(obj).name)
 	case lispTypeVectorLike:
 		val := xVectorLike(obj)
 
@@ -208,6 +210,6 @@ func debugRepr(obj lispObject) string {
 			panic("unknown vector-like type")
 		}
 	default:
-		panic("unknown object type")
+		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
 	}
 }

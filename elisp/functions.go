@@ -1,15 +1,15 @@
 package elisp
 
 func (ec *execContext) listLength(obj lispObject) (int, error) {
-	tail := obj
 	num := 0
 
-	for ; consp(tail); tail = xCdr(tail) {
+	iter := ec.iterate(obj)
+	for ; iter.hasNext(); obj = iter.next() {
 		num += 1
 	}
 
-	if tail != ec.nil_ {
-		return 0, xErrOnly(ec.wrongTypeArgument(ec.g.listp, obj))
+	if iter.hasError() {
+		return 0, xErrOnly(iter.error())
 	}
 
 	return num, nil
@@ -38,17 +38,17 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
-	tail := alist
-	for ; consp(tail); tail = xCdr(tail) {
-		element := xCar(tail)
+	iter := ec.iterate(alist)
+	for ; iter.hasNext(); alist = iter.next() {
+		element := xCar(alist)
 
 		if consp(element) && xCar(element) == key {
 			return element, nil
 		}
 	}
 
-	if tail != ec.nil_ {
-		return ec.wrongTypeArgument(ec.g.listp, alist)
+	if iter.hasError() {
+		return iter.error()
 	}
 
 	return ec.nil_, nil
@@ -56,9 +56,9 @@ func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 
 func (ec *execContext) assoc(key, alist, testFn lispObject) (lispObject, error) {
 	// TAGS: incomplete
-	tail := alist
-	for ; consp(tail); tail = xCdr(tail) {
-		element := xCar(tail)
+	iter := ec.iterate(alist)
+	for ; iter.hasNext(); alist = iter.next() {
+		element := xCar(alist)
 
 		if consp(element) {
 			equal, err := ec.equal(xCar(element), key)
@@ -72,23 +72,23 @@ func (ec *execContext) assoc(key, alist, testFn lispObject) (lispObject, error) 
 		}
 	}
 
-	if tail != ec.nil_ {
-		return ec.wrongTypeArgument(ec.g.listp, alist)
+	if iter.hasError() {
+		return iter.error()
 	}
 
 	return ec.nil_, nil
 }
 
 func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
-	tail := list
-	for ; consp(tail); tail = xCdr(tail) {
-		if xCar(tail) == elt {
-			return tail, nil
+	iter := ec.iterate(list)
+	for ; iter.hasNext(); list = iter.next() {
+		if xCar(list) == elt {
+			return list, nil
 		}
 	}
 
-	if tail != ec.nil_ {
-		return ec.wrongTypeArgument(ec.g.listp, list)
+	if iter.hasError() {
+		return iter.error()
 	}
 
 	return ec.nil_, nil
@@ -107,7 +107,8 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 
 	switch t1 {
 	case lispTypeCons:
-		for ; consp(o1); o1 = xCdr(o1) {
+		iter := ec.iterate(o1)
+		for ; iter.hasNext(); o1 = iter.next() {
 			if !consp(o2) {
 				return ec.false_()
 			}
@@ -125,6 +126,10 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 			if xCdr(o1) == o2 {
 				return ec.true_()
 			}
+		}
+
+		if iter.hasError() {
+			return iter.error()
 		}
 
 		return ec.false_()
@@ -152,47 +157,55 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error) {
 	prev := ec.nil_
 	tail := plist
+	iter := ec.iterate(tail).withPredicate(ec.g.plistp)
 
-	for consp(tail) {
-		next := xCdr(tail)
-
-		if !consp(next) {
+	for ; iter.hasNext(); tail = iter.next() {
+		if !consp(xCdr(tail)) {
 			break
-		} else if prop == xCar(tail) {
-			xSetCar(next, val)
+		}
+
+		if prop == xCar(tail) {
+			_, err := ec.setCar(xCdr(tail), val)
+			if err != nil {
+				return nil, err
+			}
 			return plist, nil
 		}
 
 		prev = tail
-		tail = xCdr(next)
+		tail = xCdr(tail)
 	}
 
-	if tail != ec.nil_ {
-		return ec.wrongTypeArgument(ec.g.listp, plist)
+	if iter.hasError() {
+		return iter.error()
 	}
 
 	if prev == ec.nil_ {
 		return ec.makeCons(prop, ec.makeCons(val, plist)), nil
 	} else {
 		newCell := ec.makeCons(prop, ec.makeCons(val, xCdr(xCdr(prev))))
-		xSetCdr(xCdr(prev), newCell)
+		_, err := ec.setCdr(xCdr(prev), newCell)
+		if err != nil {
+			return nil, err
+		}
+
 		return plist, nil
 	}
 }
 
 func (ec *execContext) plistGet(plist, prop lispObject) (lispObject, error) {
-	tail := plist
+	iter := ec.iterate(plist)
 
-	for consp(tail) {
-		next := xCdr(tail)
-
-		if !consp(next) {
+	for ; iter.hasNext(); plist = iter.next() {
+		if !consp(xCdr(plist)) {
 			break
-		} else if prop == xCar(tail) {
-			return xCar(next), nil
 		}
 
-		tail = xCdr(next)
+		if prop == xCar(plist) {
+			return xCar(xCdr(plist)), nil
+		}
+
+		plist = iter.next()
 	}
 
 	return ec.nil_, nil
