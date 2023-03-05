@@ -167,5 +167,5 @@ func (ec *execContext) symbolsOfPrint() {
 	ec.defSubr2("princ", ec.princ, 1)
 	ec.defSubr2("prin1-to-string", ec.prin1ToString, 1)
 
-	ec.defVar(ec.g.standardOutput, ec.t)
+	ec.defVarStatic(ec.g.standardOutput, ec.t)
 }

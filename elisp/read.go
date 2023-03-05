@@ -478,6 +478,6 @@ func (ec *execContext) symbolsOfRead() {
 	ec.defSubr1("read", ec.read, 0)
 	ec.defSubr5("load", ec.load, 1)
 
-	ec.defVar(ec.g.standardInput, ec.t)
-	ec.defVar(ec.g.lexicalBinding, ec.nil_)
+	ec.defVarStatic(ec.g.standardInput, ec.t)
+	ec.defVarStatic(ec.g.lexicalBinding, ec.nil_)
 }

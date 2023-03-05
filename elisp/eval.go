@@ -650,5 +650,5 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubr2("throw", ec.throw, 2).noReturn = true
 	ec.defSubr2("signal", ec.signal, 2).noReturn = true
 
-	ec.defVar(ec.g.internalInterpreterEnv, ec.nil_)
+	ec.defVarStatic(ec.g.internalInterpreterEnv, ec.nil_)
 }

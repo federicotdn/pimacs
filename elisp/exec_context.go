@@ -364,7 +364,7 @@ func (ec *execContext) defSubrU(name string, fn lispFn1, minArgs int) *subroutin
 	return sub
 }
 
-func (ec *execContext) defVar(symbol, value lispObject) {
+func (ec *execContext) defVarStatic(symbol, value lispObject) {
 	sym := xSymbol(symbol)
 	if sym.value != ec.g.unbound {
 		ec.terminate("variable value already set: '%v'", sym.name)
@@ -391,7 +391,7 @@ func newExecContext() *execContext {
 	ec.symbolsOfBuffer()     // buffer.go
 	ec.symbolsOfMinibuffer() // minibuffer.go
 
-	ec.defVar(ec.g.nonInteractive, ec.t)
+	ec.defVarStatic(ec.g.nonInteractive, ec.t)
 
 	ec.errorOnSubrRedefine = false
 	ec.symbolsOfEmacs_autogen()
