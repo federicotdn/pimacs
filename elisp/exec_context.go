@@ -38,6 +38,8 @@ type execContext struct {
 	obarray    map[string]*lispSymbol
 	currentBuf *buffer
 	buffers    lispObject
+
+	errorOnSubrRedefine bool
 }
 
 type stackEntryLet struct {
@@ -244,7 +246,10 @@ func (ec *execContext) defSubr(name string, sub *subroutine) {
 	sym := xSymbol(symbol)
 
 	if sym.function != ec.nil_ {
-		ec.terminate("function value already set: '%v'", sym.name)
+		if ec.errorOnSubrRedefine {
+			ec.terminate("function value already set: '%v'", sym.name)
+		}
+		return
 	}
 
 	vec := ec.makeVectorLike(vectorLikeTypeSubroutine, sub)
@@ -370,8 +375,9 @@ func (ec *execContext) defVar(symbol, value lispObject) {
 
 func newExecContext() *execContext {
 	ec := execContext{
-		obarray: make(map[string]*lispSymbol),
-		stack:   []stackEntry{},
+		obarray:             make(map[string]*lispSymbol),
+		stack:               []stackEntry{},
+		errorOnSubrRedefine: true,
 	}
 
 	ec.createSymbols()       // symbols.go
@@ -386,6 +392,10 @@ func newExecContext() *execContext {
 	ec.symbolsOfMinibuffer() // minibuffer.go
 
 	ec.defVar(ec.g.nonInteractive, ec.t)
+
+	ec.errorOnSubrRedefine = false
+	ec.symbolsOfEmacs_autogen()
+	ec.errorOnSubrRedefine = true
 
 	ec.initBuffer() // buffer.go
 
@@ -520,6 +530,10 @@ func (ec *execContext) true_() (lispObject, error) {
 }
 
 func (ec *execContext) false_() (lispObject, error) {
+	return ec.nil_, nil
+}
+
+func (ec *execContext) stub(name string) (lispObject, error) {
 	return ec.nil_, nil
 }
 

@@ -1,13 +1,16 @@
 from pathlib import Path
+import subprocess
 from collections import namedtuple
 import os
 from pyparsing import Literal, Regex, QuotedString, SkipTo, Opt, delimited_list
 
 FILE_HEADER = """// Automatically generated with pimacs.extract
 // DO NOT MODIFY!
+// Generated from GNU Emacs commit: {}, branch: {}
 
 """
 AUTOGEN_SUFFIX = "_autogen"
+PACKAGE = "elisp"
 GO_KEYWORDS = [
     "break",
     "default",
@@ -172,7 +175,9 @@ def get_go_declarations(defuns: list[dict]) -> tuple:
             minargs = int(defun["minargs"])
         except ValueError:
             minargs = "emacsConstant_" + defun["minargs"] + AUTOGEN_SUFFIX
-            go_constants.append(GoConstant(minargs, str(EMACS_CONSTANTS[defun["minargs"]])))
+            go_constants.append(
+                GoConstant(minargs, str(EMACS_CONSTANTS[defun["minargs"]]))
+            )
 
         fnname = fnname_to_go(defun["fnname"])
         args = None
@@ -190,9 +195,9 @@ def get_go_declarations(defuns: list[dict]) -> tuple:
     return go_defuns, go_constants
 
 
-def generate_go_file(defuns: list[dict]) -> str:
+def generate_go_file(defuns: list[dict], emacs_commit: str, emacs_branch: str) -> str:
     go_defuns, go_constants = get_go_declarations(defuns)
-    s = FILE_HEADER + "package elisp\n\n"
+    s = FILE_HEADER.format(emacs_commit, emacs_branch) + f"package {PACKAGE}\n\n"
 
     for constant in go_constants:
         s += f"const {constant.name} = {constant.value}\n"
@@ -207,13 +212,13 @@ def generate_go_file(defuns: list[dict]) -> str:
         elif defun.subr_fn != "defSubr0":
             s += ", ".join(defun.args) + " lispObject"
         s += ") (lispObject, error) {\n"
-        s += "	return ec.nil_, nil\n"
+        s += f'\treturn ec.stub("{defun.lname}")\n'
         s += "}\n\n"
 
-    s += "func (ec *execContext) symbolsOfEmacs() {\n"
+    s += f"func (ec *execContext) symbolsOfEmacs{AUTOGEN_SUFFIX}() {{\n"
 
     for defun in go_defuns.values():
-        s += f'	ec.{defun.subr_fn}("{defun.lname}", ec.{defun.fnname}'
+        s += f'\tec.{defun.subr_fn}("{defun.lname}", ec.{defun.fnname}'
         if defun.subr_fn != "defSubr0":
             s += f", {defun.minargs}"
         s += ")\n"
@@ -226,19 +231,28 @@ def generate_go_file(defuns: list[dict]) -> str:
 def main() -> None:
     emacs_base = Path(os.environ["EMACS_REPO_ROOT"])
     pimacs_base = Path(os.environ["PIMACS_REPO_ROOT"])
+    emacs_commit = subprocess.check_output(
+        "git rev-parse HEAD", text=True, shell=True, cwd=emacs_base
+    ).strip()
+    emacs_branch = subprocess.check_output(
+        "git branch --show-current", text=True, shell=True, cwd=emacs_base
+    ).strip()
 
-    defuns = []
+    all_defuns = []
 
     for p in emacs_base.joinpath("src").rglob("*"):
         if not p.suffix == ".c" or p.name == "msdos.c":
             continue
 
-        file_defuns, *_ = extract_declarations(p)
-        defuns.extend(file_defuns)
+        defuns, *_ = extract_declarations(p)
+        all_defuns.extend(defuns)
 
-    contents = generate_go_file(defuns)
-    with open(pimacs_base.joinpath("elisp/emacs_autogen.go"), "w") as f:
+    contents = generate_go_file(all_defuns, emacs_commit, emacs_branch)
+    target = pimacs_base.joinpath("elisp/emacs_autogen.go")
+    with open(target, "w") as f:
         f.write(contents)
+
+    print("Wrote", target)
 
 
 if __name__ == "__main__":
