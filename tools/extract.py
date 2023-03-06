@@ -1,6 +1,6 @@
 from pathlib import Path
 import subprocess
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 import os
 from pyparsing import Literal, Regex, QuotedString, SkipTo, Opt, delimited_list
 
@@ -139,8 +139,8 @@ def to_camel_case(text: str) -> str:
     return s[0] + "".join(i.capitalize() for i in s[1:])
 
 
-def fnname_to_go(fnname: str) -> str:
-    return to_camel_case(fnname[1:]) + AUTOGEN_SUFFIX
+def fnname_to_go(fnname: str, count: int) -> str:
+    return to_camel_case(fnname[1:]) + (f"_{count}" if count else "") + AUTOGEN_SUFFIX
 
 
 def go_safe_identifier(identifier: str) -> str:
@@ -148,12 +148,11 @@ def go_safe_identifier(identifier: str) -> str:
 
 
 def get_go_declarations(defuns: list[dict]) -> tuple:
-    go_defuns = {}
+    go_defuns = defaultdict(list)
+    go_defun_counts = defaultdict(int)
     go_constants = []
 
     for defun in defuns:
-        lname = defun["lname"]
-
         try:
             maxargs = int(defun["maxargs"])
             if maxargs < 0 or maxargs > 8:
@@ -179,20 +178,20 @@ def get_go_declarations(defuns: list[dict]) -> tuple:
                 GoConstant(minargs, str(EMACS_CONSTANTS[defun["minargs"]]))
             )
 
-        fnname = fnname_to_go(defun["fnname"])
+        lname = defun["lname"]
         args = None
         if defun["args"] is not None:
             args = [go_safe_identifier(arg) for arg in defun["args"]]
 
+        count = go_defun_counts[lname]
+        go_defun_counts[lname] += 1
+
+        fnname = fnname_to_go(defun["fnname"], count)
+
         go_defun = GoDefun(subr_fn, numargs, minargs, lname, fnname, args)
+        go_defuns[lname].append(go_defun)
 
-        if lname in go_defuns:
-            # TODO: Fix repeated defuns
-            continue
-
-        go_defuns[lname] = go_defun
-
-    return go_defuns, go_constants
+    return sum(go_defuns.values(), []), go_constants
 
 
 def generate_go_file(defuns: list[dict], emacs_commit: str, emacs_branch: str) -> str:
@@ -205,7 +204,7 @@ def generate_go_file(defuns: list[dict], emacs_commit: str, emacs_branch: str) -
     if go_constants:
         s += "\n"
 
-    for defun in go_defuns.values():
+    for defun in go_defuns:
         s += f"func (ec *execContext) {defun.fnname}("
         if defun.subr_fn == "defSubrM":
             s += "args ...lispObject"
@@ -217,13 +216,15 @@ def generate_go_file(defuns: list[dict], emacs_commit: str, emacs_branch: str) -
 
     s += f"func (ec *execContext) symbolsOfEmacs{AUTOGEN_SUFFIX}() {{\n"
 
-    for defun in go_defuns.values():
+    for defun in go_defuns:
         s += f'\tec.{defun.subr_fn}("{defun.lname}", ec.{defun.fnname}'
         if defun.subr_fn != "defSubr0":
             s += f", {defun.minargs}"
         s += ")\n"
 
-    s += "}"
+    s += "}\n\n"
+    s += f"// Subroutines count: {len(go_defuns)}\n"
+    s += f"// Constants count: {len(go_constants)}\n"
 
     return s
 

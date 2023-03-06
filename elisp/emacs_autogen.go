@@ -935,6 +935,18 @@ func (ec *execContext) menuOrPopupActiveP_autogen() (lispObject, error) {
 	return ec.stub("menu-or-popup-active-p")
 }
 
+func (ec *execContext) menuOrPopupActiveP_1_autogen() (lispObject, error) {
+	return ec.stub("menu-or-popup-active-p")
+}
+
+func (ec *execContext) menuOrPopupActiveP_2_autogen() (lispObject, error) {
+	return ec.stub("menu-or-popup-active-p")
+}
+
+func (ec *execContext) menuOrPopupActiveP_3_autogen() (lispObject, error) {
+	return ec.stub("menu-or-popup-active-p")
+}
+
 func (ec *execContext) haikuMenuBarOpen_autogen(frame lispObject) (lispObject, error) {
 	return ec.stub("haiku-menu-bar-open")
 }
@@ -1183,6 +1195,14 @@ func (ec *execContext) xMenuBarOpenInternal_autogen(frame lispObject) (lispObjec
 	return ec.stub("x-menu-bar-open-internal")
 }
 
+func (ec *execContext) xMenuBarOpenInternal_1_autogen(frame lispObject) (lispObject, error) {
+	return ec.stub("x-menu-bar-open-internal")
+}
+
+func (ec *execContext) xMenuBarOpenInternal_2_autogen(frame lispObject) (lispObject, error) {
+	return ec.stub("x-menu-bar-open-internal")
+}
+
 func (ec *execContext) int86_autogen(interrupt, registers lispObject) (lispObject, error) {
 	return ec.stub("int86")
 }
@@ -1220,6 +1240,14 @@ func (ec *execContext) insertStartupScreen_autogen() (lispObject, error) {
 }
 
 func (ec *execContext) fileSystemInfo_autogen(filename lispObject) (lispObject, error) {
+	return ec.stub("file-system-info")
+}
+
+func (ec *execContext) fileSystemInfo_1_autogen(filename lispObject) (lispObject, error) {
+	return ec.stub("file-system-info")
+}
+
+func (ec *execContext) fileSystemInfo_2_autogen(filename lispObject) (lispObject, error) {
 	return ec.stub("file-system-info")
 }
 
@@ -1383,7 +1411,15 @@ func (ec *execContext) fontGetSystemNormalFont_autogen() (lispObject, error) {
 	return ec.stub("font-get-system-normal-font")
 }
 
+func (ec *execContext) fontGetSystemNormalFont_1_autogen() (lispObject, error) {
+	return ec.stub("font-get-system-normal-font")
+}
+
 func (ec *execContext) fontGetSystemFont_autogen() (lispObject, error) {
+	return ec.stub("font-get-system-font")
+}
+
+func (ec *execContext) fontGetSystemFont_1_autogen() (lispObject, error) {
 	return ec.stub("font-get-system-font")
 }
 
@@ -1444,6 +1480,18 @@ func (ec *execContext) putUnicodePropertyInternal_autogen(char_table, ch, value 
 }
 
 func (ec *execContext) xSelectFont_autogen(frame, exclude_proportional lispObject) (lispObject, error) {
+	return ec.stub("x-select-font")
+}
+
+func (ec *execContext) xSelectFont_1_autogen(frame, ignored lispObject) (lispObject, error) {
+	return ec.stub("x-select-font")
+}
+
+func (ec *execContext) xSelectFont_2_autogen(frame, ignored lispObject) (lispObject, error) {
+	return ec.stub("x-select-font")
+}
+
+func (ec *execContext) xSelectFont_3_autogen(frame, exclude_proportional lispObject) (lispObject, error) {
 	return ec.stub("x-select-font")
 }
 
@@ -2547,7 +2595,31 @@ func (ec *execContext) xwDisplayColorP_autogen(terminal lispObject) (lispObject,
 	return ec.stub("xw-display-color-p")
 }
 
+func (ec *execContext) xwDisplayColorP_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("xw-display-color-p")
+}
+
+func (ec *execContext) xwDisplayColorP_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("xw-display-color-p")
+}
+
+func (ec *execContext) xwDisplayColorP_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("xw-display-color-p")
+}
+
 func (ec *execContext) xwColorDefinedP_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-defined-p")
+}
+
+func (ec *execContext) xwColorDefinedP_1_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-defined-p")
+}
+
+func (ec *execContext) xwColorDefinedP_2_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-defined-p")
+}
+
+func (ec *execContext) xwColorDefinedP_3_autogen(color, frame lispObject) (lispObject, error) {
 	return ec.stub("xw-color-defined-p")
 }
 
@@ -2555,7 +2627,31 @@ func (ec *execContext) xwColorValues_autogen(color, frame lispObject) (lispObjec
 	return ec.stub("xw-color-values")
 }
 
+func (ec *execContext) xwColorValues_1_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-values")
+}
+
+func (ec *execContext) xwColorValues_2_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-values")
+}
+
+func (ec *execContext) xwColorValues_3_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-values")
+}
+
 func (ec *execContext) xDisplayGrayscaleP_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-grayscale-p")
+}
+
+func (ec *execContext) xDisplayGrayscaleP_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-grayscale-p")
+}
+
+func (ec *execContext) xDisplayGrayscaleP_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-grayscale-p")
+}
+
+func (ec *execContext) xDisplayGrayscaleP_3_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-display-grayscale-p")
 }
 
@@ -2563,7 +2659,31 @@ func (ec *execContext) xOpenConnection_autogen(display, resource_string, must_su
 	return ec.stub("x-open-connection")
 }
 
+func (ec *execContext) xOpenConnection_1_autogen(display, resource_string, must_succeed lispObject) (lispObject, error) {
+	return ec.stub("x-open-connection")
+}
+
+func (ec *execContext) xOpenConnection_2_autogen(display, xrm_string, must_succeed lispObject) (lispObject, error) {
+	return ec.stub("x-open-connection")
+}
+
+func (ec *execContext) xOpenConnection_3_autogen(display, xrm_string, must_succeed lispObject) (lispObject, error) {
+	return ec.stub("x-open-connection")
+}
+
 func (ec *execContext) xDisplayPixelWidth_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-width")
+}
+
+func (ec *execContext) xDisplayPixelWidth_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-width")
+}
+
+func (ec *execContext) xDisplayPixelWidth_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-width")
+}
+
+func (ec *execContext) xDisplayPixelWidth_3_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-display-pixel-width")
 }
 
@@ -2571,7 +2691,31 @@ func (ec *execContext) xDisplayPixelHeight_autogen(terminal lispObject) (lispObj
 	return ec.stub("x-display-pixel-height")
 }
 
+func (ec *execContext) xDisplayPixelHeight_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-height")
+}
+
+func (ec *execContext) xDisplayPixelHeight_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-height")
+}
+
+func (ec *execContext) xDisplayPixelHeight_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-height")
+}
+
 func (ec *execContext) xDisplayMmHeight_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-height")
+}
+
+func (ec *execContext) xDisplayMmHeight_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-height")
+}
+
+func (ec *execContext) xDisplayMmHeight_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-height")
+}
+
+func (ec *execContext) xDisplayMmHeight_3_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-display-mm-height")
 }
 
@@ -2579,7 +2723,31 @@ func (ec *execContext) xDisplayMmWidth_autogen(terminal lispObject) (lispObject,
 	return ec.stub("x-display-mm-width")
 }
 
+func (ec *execContext) xDisplayMmWidth_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-width")
+}
+
+func (ec *execContext) xDisplayMmWidth_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-width")
+}
+
+func (ec *execContext) xDisplayMmWidth_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-width")
+}
+
 func (ec *execContext) xCreateFrame_autogen(parms lispObject) (lispObject, error) {
+	return ec.stub("x-create-frame")
+}
+
+func (ec *execContext) xCreateFrame_1_autogen(parms lispObject) (lispObject, error) {
+	return ec.stub("x-create-frame")
+}
+
+func (ec *execContext) xCreateFrame_2_autogen(parms lispObject) (lispObject, error) {
+	return ec.stub("x-create-frame")
+}
+
+func (ec *execContext) xCreateFrame_3_autogen(parameters lispObject) (lispObject, error) {
 	return ec.stub("x-create-frame")
 }
 
@@ -2587,7 +2755,31 @@ func (ec *execContext) xDisplayVisualClass_autogen(terminal lispObject) (lispObj
 	return ec.stub("x-display-visual-class")
 }
 
+func (ec *execContext) xDisplayVisualClass_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-visual-class")
+}
+
+func (ec *execContext) xDisplayVisualClass_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-visual-class")
+}
+
+func (ec *execContext) xDisplayVisualClass_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-visual-class")
+}
+
 func (ec *execContext) xShowTip_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return ec.stub("x-show-tip")
+}
+
+func (ec *execContext) xShowTip_1_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return ec.stub("x-show-tip")
+}
+
+func (ec *execContext) xShowTip_2_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return ec.stub("x-show-tip")
+}
+
+func (ec *execContext) xShowTip_3_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
 	return ec.stub("x-show-tip")
 }
 
@@ -2595,7 +2787,31 @@ func (ec *execContext) xHideTip_autogen() (lispObject, error) {
 	return ec.stub("x-hide-tip")
 }
 
+func (ec *execContext) xHideTip_1_autogen() (lispObject, error) {
+	return ec.stub("x-hide-tip")
+}
+
+func (ec *execContext) xHideTip_2_autogen() (lispObject, error) {
+	return ec.stub("x-hide-tip")
+}
+
+func (ec *execContext) xHideTip_3_autogen() (lispObject, error) {
+	return ec.stub("x-hide-tip")
+}
+
 func (ec *execContext) xCloseConnection_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-close-connection")
+}
+
+func (ec *execContext) xCloseConnection_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-close-connection")
+}
+
+func (ec *execContext) xCloseConnection_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-close-connection")
+}
+
+func (ec *execContext) xCloseConnection_3_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-close-connection")
 }
 
@@ -2603,7 +2819,27 @@ func (ec *execContext) xDisplayList_autogen() (lispObject, error) {
 	return ec.stub("x-display-list")
 }
 
+func (ec *execContext) xDisplayList_1_autogen() (lispObject, error) {
+	return ec.stub("x-display-list")
+}
+
+func (ec *execContext) xDisplayList_2_autogen() (lispObject, error) {
+	return ec.stub("x-display-list")
+}
+
+func (ec *execContext) xDisplayList_3_autogen() (lispObject, error) {
+	return ec.stub("x-display-list")
+}
+
 func (ec *execContext) xServerVendor_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-vendor")
+}
+
+func (ec *execContext) xServerVendor_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-vendor")
+}
+
+func (ec *execContext) xServerVendor_2_autogen(terminal lispObject) (lispObject, error) {
 	return ec.stub("x-server-vendor")
 }
 
@@ -2611,7 +2847,27 @@ func (ec *execContext) xServerVersion_autogen(terminal lispObject) (lispObject, 
 	return ec.stub("x-server-version")
 }
 
+func (ec *execContext) xServerVersion_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-version")
+}
+
+func (ec *execContext) xServerVersion_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-version")
+}
+
 func (ec *execContext) xDisplayScreens_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-screens")
+}
+
+func (ec *execContext) xDisplayScreens_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-screens")
+}
+
+func (ec *execContext) xDisplayScreens_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-screens")
+}
+
+func (ec *execContext) xDisplayScreens_3_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-display-screens")
 }
 
@@ -2623,7 +2879,31 @@ func (ec *execContext) xDisplayColorCells_autogen(terminal lispObject) (lispObje
 	return ec.stub("x-display-color-cells")
 }
 
+func (ec *execContext) xDisplayColorCells_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-color-cells")
+}
+
+func (ec *execContext) xDisplayColorCells_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-color-cells")
+}
+
+func (ec *execContext) xDisplayColorCells_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-color-cells")
+}
+
 func (ec *execContext) xDisplayPlanes_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-planes")
+}
+
+func (ec *execContext) xDisplayPlanes_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-planes")
+}
+
+func (ec *execContext) xDisplayPlanes_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-planes")
+}
+
+func (ec *execContext) xDisplayPlanes_3_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-display-planes")
 }
 
@@ -2631,7 +2911,23 @@ func (ec *execContext) xDoubleBufferedP_autogen(frame lispObject) (lispObject, e
 	return ec.stub("x-double-buffered-p")
 }
 
+func (ec *execContext) xDoubleBufferedP_1_autogen(frame lispObject) (lispObject, error) {
+	return ec.stub("x-double-buffered-p")
+}
+
 func (ec *execContext) xDisplayBackingStore_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-backing-store")
+}
+
+func (ec *execContext) xDisplayBackingStore_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-backing-store")
+}
+
+func (ec *execContext) xDisplayBackingStore_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-backing-store")
+}
+
+func (ec *execContext) xDisplayBackingStore_3_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-display-backing-store")
 }
 
@@ -2656,6 +2952,18 @@ func (ec *execContext) haikuFrameListZOrder_autogen(terminal lispObject) (lispOb
 }
 
 func (ec *execContext) xDisplaySaveUnder_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-save-under")
+}
+
+func (ec *execContext) xDisplaySaveUnder_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-save-under")
+}
+
+func (ec *execContext) xDisplaySaveUnder_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-save-under")
+}
+
+func (ec *execContext) xDisplaySaveUnder_3_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-display-save-under")
 }
 
@@ -3231,6 +3539,10 @@ func (ec *execContext) xExportFrames_autogen(frames, type_ lispObject) (lispObje
 	return ec.stub("x-export-frames")
 }
 
+func (ec *execContext) xExportFrames_1_autogen(frames, type_ lispObject) (lispObject, error) {
+	return ec.stub("x-export-frames")
+}
+
 func (ec *execContext) pgtkSetMonitorScaleFactor_autogen(monitor_model, scale_factor lispObject) (lispObject, error) {
 	return ec.stub("pgtk-set-monitor-scale-factor")
 }
@@ -3244,6 +3556,14 @@ func (ec *execContext) pgtkSetResource_autogen(attribute, value lispObject) (lis
 }
 
 func (ec *execContext) xServerMaxRequestSize_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-max-request-size")
+}
+
+func (ec *execContext) xServerMaxRequestSize_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-max-request-size")
+}
+
+func (ec *execContext) xServerMaxRequestSize_2_autogen(display lispObject) (lispObject, error) {
 	return ec.stub("x-server-max-request-size")
 }
 
@@ -3287,11 +3607,27 @@ func (ec *execContext) xFileDialog_autogen(prompt, dir, default_filename, mustma
 	return ec.stub("x-file-dialog")
 }
 
+func (ec *execContext) xFileDialog_1_autogen(prompt, dir, default_filename, mustmatch, only_dir_p lispObject) (lispObject, error) {
+	return ec.stub("x-file-dialog")
+}
+
+func (ec *execContext) xFileDialog_2_autogen(prompt, dir, default_filename, mustmatch, only_dir_p lispObject) (lispObject, error) {
+	return ec.stub("x-file-dialog")
+}
+
+func (ec *execContext) xFileDialog_3_autogen(prompt, dir, default_filename, mustmatch, only_dir_p lispObject) (lispObject, error) {
+	return ec.stub("x-file-dialog")
+}
+
 func (ec *execContext) pgtkBackendDisplayClass_autogen(terminal lispObject) (lispObject, error) {
 	return ec.stub("pgtk-backend-display-class")
 }
 
 func (ec *execContext) xGtkDebug_autogen(enable lispObject) (lispObject, error) {
+	return ec.stub("x-gtk-debug")
+}
+
+func (ec *execContext) xGtkDebug_1_autogen(enable lispObject) (lispObject, error) {
 	return ec.stub("x-gtk-debug")
 }
 
@@ -4351,7 +4687,15 @@ func (ec *execContext) xSynchronize_autogen(on, terminal lispObject) (lispObject
 	return ec.stub("x-synchronize")
 }
 
+func (ec *execContext) xSynchronize_1_autogen(on, display lispObject) (lispObject, error) {
+	return ec.stub("x-synchronize")
+}
+
 func (ec *execContext) xChangeWindowProperty_autogen(prop, value, frame, type_, format, outer_p, window_id lispObject) (lispObject, error) {
+	return ec.stub("x-change-window-property")
+}
+
+func (ec *execContext) xChangeWindowProperty_1_autogen(prop, value, frame, type_, format, outer_p lispObject) (lispObject, error) {
 	return ec.stub("x-change-window-property")
 }
 
@@ -4359,7 +4703,15 @@ func (ec *execContext) xDeleteWindowProperty_autogen(prop, frame, window_id lisp
 	return ec.stub("x-delete-window-property")
 }
 
+func (ec *execContext) xDeleteWindowProperty_1_autogen(prop, frame lispObject) (lispObject, error) {
+	return ec.stub("x-delete-window-property")
+}
+
 func (ec *execContext) xWindowProperty_autogen(prop, frame, type_, window_id, delete_p, vector_ret_p lispObject) (lispObject, error) {
+	return ec.stub("x-window-property")
+}
+
+func (ec *execContext) xWindowProperty_1_autogen(prop, frame, type_, source, delete_p, vector_ret_p lispObject) (lispObject, error) {
 	return ec.stub("x-window-property")
 }
 
@@ -6752,6 +7104,9 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1("sqlitep", ec.sqlitep_autogen, 1)
 	ec.defSubr0("sqlite-available-p", ec.sqliteAvailableP_autogen)
 	ec.defSubr0("menu-or-popup-active-p", ec.menuOrPopupActiveP_autogen)
+	ec.defSubr0("menu-or-popup-active-p", ec.menuOrPopupActiveP_1_autogen)
+	ec.defSubr0("menu-or-popup-active-p", ec.menuOrPopupActiveP_2_autogen)
+	ec.defSubr0("menu-or-popup-active-p", ec.menuOrPopupActiveP_3_autogen)
 	ec.defSubr1("haiku-menu-bar-open", ec.haikuMenuBarOpen_autogen, 0)
 	ec.defSubr2("write-char", ec.writeChar_autogen, 1)
 	ec.defSubr2("terpri", ec.terpri_autogen, 0)
@@ -6814,6 +7169,8 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr3("backtrace-eval", ec.backtraceEval_autogen, 2)
 	ec.defSubr2("backtrace--locals", ec.backtraceLocals_autogen, 1)
 	ec.defSubr1("x-menu-bar-open-internal", ec.xMenuBarOpenInternal_autogen, 0)
+	ec.defSubr1("x-menu-bar-open-internal", ec.xMenuBarOpenInternal_1_autogen, 0)
+	ec.defSubr1("x-menu-bar-open-internal", ec.xMenuBarOpenInternal_2_autogen, 0)
 	ec.defSubr2("int86", ec.int86_autogen, 2)
 	ec.defSubr2("msdos-memget", ec.dosMemget_autogen, 2)
 	ec.defSubr2("msdos-memput", ec.dosMemput_autogen, 2)
@@ -6824,6 +7181,8 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr0("msdos-mouse-disable", ec.msdosMouseDisable_autogen)
 	ec.defSubr0("insert-startup-screen", ec.insertStartupScreen_autogen)
 	ec.defSubr1("file-system-info", ec.fileSystemInfo_autogen, 1)
+	ec.defSubr1("file-system-info", ec.fileSystemInfo_1_autogen, 1)
+	ec.defSubr1("file-system-info", ec.fileSystemInfo_2_autogen, 1)
 	ec.defSubr2("text-properties-at", ec.textPropertiesAt_autogen, 1)
 	ec.defSubr3("get-text-property", ec.getTextProperty_autogen, 2)
 	ec.defSubr3("get-char-property", ec.getCharProperty_autogen, 2)
@@ -6864,7 +7223,9 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr0("all-threads", ec.allThreads_autogen)
 	ec.defSubr1("thread-last-error", ec.threadLastError_autogen, 0)
 	ec.defSubr0("font-get-system-normal-font", ec.fontGetSystemNormalFont_autogen)
+	ec.defSubr0("font-get-system-normal-font", ec.fontGetSystemNormalFont_1_autogen)
 	ec.defSubr0("font-get-system-font", ec.fontGetSystemFont_autogen)
+	ec.defSubr0("font-get-system-font", ec.fontGetSystemFont_1_autogen)
 	ec.defSubr0("tool-bar-get-system-style", ec.toolBarGetSystemStyle_autogen)
 	ec.defSubr2("make-char-table", ec.makeCharTable_autogen, 1)
 	ec.defSubr1("char-table-subtype", ec.charTableSubtype_autogen, 1)
@@ -6880,6 +7241,9 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr2("get-unicode-property-internal", ec.getUnicodePropertyInternal_autogen, 2)
 	ec.defSubr3("put-unicode-property-internal", ec.putUnicodePropertyInternal_autogen, 3)
 	ec.defSubr2("x-select-font", ec.xSelectFont_autogen, 0)
+	ec.defSubr2("x-select-font", ec.xSelectFont_1_autogen, 0)
+	ec.defSubr2("x-select-font", ec.xSelectFont_2_autogen, 0)
+	ec.defSubr2("x-select-font", ec.xSelectFont_3_autogen, 0)
 	ec.defSubr1("identity", ec.identity_autogen, 1)
 	ec.defSubr1("random", ec.random_autogen, 0)
 	ec.defSubr1("length", ec.length_autogen, 1)
@@ -7155,34 +7519,99 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr2("haiku-set-mouse-absolute-pixel-position", ec.haikuSetMouseAbsolutePixelPosition_autogen, 2)
 	ec.defSubr0("haiku-mouse-absolute-pixel-position", ec.haikuMouseAbsolutePixelPosition_autogen)
 	ec.defSubr1("xw-display-color-p", ec.xwDisplayColorP_autogen, 0)
+	ec.defSubr1("xw-display-color-p", ec.xwDisplayColorP_1_autogen, 0)
+	ec.defSubr1("xw-display-color-p", ec.xwDisplayColorP_2_autogen, 0)
+	ec.defSubr1("xw-display-color-p", ec.xwDisplayColorP_3_autogen, 0)
 	ec.defSubr2("xw-color-defined-p", ec.xwColorDefinedP_autogen, 1)
+	ec.defSubr2("xw-color-defined-p", ec.xwColorDefinedP_1_autogen, 1)
+	ec.defSubr2("xw-color-defined-p", ec.xwColorDefinedP_2_autogen, 1)
+	ec.defSubr2("xw-color-defined-p", ec.xwColorDefinedP_3_autogen, 1)
 	ec.defSubr2("xw-color-values", ec.xwColorValues_autogen, 1)
+	ec.defSubr2("xw-color-values", ec.xwColorValues_1_autogen, 1)
+	ec.defSubr2("xw-color-values", ec.xwColorValues_2_autogen, 1)
+	ec.defSubr2("xw-color-values", ec.xwColorValues_3_autogen, 1)
 	ec.defSubr1("x-display-grayscale-p", ec.xDisplayGrayscaleP_autogen, 0)
+	ec.defSubr1("x-display-grayscale-p", ec.xDisplayGrayscaleP_1_autogen, 0)
+	ec.defSubr1("x-display-grayscale-p", ec.xDisplayGrayscaleP_2_autogen, 0)
+	ec.defSubr1("x-display-grayscale-p", ec.xDisplayGrayscaleP_3_autogen, 0)
 	ec.defSubr3("x-open-connection", ec.xOpenConnection_autogen, 1)
+	ec.defSubr3("x-open-connection", ec.xOpenConnection_1_autogen, 1)
+	ec.defSubr3("x-open-connection", ec.xOpenConnection_2_autogen, 1)
+	ec.defSubr3("x-open-connection", ec.xOpenConnection_3_autogen, 1)
 	ec.defSubr1("x-display-pixel-width", ec.xDisplayPixelWidth_autogen, 0)
+	ec.defSubr1("x-display-pixel-width", ec.xDisplayPixelWidth_1_autogen, 0)
+	ec.defSubr1("x-display-pixel-width", ec.xDisplayPixelWidth_2_autogen, 0)
+	ec.defSubr1("x-display-pixel-width", ec.xDisplayPixelWidth_3_autogen, 0)
 	ec.defSubr1("x-display-pixel-height", ec.xDisplayPixelHeight_autogen, 0)
+	ec.defSubr1("x-display-pixel-height", ec.xDisplayPixelHeight_1_autogen, 0)
+	ec.defSubr1("x-display-pixel-height", ec.xDisplayPixelHeight_2_autogen, 0)
+	ec.defSubr1("x-display-pixel-height", ec.xDisplayPixelHeight_3_autogen, 0)
 	ec.defSubr1("x-display-mm-height", ec.xDisplayMmHeight_autogen, 0)
+	ec.defSubr1("x-display-mm-height", ec.xDisplayMmHeight_1_autogen, 0)
+	ec.defSubr1("x-display-mm-height", ec.xDisplayMmHeight_2_autogen, 0)
+	ec.defSubr1("x-display-mm-height", ec.xDisplayMmHeight_3_autogen, 0)
 	ec.defSubr1("x-display-mm-width", ec.xDisplayMmWidth_autogen, 0)
+	ec.defSubr1("x-display-mm-width", ec.xDisplayMmWidth_1_autogen, 0)
+	ec.defSubr1("x-display-mm-width", ec.xDisplayMmWidth_2_autogen, 0)
+	ec.defSubr1("x-display-mm-width", ec.xDisplayMmWidth_3_autogen, 0)
 	ec.defSubr1("x-create-frame", ec.xCreateFrame_autogen, 1)
+	ec.defSubr1("x-create-frame", ec.xCreateFrame_1_autogen, 1)
+	ec.defSubr1("x-create-frame", ec.xCreateFrame_2_autogen, 1)
+	ec.defSubr1("x-create-frame", ec.xCreateFrame_3_autogen, 1)
 	ec.defSubr1("x-display-visual-class", ec.xDisplayVisualClass_autogen, 0)
+	ec.defSubr1("x-display-visual-class", ec.xDisplayVisualClass_1_autogen, 0)
+	ec.defSubr1("x-display-visual-class", ec.xDisplayVisualClass_2_autogen, 0)
+	ec.defSubr1("x-display-visual-class", ec.xDisplayVisualClass_3_autogen, 0)
 	ec.defSubr6("x-show-tip", ec.xShowTip_autogen, 1)
+	ec.defSubr6("x-show-tip", ec.xShowTip_1_autogen, 1)
+	ec.defSubr6("x-show-tip", ec.xShowTip_2_autogen, 1)
+	ec.defSubr6("x-show-tip", ec.xShowTip_3_autogen, 1)
 	ec.defSubr0("x-hide-tip", ec.xHideTip_autogen)
+	ec.defSubr0("x-hide-tip", ec.xHideTip_1_autogen)
+	ec.defSubr0("x-hide-tip", ec.xHideTip_2_autogen)
+	ec.defSubr0("x-hide-tip", ec.xHideTip_3_autogen)
 	ec.defSubr1("x-close-connection", ec.xCloseConnection_autogen, 1)
+	ec.defSubr1("x-close-connection", ec.xCloseConnection_1_autogen, 1)
+	ec.defSubr1("x-close-connection", ec.xCloseConnection_2_autogen, 1)
+	ec.defSubr1("x-close-connection", ec.xCloseConnection_3_autogen, 1)
 	ec.defSubr0("x-display-list", ec.xDisplayList_autogen)
+	ec.defSubr0("x-display-list", ec.xDisplayList_1_autogen)
+	ec.defSubr0("x-display-list", ec.xDisplayList_2_autogen)
+	ec.defSubr0("x-display-list", ec.xDisplayList_3_autogen)
 	ec.defSubr1("x-server-vendor", ec.xServerVendor_autogen, 0)
+	ec.defSubr1("x-server-vendor", ec.xServerVendor_1_autogen, 0)
+	ec.defSubr1("x-server-vendor", ec.xServerVendor_2_autogen, 0)
 	ec.defSubr1("x-server-version", ec.xServerVersion_autogen, 0)
+	ec.defSubr1("x-server-version", ec.xServerVersion_1_autogen, 0)
+	ec.defSubr1("x-server-version", ec.xServerVersion_2_autogen, 0)
 	ec.defSubr1("x-display-screens", ec.xDisplayScreens_autogen, 0)
+	ec.defSubr1("x-display-screens", ec.xDisplayScreens_1_autogen, 0)
+	ec.defSubr1("x-display-screens", ec.xDisplayScreens_2_autogen, 0)
+	ec.defSubr1("x-display-screens", ec.xDisplayScreens_3_autogen, 0)
 	ec.defSubr0("haiku-get-version-string", ec.haikuGetVersionString_autogen)
 	ec.defSubr1("x-display-color-cells", ec.xDisplayColorCells_autogen, 0)
+	ec.defSubr1("x-display-color-cells", ec.xDisplayColorCells_1_autogen, 0)
+	ec.defSubr1("x-display-color-cells", ec.xDisplayColorCells_2_autogen, 0)
+	ec.defSubr1("x-display-color-cells", ec.xDisplayColorCells_3_autogen, 0)
 	ec.defSubr1("x-display-planes", ec.xDisplayPlanes_autogen, 0)
+	ec.defSubr1("x-display-planes", ec.xDisplayPlanes_1_autogen, 0)
+	ec.defSubr1("x-display-planes", ec.xDisplayPlanes_2_autogen, 0)
+	ec.defSubr1("x-display-planes", ec.xDisplayPlanes_3_autogen, 0)
 	ec.defSubr1("x-double-buffered-p", ec.xDoubleBufferedP_autogen, 0)
+	ec.defSubr1("x-double-buffered-p", ec.xDoubleBufferedP_1_autogen, 0)
 	ec.defSubr1("x-display-backing-store", ec.xDisplayBackingStore_autogen, 0)
+	ec.defSubr1("x-display-backing-store", ec.xDisplayBackingStore_1_autogen, 0)
+	ec.defSubr1("x-display-backing-store", ec.xDisplayBackingStore_2_autogen, 0)
+	ec.defSubr1("x-display-backing-store", ec.xDisplayBackingStore_3_autogen, 0)
 	ec.defSubr1("haiku-frame-geometry", ec.haikuFrameGeometry_autogen, 0)
 	ec.defSubr2("haiku-frame-edges", ec.haikuFrameEdges_autogen, 0)
 	ec.defSubr6("haiku-read-file-name", ec.haikuReadFileName_autogen, 1)
 	ec.defSubr2("haiku-put-resource", ec.haikuPutResource_autogen, 2)
 	ec.defSubr1("haiku-frame-list-z-order", ec.haikuFrameListZOrder_autogen, 0)
 	ec.defSubr1("x-display-save-under", ec.xDisplaySaveUnder_autogen, 0)
+	ec.defSubr1("x-display-save-under", ec.xDisplaySaveUnder_1_autogen, 0)
+	ec.defSubr1("x-display-save-under", ec.xDisplaySaveUnder_2_autogen, 0)
+	ec.defSubr1("x-display-save-under", ec.xDisplaySaveUnder_3_autogen, 0)
 	ec.defSubr3("haiku-frame-restack", ec.haikuFrameRestack_autogen, 2)
 	ec.defSubr1("haiku-save-session-reply", ec.haikuSaveSessionReply_autogen, 1)
 	ec.defSubr1("haiku-display-monitor-attributes-list", ec.haikuDisplayMonitorAttributesList_autogen, 0)
@@ -7326,10 +7755,13 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr2("describe-vector", ec.describeVector_autogen, 1)
 	ec.defSubr7("help--describe-vector", ec.helpDescribeVector_autogen, 7)
 	ec.defSubr2("x-export-frames", ec.xExportFrames_autogen, 0)
+	ec.defSubr2("x-export-frames", ec.xExportFrames_1_autogen, 0)
 	ec.defSubr2("pgtk-set-monitor-scale-factor", ec.pgtkSetMonitorScaleFactor_autogen, 2)
 	ec.defSubr3("pgtk-frame-restack", ec.pgtkFrameRestack_autogen, 2)
 	ec.defSubr2("pgtk-set-resource", ec.pgtkSetResource_autogen, 2)
 	ec.defSubr1("x-server-max-request-size", ec.xServerMaxRequestSize_autogen, 0)
+	ec.defSubr1("x-server-max-request-size", ec.xServerMaxRequestSize_1_autogen, 0)
+	ec.defSubr1("x-server-max-request-size", ec.xServerMaxRequestSize_2_autogen, 0)
 	ec.defSubr1("pgtk-font-name", ec.pgtkFontName_autogen, 1)
 	ec.defSubr1("pgtk-display-monitor-attributes-list", ec.pgtkDisplayMonitorAttributesList_autogen, 0)
 	ec.defSubr1("pgtk-frame-geometry", ec.pgtkFrameGeometry_autogen, 0)
@@ -7340,8 +7772,12 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr0("pgtk-get-page-setup", ec.pgtkGetPageSetup_autogen)
 	ec.defSubr1("pgtk-print-frames-dialog", ec.pgtkPrintFramesDialog_autogen, 0)
 	ec.defSubr5("x-file-dialog", ec.xFileDialog_autogen, 2)
+	ec.defSubr5("x-file-dialog", ec.xFileDialog_1_autogen, 2)
+	ec.defSubr5("x-file-dialog", ec.xFileDialog_2_autogen, 2)
+	ec.defSubr5("x-file-dialog", ec.xFileDialog_3_autogen, 2)
 	ec.defSubr1("pgtk-backend-display-class", ec.pgtkBackendDisplayClass_autogen, 0)
 	ec.defSubr1("x-gtk-debug", ec.xGtkDebug_autogen, 1)
+	ec.defSubr1("x-gtk-debug", ec.xGtkDebug_1_autogen, 1)
 	ec.defSubr0("current-column", ec.currentColumn_autogen)
 	ec.defSubr2("indent-to", ec.indentTo_autogen, 1)
 	ec.defSubr0("current-indentation", ec.currentIndentation_autogen)
@@ -7606,9 +8042,13 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr2("x-set-mouse-absolute-pixel-position", ec.xSetMouseAbsolutePixelPosition_autogen, 2)
 	ec.defSubr6("x-begin-drag", ec.xBeginDrag_autogen, 1)
 	ec.defSubr2("x-synchronize", ec.xSynchronize_autogen, 1)
+	ec.defSubr2("x-synchronize", ec.xSynchronize_1_autogen, 1)
 	ec.defSubr7("x-change-window-property", ec.xChangeWindowProperty_autogen, 2)
+	ec.defSubr6("x-change-window-property", ec.xChangeWindowProperty_1_autogen, 2)
 	ec.defSubr3("x-delete-window-property", ec.xDeleteWindowProperty_autogen, 1)
+	ec.defSubr2("x-delete-window-property", ec.xDeleteWindowProperty_1_autogen, 1)
 	ec.defSubr6("x-window-property", ec.xWindowProperty_autogen, 1)
+	ec.defSubr6("x-window-property", ec.xWindowProperty_1_autogen, 1)
 	ec.defSubr3("x-window-property-attributes", ec.xWindowPropertyAttributes_autogen, 1)
 	ec.defSubr6("x-translate-coordinates", ec.xTranslateCoordinates_autogen, 1)
 	ec.defSubr0("x-uses-old-gtk-dialog", ec.xUsesOldGtkDialog_autogen)
@@ -8149,3 +8589,6 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr0("unlock-buffer", ec.unlockBuffer_autogen)
 	ec.defSubr1("file-locked-p", ec.fileLockedP_autogen, 1)
 }
+
+// Subroutines count: 1716
+// Constants count: 2

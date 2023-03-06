@@ -140,10 +140,13 @@ func TestReadPrint(t *testing.T) {
 func TestReadEvalPrint(t *testing.T) {
 	testStringToString(t, readEvalPrin1, []stringToStringTC{
 		{"1", "1", nil},
+		{"\"hello\"", "\"hello\"", nil},
+		{"\"ñandú\"", "\"ñandú\"", nil},
 		{"nil", "nil", nil},
 		{"'nil", "nil", nil},
 		{"t", "t", nil},
 		{"'t", "t", nil},
+		{"'-", "-", nil},
 		{"+", "", anyError},
 		{"(+)", "0", nil},
 		{"(+ 1)", "1", nil},
