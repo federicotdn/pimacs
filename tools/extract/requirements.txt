@@ -1,1 +1,2 @@
 pyparsing==3.0.9
+black==23.1.0
