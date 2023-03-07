@@ -17,6 +17,7 @@ type lispGlobals struct {
 	internalInterpreterEnv lispObject
 	unbound                lispObject
 	lexicalBinding         lispObject
+	emptySymbol            lispObject
 	// 2. Subroutine symbols
 	sequencep          lispObject
 	listp              lispObject
@@ -80,6 +81,7 @@ func (ec *execContext) createSymbols() {
 		{loc: &g.t, name: "t"},
 		{loc: &g.internalInterpreterEnv, name: "internal-interpreter-environment", unintern: true},
 		{loc: &g.lexicalBinding, name: "lexical-binding"},
+		{loc: &g.emptySymbol, name: ""},
 		// 2
 		{loc: &g.sequencep, name: "sequencep"},
 		{loc: &g.listp, name: "listp"},
@@ -151,7 +153,7 @@ func (ec *execContext) initializeSymbols(syms []symbolInit) {
 	names := make(map[string]bool)
 
 	for _, sym := range syms {
-		if sym.name == "" {
+		if sym.loc != &ec.g.emptySymbol && sym.name == "" {
 			ec.terminate("no symbol name defined")
 		}
 

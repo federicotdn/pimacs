@@ -237,12 +237,12 @@ func (li *listIter) error() (lispObject, error) {
 	return nil, li.err
 }
 
-func (ec *execContext) defSubr(name string, sub *subroutine) {
+func (ec *execContext) defSubr(sub *subroutine) {
 	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
 		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", sub)
 	}
 
-	symbol := xEnsure(ec.intern(ec.makeString(name), ec.nil_))
+	symbol := xEnsure(ec.intern(ec.makeString(sub.name), ec.nil_))
 	sym := xSymbol(symbol)
 
 	if sym.function != ec.nil_ {
@@ -259,8 +259,9 @@ func (ec *execContext) defSubr(name string, sub *subroutine) {
 func (ec *execContext) defSubr0(name string, fn lispFn0) *subroutine {
 	sub := &subroutine{
 		callabe0: fn,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -269,8 +270,9 @@ func (ec *execContext) defSubr1(name string, fn lispFn1, minArgs int) *subroutin
 		callabe1: fn,
 		minArgs:  minArgs,
 		maxArgs:  1,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -279,8 +281,9 @@ func (ec *execContext) defSubr2(name string, fn lispFn2, minArgs int) *subroutin
 		callabe2: fn,
 		minArgs:  minArgs,
 		maxArgs:  2,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -289,8 +292,9 @@ func (ec *execContext) defSubr3(name string, fn lispFn3, minArgs int) *subroutin
 		callabe3: fn,
 		minArgs:  minArgs,
 		maxArgs:  3,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -299,8 +303,9 @@ func (ec *execContext) defSubr4(name string, fn lispFn4, minArgs int) *subroutin
 		callabe4: fn,
 		minArgs:  minArgs,
 		maxArgs:  4,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -309,8 +314,9 @@ func (ec *execContext) defSubr5(name string, fn lispFn5, minArgs int) *subroutin
 		callabe5: fn,
 		minArgs:  minArgs,
 		maxArgs:  5,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -319,8 +325,9 @@ func (ec *execContext) defSubr6(name string, fn lispFn6, minArgs int) *subroutin
 		callabe6: fn,
 		minArgs:  minArgs,
 		maxArgs:  6,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -329,8 +336,9 @@ func (ec *execContext) defSubr7(name string, fn lispFn7, minArgs int) *subroutin
 		callabe7: fn,
 		minArgs:  minArgs,
 		maxArgs:  7,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -339,8 +347,9 @@ func (ec *execContext) defSubr8(name string, fn lispFn8, minArgs int) *subroutin
 		callabe8: fn,
 		minArgs:  minArgs,
 		maxArgs:  8,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -349,8 +358,9 @@ func (ec *execContext) defSubrM(name string, fn lispFnM, minArgs int) *subroutin
 		callabem: fn,
 		minArgs:  minArgs,
 		maxArgs:  argsMany,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 
@@ -359,8 +369,9 @@ func (ec *execContext) defSubrU(name string, fn lispFn1, minArgs int) *subroutin
 		callabe1: fn,
 		minArgs:  minArgs,
 		maxArgs:  argsUnevalled,
+		name:     name,
 	}
-	ec.defSubr(name, sub)
+	ec.defSubr(sub)
 	return sub
 }
 

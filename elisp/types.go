@@ -48,6 +48,7 @@ type subroutine struct {
 	minArgs  int
 	maxArgs  int
 	noReturn bool
+	name     string
 }
 
 type buffer struct {

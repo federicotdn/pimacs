@@ -14,15 +14,29 @@ func repl() {
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
+		eval := true
+
 		fmt.Print("> ")
 		source, _ := reader.ReadString('\n')
 		source = strings.TrimRight(source, "\r\n")
 
 		if source == "" {
 			break
+		} else if source[0] == '|' {
+			eval = false
+			source = source[1:]
+			fmt.Println("[input will not be evaluated]")
 		}
 
-		printed, err := interpreter.ReadEvalPrin1(source)
+		var printed string
+		var err error
+
+		if eval {
+			printed, err = interpreter.ReadEvalPrin1(source)
+		} else {
+			printed, err = interpreter.ReadPrin1(source)
+		}
+
 		if err != nil {
 			fmt.Println("repl error:", err)
 		} else {

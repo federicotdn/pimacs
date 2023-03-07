@@ -5,6 +5,15 @@ import (
 	"strings"
 )
 
+type readStackElementType int
+
+const (
+	readStackListStart = iota + 1
+	readStackList
+	readStackListDot
+	readStackSpecial
+)
+
 type readContext interface {
 	read() rune
 	unread(rune)
@@ -16,6 +25,17 @@ type readContextString struct {
 	runes  []rune
 	i      int
 	end    int
+}
+
+type readStackElem struct {
+	elementType readStackElementType
+	special     lispObject
+	listHead    lispObject
+	listTail    lispObject
+}
+
+type readStack struct {
+	elements []readStackElem
 }
 
 func (ctx *readContextString) read() rune {
@@ -42,6 +62,52 @@ func (ctx *readContextString) unread(c rune) {
 
 func (ctx *readContextString) position() int {
 	return ctx.i
+}
+
+func (stack *readStack) push(elem readStackElem) {
+	stack.elements = append(stack.elements, elem)
+}
+
+func (stack *readStack) peek() *readStackElem {
+	if stack.isEmpty() {
+		terminate("can't peek: read stack is empty")
+	}
+	return &stack.elements[len(stack.elements)-1]
+}
+
+func (stack *readStack) pop() readStackElem {
+	if stack.isEmpty() {
+		terminate("can't pop: read stack is empty")
+	}
+	elem := stack.elements[len(stack.elements)-1]
+	stack.elements = stack.elements[:len(stack.elements)-1]
+	return elem
+}
+
+func (stack *readStack) isEmpty() bool {
+	return len(stack.elements) == 0
+}
+
+func (ec *execContext) skipSpaceAndComments(ctx readContext) error {
+	var c rune
+
+	// Imitate do...while loop
+	for ok := true; ok; ok = (c <= 040 || c == nbsp) {
+		c = ctx.read()
+
+		if c == ';' {
+			// Imitate do...while loop (again)
+			for ok2 := true; ok2; ok2 = (c >= 0 && c != '\n') {
+			}
+		}
+
+		if c < 0 {
+			return xErrOnly(ec.signalN(ec.g.endOfFile))
+		}
+	}
+
+	ctx.unread(c)
+	return nil
 }
 
 func (ec *execContext) stringToNumber(s string) (lispObject, error) {
@@ -129,56 +195,72 @@ func (ec *execContext) readEscape(ctx readContext, stringp bool) (rune, error) {
 	return 0, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown escape code: '\\%v'", c))
 }
 
-func (ec *execContext) readList(ctx readContext) (lispObject, error) {
-	// TAGS: incomplete
-	var val lispObject = ec.nil_
-	var tail lispObject = ec.nil_
+func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
+	builder := strings.Builder{}
+	var c rune
 
 	for {
-		elt, c, err := ec.read1(ctx)
-		if err != nil {
-			return nil, err
+		c = ctx.read()
+		if c == eofRune || c == '"' {
+			break
 		}
 
-		if c != 0 {
-			switch c {
-			case ')':
-				return val, nil
-			case '.':
-				if tail != ec.nil_ {
-					obj, err := ec.read0(ctx)
-					if err != nil {
-						return nil, err
-					}
-					xSetCdr(tail, obj)
-				} else {
-					val, err = ec.read0(ctx)
-				}
+		if c == '\\' {
+			var err error
+			c, err = ec.readEscape(ctx, true)
+			if err != nil {
+				return nil, err
+			}
 
-				_, c, _ = ec.read1(ctx)
-				if c == ')' {
-					return val, nil
-				}
-
-				return ec.invalidReadSyntax("'.' in wrong context")
-			default:
-				return ec.invalidReadSyntax("invalid list ending: '%v'", string(c))
+			if c == -1 {
+				continue
 			}
 		}
 
-		tmp := ec.makeCons(elt, ec.nil_)
-
-		if tail != ec.nil_ {
-			xSetCdr(tail, tmp)
-		} else {
-			val = tmp
-		}
-
-		tail = tmp
+		builder.WriteRune(c)
 	}
+
+	if c == eofRune {
+		return ec.signalN(ec.g.endOfFile)
+	}
+
+	return ec.makeString(builder.String()), nil
 }
 
-func (ec *execContext) readAtom(c rune, ctx readContext) (lispObject, error) {
+func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
+	c := ctx.read()
+	if c == eofRune {
+		return ec.signalN(ec.g.endOfFile)
+	}
+
+	if c == ' ' || c == '\t' {
+		return ec.makeInteger(lispInt(c)), nil
+	}
+
+	if c == '\\' {
+		var err error
+		c, err = ec.readEscape(ctx, false)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if charByte8(c) {
+		c = charToByte8(c)
+	}
+
+	next := ctx.read()
+	ctx.unread(next)
+
+	special := strings.Contains("\"';()[]#?`,.", string(next))
+	if next <= 040 || special {
+		return ec.makeInteger(lispInt(c)), nil
+	}
+
+	return ec.invalidReadSyntax("invalid syntax for '?'")
+}
+
+func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
 	// TAGS: incomplete
 	quoted := false
 	builder := strings.Builder{}
@@ -215,151 +297,159 @@ func (ec *execContext) readAtom(c rune, ctx readContext) (lispObject, error) {
 	return ec.intern(ec.makeString(s), ec.nil_)
 }
 
-func (ec *execContext) read1Result(obj lispObject, err error) (lispObject, rune, error) {
-	return obj, 0, err
-}
-
-func (ec *execContext) read1(ctx readContext) (lispObject, rune, error) {
+func (ec *execContext) read0(ctx readContext) (lispObject, error) {
 	// TAGS: incomplete
+	stack := readStack{}
+	var obj lispObject
 	var err error
 	var c rune
 
-	for {
-		c = ctx.read()
-		if c == eofRune {
-			return ec.read1Result(ec.signalN(ec.g.endOfFile))
+read_obj:
+	c = ctx.read()
+	if c == eofRune {
+		return ec.signalN(ec.g.endOfFile)
+	}
+
+	switch {
+	case c == '(':
+		stack.push(readStackElem{elementType: readStackListStart})
+		goto read_obj
+	case c == '[':
+		return ec.pimacsUnimplemented(ec.g.read, "unknown token: '['")
+	case c == ')':
+		if stack.isEmpty() {
+			return ec.signalN(ec.g.invalidReadSyntax, ec.makeString(")"))
 		}
+
+		switch stack.peek().elementType {
+		case readStackListStart:
+			stack.pop()
+			obj = ec.nil_
+		case readStackList:
+			obj = stack.pop().listHead
+		default:
+			return ec.signalN(ec.g.invalidReadSyntax, ec.makeString(")"))
+		}
+	case c == ']':
+		return ec.pimacsUnimplemented(ec.g.read, "unknown token: ']'")
+	case c == '#':
+		c = ctx.read()
 
 		switch {
-		case c == '(':
-			return ec.read1Result(ec.readList(ctx))
-		case c == '[':
-			return ec.read1Result(ec.pimacsUnimplemented(ec.g.read, "unknown token: '%v'", c))
-		case c == ')' || c == ']':
-			return nil, c, nil
 		case c == '#':
-			c = ctx.read()
-
-			switch {
-			case c == '#':
-				return ec.read1Result(ec.intern(ec.emptyString(), ec.nil_))
-			case c == '\'':
-				body, err := ec.read0(ctx)
-				if err != nil {
-					return nil, 0, err
-				}
-				return ec.makeList(ec.g.function, body), 0, nil
-			default:
-				ctx.unread(c)
-				return ec.read1Result(ec.signalN(ec.g.invalidReadSyntax, ec.makeString(string(c))))
-			}
-		case c == ';':
-			for {
-				c = ctx.read()
-				if c == eofRune || c == '\n' {
-					break
-				}
-			}
-		case c == '\'' || c == '`':
-			obj, err := ec.read0(ctx)
-			if err != nil {
-				return nil, 0, err
-			}
-
-			sym := ec.g.quote
-			if c == '`' {
-				sym = ec.g.backquote
-			}
-
-			list := ec.makeList(sym, obj)
-			return list, 0, nil
-		case c == ',':
-			return ec.read1Result(ec.pimacsUnimplemented(ec.g.read, "unknown token: '%v'", c))
-		case c == '?':
-			c = ctx.read()
-			if c == eofRune {
-				return ec.read1Result(ec.signalN(ec.g.endOfFile))
-			}
-
-			if c == ' ' || c == '\t' {
-				return ec.makeInteger(lispInt(c)), 0, nil
-			}
-
-			if c == '\\' {
-				c, err = ec.readEscape(ctx, false)
-				if err != nil {
-					return nil, 0, err
-				}
-			}
-
-			if charByte8(c) {
-				c = charToByte8(c)
-			}
-
-			next := ctx.read()
-			ctx.unread(next)
-
-			special := strings.Contains("\"';()[]#?`,.", string(next))
-			if next <= 040 || special {
-				return ec.makeInteger(lispInt(c)), 0, nil
-			}
-
-			return ec.read1Result(ec.invalidReadSyntax("invalid syntax for '?'"))
-		case c == '"':
-			builder := strings.Builder{}
-
-			for {
-				c = ctx.read()
-				if c == eofRune || c == '"' {
-					break
-				}
-
-				if c == '\\' {
-					c, err = ec.readEscape(ctx, true)
-					if err != nil {
-						return nil, 0, err
-					}
-
-					if c == -1 {
-						continue
-					}
-				}
-
-				builder.WriteRune(c)
-			}
-
-			if c == eofRune {
-				return ec.read1Result(ec.signalN(ec.g.endOfFile))
-			}
-
-			return ec.makeString(builder.String()), 0, nil
-		case c == '.':
-			next := ctx.read()
-			ctx.unread(next)
-
-			special := strings.Contains("\"';([#?`,", string(next))
-			if next <= 040 || special {
-				return nil, c, nil
-			}
-			return ec.read1Result(ec.readAtom(c, ctx))
-		case c <= 040 || c == nbsp:
+			obj = ec.g.emptySymbol
+		case c == '\'':
+			stack.push(readStackElem{
+				elementType: readStackSpecial,
+				special:     ec.g.function,
+			})
+			goto read_obj
 		default:
-			return ec.read1Result(ec.readAtom(c, ctx))
+			return ec.pimacsUnimplemented(ec.g.read, "unknown token: '#%c'", c)
+		}
+	case c == ';':
+		for {
+			c = ctx.read()
+			if c == eofRune || c == '\n' {
+				break
+			}
+		}
+		goto read_obj
+	case c == '\'':
+		stack.push(readStackElem{elementType: readStackSpecial, special: ec.g.quote})
+		goto read_obj
+	case c == '`':
+		stack.push(readStackElem{elementType: readStackSpecial, special: ec.g.backquote})
+		goto read_obj
+	case c == ',':
+		return ec.pimacsUnimplemented(ec.g.read, "unknown token: ','")
+	case c == '?':
+		obj, err = ec.readCharLiteral(ctx)
+		if err != nil {
+			return nil, err
+		}
+	case c == '"':
+		obj, err = ec.readStringLiteral(ctx)
+		if err != nil {
+			return nil, err
+		}
+	case c == '.':
+		next := ctx.read()
+		ctx.unread(next)
+
+		special := strings.Contains("\"';([#?`,", string(next))
+		if next <= 040 || c == nbsp || special {
+			if !stack.isEmpty() && (stack.peek().elementType == readStackList ||
+				stack.peek().elementType == readStackListStart) {
+				stack.peek().elementType = readStackListDot
+				goto read_obj
+			}
+
+			println("next", string([]rune{next}), next)
+			return ec.signalN(ec.g.invalidReadSyntax, ec.makeString("."))
+		}
+
+		obj, err = ec.readSymbol(c, ctx)
+		if err != nil {
+			return nil, err
+		}
+	case c <= 040 || c == nbsp:
+		goto read_obj
+	default:
+		obj, err = ec.readSymbol(c, ctx)
+		if err != nil {
+			return nil, err
 		}
 	}
-}
 
-func (ec *execContext) read0(ctx readContext) (lispObject, error) {
-	obj, c, err := ec.read1(ctx)
-	if err != nil {
-		return nil, err
+	for !stack.isEmpty() {
+		top := stack.peek()
+
+		switch top.elementType {
+		case readStackListStart:
+			top.elementType = readStackList
+			top.listHead = ec.makeCons(obj, ec.nil_)
+			top.listTail = top.listHead
+			goto read_obj
+
+		case readStackList:
+			tail := ec.makeCons(obj, ec.nil_)
+			xSetCdr(top.listTail, tail)
+			top.listTail = tail
+			goto read_obj
+
+		case readStackListDot:
+			ec.skipSpaceAndComments(ctx)
+			ch := ctx.read()
+			if ch != ')' {
+				return ec.signalN(ec.g.invalidReadSyntax, ec.makeString("expected )"))
+			}
+
+			stack.pop()
+
+			if top.listHead == nil {
+				// We never got to handle readStackListStart, since we got
+				// (. x) as input. Use obj (set previously) as the return value.
+				break
+			}
+
+			xSetCdr(top.listTail, obj)
+			obj = top.listHead
+
+		case readStackSpecial:
+			stack.pop()
+			obj = ec.makeList(top.special, obj)
+		default:
+			return ec.signalN(ec.g.read, ec.makeString("unknown read stack entry type"))
+		}
 	}
 
-	if c != 0 {
-		return ec.invalidReadSyntax("unexpected character: '%v'", c)
+	if obj == nil {
+		ec.terminate("read0 failed to read object")
 	}
 
 	return obj, nil
+
 }
 
 func (ec *execContext) readInternalStart(stream, start, end lispObject) (lispObject, readContext, error) {
@@ -417,7 +507,7 @@ func (ec *execContext) readInternalStart(stream, start, end lispObject) (lispObj
 	return result, ctx, err
 }
 
-func (ec *execContext) intern(str, obarray lispObject) (lispObject, error) {
+func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	if !stringp(str) {
 		return ec.wrongTypeArgument(ec.g.stringp, str)
 	}

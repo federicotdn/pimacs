@@ -38,11 +38,11 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 	}
 
 	if result == nil && err == nil {
-		ec.terminate("subroutine returned no value and no error")
+		ec.terminate("subroutine returned no value and no error: '%+v'", sub.name)
 	}
 
 	if err == nil && sub.noReturn {
-		ec.terminate("subroutine with noreturn returned value")
+		ec.terminate("subroutine with noreturn returned value: '%+v'", sub.name)
 	}
 
 	return result, err
