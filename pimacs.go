@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/federicotdn/pimacs/elisp"
+	"github.com/federicotdn/pimacs/core"
 	"os"
 	"strings"
 )
 
 func repl() {
-	interpreter := elisp.NewInterpreter()
+	interpreter := core.NewInterpreter()
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
@@ -46,7 +46,7 @@ func repl() {
 }
 
 func load(filename string) {
-	interpreter := elisp.NewInterpreter()
+	interpreter := core.NewInterpreter()
 
 	data, err := os.ReadFile(filename)
 	if err != nil {

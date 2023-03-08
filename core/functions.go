@@ -1,4 +1,4 @@
-package elisp
+package core
 
 func (ec *execContext) listLength(obj lispObject) (int, error) {
 	num := 0

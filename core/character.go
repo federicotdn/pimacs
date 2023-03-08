@@ -1,4 +1,4 @@
-package elisp
+package core
 
 const (
 	eightBitCodeOffset rune = 0x3fff00

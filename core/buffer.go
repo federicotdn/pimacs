@@ -1,4 +1,4 @@
-package elisp
+package core
 
 func (ec *execContext) insert(args ...lispObject) (lispObject, error) {
 	// TAGS: revise

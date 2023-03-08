@@ -2,7 +2,7 @@
 // DO NOT MODIFY!
 // Generated from GNU Emacs commit: 3f43a16bc63eac12db5707b26da2507077b4f13c, branch: emacs-29
 
-package elisp
+package core
 
 const emacsConstant_coding_arg_max_autogen = 13
 const emacsConstant_charset_arg_max_autogen = 17

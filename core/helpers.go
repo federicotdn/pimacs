@@ -1,4 +1,4 @@
-package elisp
+package core
 
 import "fmt"
 

@@ -1,4 +1,4 @@
-package elisp
+package core
 
 type lispType int
 type vectorLikeType int
@@ -90,6 +90,10 @@ type lispVectorLike struct {
 
 type lispObject interface {
 	getType() lispType
+}
+
+func (s *subroutine) setAttrs(noReturn bool) {
+	s.noReturn = noReturn
 }
 
 func (ls *lispSymbol) getType() lispType {

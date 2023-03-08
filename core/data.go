@@ -1,4 +1,4 @@
-package elisp
+package core
 
 func (ec *execContext) null(object lispObject) (lispObject, error) {
 	return ec.bool(object == ec.nil_)

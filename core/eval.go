@@ -1,4 +1,4 @@
-package elisp
+package core
 
 import (
 	"fmt"
@@ -647,8 +647,8 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubrU("catch", ec.catch, 1)
 	ec.defSubrU("unwind-protect", ec.unwindProtect, 1)
 	ec.defSubrU("condition-case", ec.conditionCase, 2)
-	ec.defSubr2("throw", ec.throw, 2).noReturn = true
-	ec.defSubr2("signal", ec.signal, 2).noReturn = true
+	ec.defSubr2("throw", ec.throw, 2).setAttrs(true)
+	ec.defSubr2("signal", ec.signal, 2).setAttrs(true)
 
 	ec.defVarStatic(ec.g.internalInterpreterEnv, ec.nil_)
 }

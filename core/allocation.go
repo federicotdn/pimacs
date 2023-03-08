@@ -1,4 +1,4 @@
-package elisp
+package core
 
 func (ec *execContext) cons(car lispObject, cdr lispObject) (lispObject, error) {
 	return ec.makeCons(car, cdr), nil
