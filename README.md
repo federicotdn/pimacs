@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="pimacs" src="https://github.com/federicotdn/pimacs/raw/main/etc/logo.png" width="50%">
+  <img alt="pimacs" src="https://github.com/federicotdn/pimacs/raw/main/extra/logo.png" width="50%">
   <br/>
 </p>
 
