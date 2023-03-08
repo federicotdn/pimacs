@@ -8,6 +8,10 @@ func (ec *execContext) sequencep(object lispObject) (lispObject, error) {
 	return ec.bool(consp(object) || object == ec.nil_ || arrayp(object))
 }
 
+func (ec *execContext) consp(object lispObject) (lispObject, error) {
+	return ec.bool(consp(object))
+}
+
 func (ec *execContext) listp(object lispObject) (lispObject, error) {
 	return ec.bool(object == ec.nil_ || consp(object))
 }
@@ -152,25 +156,26 @@ func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfData() {
-	ec.defSubr1("null", ec.null, 1)
-	ec.defSubr1("sequencep", ec.sequencep, 1)
-	ec.defSubr1("listp", ec.listp, 1)
-	ec.defSubr1("symbolp", ec.symbolp, 1)
-	ec.defSubr1("stringp", ec.stringp, 1)
-	ec.defSubr1("number-or-marker-p", ec.numberOrMarkerp, 1)
-	ec.defSubr1("char-or-string-p", ec.charOrStringp, 1)
-	ec.defSubr1("integerp", ec.numberOrMarkerp, 1)
-	ec.defSubr1("bufferp", ec.bufferp, 1)
-	ec.defSubr1("car", ec.car, 1)
-	ec.defSubr1("cdr", ec.cdr, 1)
-	ec.defSubr2("setcar", ec.setCar, 2)
-	ec.defSubr2("setcdr", ec.setCdr, 2)
-	ec.defSubr1("symbol-plist", ec.symbolPlist, 1)
-	ec.defSubr1("symbol-name", ec.symbolName, 1)
-	ec.defSubr2("set", ec.set, 2)
-	ec.defSubr2("fset", ec.fset, 2)
-	ec.defSubr2("eq", ec.eq, 2)
-	ec.defSubr3("defalias", ec.defalias, 2)
-	ec.defSubrM("+", ec.plusSign, 0)
-	ec.defSubrM("<", ec.lessThanSign, 1)
+	ec.defSubr1(nil, "null", ec.null, 1)
+	ec.defSubr1(&ec.g.sequencep, "sequencep", ec.sequencep, 1)
+	ec.defSubr1(&ec.g.consp, "consp", ec.consp, 1)
+	ec.defSubr1(&ec.g.listp, "listp", ec.listp, 1)
+	ec.defSubr1(&ec.g.symbolp, "symbolp", ec.symbolp, 1)
+	ec.defSubr1(&ec.g.stringp, "stringp", ec.stringp, 1)
+	ec.defSubr1(&ec.g.numberOrMarkerp, "number-or-marker-p", ec.numberOrMarkerp, 1)
+	ec.defSubr1(&ec.g.charOrStringp, "char-or-string-p", ec.charOrStringp, 1)
+	ec.defSubr1(&ec.g.integerp, "integerp", ec.numberOrMarkerp, 1)
+	ec.defSubr1(&ec.g.bufferp, "bufferp", ec.bufferp, 1)
+	ec.defSubr1(nil, "car", ec.car, 1)
+	ec.defSubr1(nil, "cdr", ec.cdr, 1)
+	ec.defSubr2(nil, "setcar", ec.setCar, 2)
+	ec.defSubr2(nil, "setcdr", ec.setCdr, 2)
+	ec.defSubr1(nil, "symbol-plist", ec.symbolPlist, 1)
+	ec.defSubr1(nil, "symbol-name", ec.symbolName, 1)
+	ec.defSubr2(nil, "set", ec.set, 2)
+	ec.defSubr2(nil, "fset", ec.fset, 2)
+	ec.defSubr2(nil, "eq", ec.eq, 2)
+	ec.defSubr3(nil, "defalias", ec.defalias, 2)
+	ec.defSubrM(nil, "+", ec.plusSign, 0)
+	ec.defSubrM(nil, "<", ec.lessThanSign, 1)
 }

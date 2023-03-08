@@ -188,6 +188,8 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(eq t t)", "t", nil},
 		{"(eq 't t)", "t", nil},
 		{"(eq 1000 1000)", "nil", nil},
+		{"(consp nil)", "nil", nil},
+		{"(consp (cons 1 2))", "t", nil},
 		{"(put 1 1)", "", anyError},
 		{"(put 'a 'foo 1)", "1", nil},
 		{"(progn (put 'a 'foo 42) (get 'a 'foo))", "42", nil},

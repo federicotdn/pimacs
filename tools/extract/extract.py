@@ -10,7 +10,7 @@ FILE_HEADER = """// Automatically generated with pimacs.extract
 
 """
 AUTOGEN_SUFFIX = "_autogen"
-PACKAGE = "elisp"
+PACKAGE = "core"
 GO_KEYWORDS = [
     "break",
     "default",
@@ -217,7 +217,7 @@ def generate_go_file(defuns: list[dict], emacs_commit: str, emacs_branch: str) -
     s += f"func (ec *execContext) symbolsOfEmacs{AUTOGEN_SUFFIX}() {{\n"
 
     for defun in go_defuns:
-        s += f'\tec.{defun.subr_fn}("{defun.lname}", ec.{defun.fnname}'
+        s += f'\tec.{defun.subr_fn}(nil, "{defun.lname}", ec.{defun.fnname}'
         if defun.subr_fn != "defSubr0":
             s += f", {defun.minargs}"
         s += ")\n"
@@ -249,7 +249,7 @@ def main() -> None:
         all_defuns.extend(defuns)
 
     contents = generate_go_file(all_defuns, emacs_commit, emacs_branch)
-    target = pimacs_base.joinpath("elisp/emacs_autogen.go")
+    target = pimacs_base.joinpath(f"{PACKAGE}/emacs_autogen.go")
     with open(target, "w") as f:
         f.write(contents)
 

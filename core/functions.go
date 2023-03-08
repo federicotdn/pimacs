@@ -154,6 +154,11 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 	return ec.false_()
 }
 
+func (ec *execContext) plistp(object lispObject) (lispObject, error) {
+	// TAGS: stub
+	return ec.nil_, nil
+}
+
 func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error) {
 	prev := ec.nil_
 	tail := plist
@@ -275,14 +280,15 @@ func (ec *execContext) nconc(args ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfFunctions() {
-	ec.defSubr1("length", ec.length, 1)
-	ec.defSubr2("equal", ec.equal, 2)
-	ec.defSubr2("assq", ec.assq, 2)
-	ec.defSubr3("assoc", ec.assoc, 2)
-	ec.defSubr2("memq", ec.memq, 2)
-	ec.defSubr2("get", ec.get, 2)
-	ec.defSubr3("put", ec.put, 3)
-	ec.defSubr2("plist-get", ec.plistGet, 2)
-	ec.defSubr3("plist-put", ec.plistPut, 3)
-	ec.defSubrM("nconc", ec.nconc, 0)
+	ec.defSubr1(nil, "length", ec.length, 1)
+	ec.defSubr2(&ec.g.equal, "equal", ec.equal, 2)
+	ec.defSubr2(nil, "assq", ec.assq, 2)
+	ec.defSubr3(nil, "assoc", ec.assoc, 2)
+	ec.defSubr2(nil, "memq", ec.memq, 2)
+	ec.defSubr2(nil, "get", ec.get, 2)
+	ec.defSubr3(nil, "put", ec.put, 3)
+	ec.defSubr1(&ec.g.plistp, "plistp", ec.plistp, 1)
+	ec.defSubr2(nil, "plist-get", ec.plistGet, 2)
+	ec.defSubr3(nil, "plist-put", ec.plistPut, 3)
+	ec.defSubrM(nil, "nconc", ec.nconc, 0)
 }

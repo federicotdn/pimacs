@@ -453,6 +453,11 @@ func (ec *execContext) quote(args lispObject) (lispObject, error) {
 	return xCar(args), nil
 }
 
+func (ec *execContext) backquote(args lispObject) (lispObject, error) {
+	// TAGS: stub
+	return ec.nil_, nil
+}
+
 func (ec *execContext) if_(args lispObject) (lispObject, error) {
 	car_ := xCar(args)
 	cdr_ := xCdr(args)
@@ -636,19 +641,25 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfEval() {
-	ec.defSubr2("eval", ec.eval, 1)
-	ec.defSubrM("funcall", ec.funcall, 1)
-	ec.defSubrM("apply", ec.apply, 1)
-	ec.defSubrU("progn", ec.progn, 0)
-	ec.defSubrU("if", ec.if_, 2)
-	ec.defSubrU("while", ec.while, 1)
-	ec.defSubrU("quote", ec.quote, 1)
-	ec.defSubrU("function", ec.function, 1)
-	ec.defSubrU("catch", ec.catch, 1)
-	ec.defSubrU("unwind-protect", ec.unwindProtect, 1)
-	ec.defSubrU("condition-case", ec.conditionCase, 2)
-	ec.defSubr2("throw", ec.throw, 2).setAttrs(true)
-	ec.defSubr2("signal", ec.signal, 2).setAttrs(true)
+	ec.defVarUninterned(&ec.g.internalInterpreterEnv, "internal-interpreter-environment", ec.nil_)
+	ec.defVar(&ec.g.lambda, "lambda", ec.g.unbound)
+	ec.defVar(&ec.g.closure, "closure", ec.g.unbound)
+	ec.defVar(&ec.g.macro, "macro", ec.g.unbound)
+	ec.defVar(&ec.g.andRest, "&rest", ec.g.unbound)
+	ec.defVar(&ec.g.andOptional, "&optional", ec.g.unbound)
 
-	ec.defVarStatic(ec.g.internalInterpreterEnv, ec.nil_)
+	ec.defSubr2(&ec.g.eval, "eval", ec.eval, 1)
+	ec.defSubrM(nil, "funcall", ec.funcall, 1)
+	ec.defSubrM(nil, "apply", ec.apply, 1)
+	ec.defSubrU(nil, "progn", ec.progn, 0)
+	ec.defSubrU(nil, "if", ec.if_, 2)
+	ec.defSubrU(nil, "while", ec.while, 1)
+	ec.defSubrU(&ec.g.quote, "quote", ec.quote, 1)
+	ec.defSubrU(&ec.g.backquote, "`", ec.backquote, 1)
+	ec.defSubrU(&ec.g.function, "function", ec.function, 1)
+	ec.defSubrU(nil, "catch", ec.catch, 1)
+	ec.defSubrU(nil, "unwind-protect", ec.unwindProtect, 1)
+	ec.defSubrU(nil, "condition-case", ec.conditionCase, 2)
+	ec.defSubr2(nil, "throw", ec.throw, 2).setAttrs(true)
+	ec.defSubr2(nil, "signal", ec.signal, 2).setAttrs(true)
 }

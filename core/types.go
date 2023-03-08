@@ -100,6 +100,12 @@ func (ls *lispSymbol) getType() lispType {
 	return lispTypeSymbol
 }
 
+func (ls *lispSymbol) setAttributes(value, function, plist lispObject) {
+	ls.value = value
+	ls.function = function
+	ls.plist = plist
+}
+
 func (lc *lispCons) getType() lispType {
 	return lispTypeCons
 }

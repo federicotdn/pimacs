@@ -517,7 +517,7 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	sym, ok := ec.obarray[name]
 	if !ok {
 		sym = ec.makeSymbol(name)
-		ec.internNewSymbol(sym)
+		ec.internNewSymbol(sym, true)
 	}
 
 	return sym, nil
@@ -563,11 +563,13 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 }
 
 func (ec *execContext) symbolsOfRead() {
-	ec.defSubr2("intern", ec.intern, 1)
-	ec.defSubr3("read-from-string", ec.readFromString, 1)
-	ec.defSubr1("read", ec.read, 0)
-	ec.defSubr5("load", ec.load, 1)
+	ec.defVar(&ec.g.standardInput, "standard-input", ec.t)
+	ec.defVar(&ec.g.lexicalBinding, "lexical-binding", ec.nil_)
+	ec.defVar(&ec.g.loadPath, "load-path", ec.nil_)
+	ec.defVarUninterned(&ec.g.readChar, "read-char", ec.g.unbound)
 
-	ec.defVarStatic(ec.g.standardInput, ec.t)
-	ec.defVarStatic(ec.g.lexicalBinding, ec.nil_)
+	ec.defSubr2(nil, "intern", ec.intern, 1)
+	ec.defSubr3(nil, "read-from-string", ec.readFromString, 1)
+	ec.defSubr1(&ec.g.read, "read", ec.read, 0)
+	ec.defSubr5(nil, "load", ec.load, 1)
 }

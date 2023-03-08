@@ -39,7 +39,7 @@ type execContext struct {
 	currentBuf *buffer
 	buffers    lispObject
 
-	errorOnSubrRedefine bool
+	errorOnVarRedefine bool
 }
 
 type stackEntryLet struct {
@@ -237,161 +237,174 @@ func (li *listIter) error() (lispObject, error) {
 	return nil, li.err
 }
 
-func (ec *execContext) defSubr(sub *subroutine) {
-	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
-		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", sub)
-	}
-
-	symbol := xEnsure(ec.intern(ec.makeString(sub.name), ec.nil_))
-	sym := xSymbol(symbol)
-
-	if sym.function != ec.nil_ {
-		if ec.errorOnSubrRedefine {
-			ec.terminate("function value already set: '%v'", sym.name)
+func (ec *execContext) defSubr(symbol *lispObject, sub *subroutine) {
+	if symbol != nil && *symbol != nil {
+		if ec.errorOnVarRedefine {
+			ec.terminate("subroutine value already set: '%+v'", *symbol)
 		}
 		return
 	}
 
+	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
+		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", sub)
+	}
+
+	sym := ec.defVar(symbol, sub.name, ec.g.unbound) // Create a variable with value = unbound
 	vec := ec.makeVectorLike(vectorLikeTypeSubroutine, sub)
 	sym.function = vec
+
+	if symbol != nil {
+		*symbol = sym
+	}
 }
 
-func (ec *execContext) defSubr0(name string, fn lispFn0) *subroutine {
+func (ec *execContext) defSubr0(symbol *lispObject, name string, fn lispFn0) *subroutine {
 	sub := &subroutine{
 		callabe0: fn,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubr1(name string, fn lispFn1, minArgs int) *subroutine {
+func (ec *execContext) defSubr1(symbol *lispObject, name string, fn lispFn1, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe1: fn,
 		minArgs:  minArgs,
 		maxArgs:  1,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubr2(name string, fn lispFn2, minArgs int) *subroutine {
+func (ec *execContext) defSubr2(symbol *lispObject, name string, fn lispFn2, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe2: fn,
 		minArgs:  minArgs,
 		maxArgs:  2,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubr3(name string, fn lispFn3, minArgs int) *subroutine {
+func (ec *execContext) defSubr3(symbol *lispObject, name string, fn lispFn3, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe3: fn,
 		minArgs:  minArgs,
 		maxArgs:  3,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubr4(name string, fn lispFn4, minArgs int) *subroutine {
+func (ec *execContext) defSubr4(symbol *lispObject, name string, fn lispFn4, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe4: fn,
 		minArgs:  minArgs,
 		maxArgs:  4,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubr5(name string, fn lispFn5, minArgs int) *subroutine {
+func (ec *execContext) defSubr5(symbol *lispObject, name string, fn lispFn5, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe5: fn,
 		minArgs:  minArgs,
 		maxArgs:  5,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubr6(name string, fn lispFn6, minArgs int) *subroutine {
+func (ec *execContext) defSubr6(symbol *lispObject, name string, fn lispFn6, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe6: fn,
 		minArgs:  minArgs,
 		maxArgs:  6,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubr7(name string, fn lispFn7, minArgs int) *subroutine {
+func (ec *execContext) defSubr7(symbol *lispObject, name string, fn lispFn7, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe7: fn,
 		minArgs:  minArgs,
 		maxArgs:  7,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubr8(name string, fn lispFn8, minArgs int) *subroutine {
+func (ec *execContext) defSubr8(symbol *lispObject, name string, fn lispFn8, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe8: fn,
 		minArgs:  minArgs,
 		maxArgs:  8,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubrM(name string, fn lispFnM, minArgs int) *subroutine {
+func (ec *execContext) defSubrM(symbol *lispObject, name string, fn lispFnM, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabem: fn,
 		minArgs:  minArgs,
 		maxArgs:  argsMany,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defSubrU(name string, fn lispFn1, minArgs int) *subroutine {
+func (ec *execContext) defSubrU(symbol *lispObject, name string, fn lispFn1, minArgs int) *subroutine {
 	sub := &subroutine{
 		callabe1: fn,
 		minArgs:  minArgs,
 		maxArgs:  argsUnevalled,
 		name:     name,
 	}
-	ec.defSubr(sub)
+	ec.defSubr(symbol, sub)
 	return sub
 }
 
-func (ec *execContext) defVarStatic(symbol, value lispObject) {
-	sym := xSymbol(symbol)
-	if sym.value != ec.g.unbound {
-		ec.terminate("variable value already set: '%v'", sym.name)
+func (ec *execContext) defVarUninterned(symbol *lispObject, name string, value lispObject) *lispSymbol {
+	if symbol != nil && *symbol != nil {
+		ec.terminate("variable value already set: '%+v'", *symbol)
 	}
 
+	sym := ec.makeSymbol(name)
 	sym.value = value
+
+	if symbol != nil {
+		*symbol = sym
+	}
+	return sym
+}
+
+func (ec *execContext) defVar(symbol *lispObject, name string, value lispObject) *lispSymbol {
+	sym := ec.defVarUninterned(symbol, name, value)
+	ec.internNewSymbol(sym, ec.errorOnVarRedefine)
+	return sym
 }
 
 func newExecContext() *execContext {
 	ec := execContext{
-		obarray:             make(map[string]*lispSymbol),
-		stack:               []stackEntry{},
-		errorOnSubrRedefine: true,
+		obarray:            make(map[string]*lispSymbol),
+		stack:              []stackEntry{},
+		errorOnVarRedefine: true,
 	}
 
-	ec.createSymbols()       // symbols.go
+	ec.initSymbols()         // symbols.go
 	ec.symbolsOfErrors()     // errors.gmo
 	ec.symbolsOfRead()       // read.go
 	ec.symbolsOfEval()       // eval.go
@@ -402,14 +415,23 @@ func newExecContext() *execContext {
 	ec.symbolsOfBuffer()     // buffer.go
 	ec.symbolsOfMinibuffer() // minibuffer.go
 
-	ec.defVarStatic(ec.g.nonInteractive, ec.t)
+	ec.defVar(&ec.g.nonInteractive, "noninteractive", ec.t)
+	ec.defVar(nil, "pimacs-testing", ec.nil_)
 
-	ec.errorOnSubrRedefine = false
+	// Load Emacs stubs at the end, without erroring out
+	// on repeated defuns or defvars
+	ec.errorOnVarRedefine = false
 	ec.symbolsOfEmacs_autogen()
-	ec.errorOnSubrRedefine = true
+	ec.errorOnVarRedefine = true
+
+	ec.checkSymbols()
 
 	ec.initBuffer() // buffer.go
 
+	return &ec
+}
+
+func (ec *execContext) loadBaseElisp() error {
 	contents, err := scripts.ReadFile("scripts/pimacs/base.el")
 	if err != nil {
 		ec.terminate("open script error: '%v'", err)
@@ -418,14 +440,16 @@ func newExecContext() *execContext {
 	source := ec.makeString(string(contents))
 	result, _, err := ec.readInternalStart(source, ec.nil_, ec.nil_)
 	xEnsure(ec.evalSub(xEnsure(result, err)))
-
-	return &ec
+	return nil
 }
 
-func (ec *execContext) internNewSymbol(symbol *lispSymbol) {
+func (ec *execContext) internNewSymbol(symbol *lispSymbol, errorOnExisting bool) {
 	prev, ok := ec.obarray[symbol.name]
 	if ok && prev != symbol {
-		ec.terminate("different symbol with that name already interned, name: '%v'", symbol.name)
+		if errorOnExisting {
+			ec.terminate("different symbol with that name already interned, name: '%v'", symbol.name)
+		}
+		return
 	}
 	ec.obarray[symbol.name] = symbol
 }

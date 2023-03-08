@@ -162,10 +162,10 @@ func (ec *execContext) princ(obj, printCharFn lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfPrint() {
-	ec.defSubr2("prin1", ec.prin1, 1)
-	ec.defSubr2("print", ec.print_, 1)
-	ec.defSubr2("princ", ec.princ, 1)
-	ec.defSubr2("prin1-to-string", ec.prin1ToString, 1)
+	ec.defVar(&ec.g.standardOutput, "standard-output", ec.t)
 
-	ec.defVarStatic(ec.g.standardOutput, ec.t)
+	ec.defSubr2(&ec.g.prin1, "prin1", ec.prin1, 1)
+	ec.defSubr2(nil, "print", ec.print_, 1)
+	ec.defSubr2(nil, "princ", ec.princ, 1)
+	ec.defSubr2(nil, "prin1-to-string", ec.prin1ToString, 1)
 }
