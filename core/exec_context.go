@@ -1,12 +1,9 @@
 package core
 
 import (
-	"embed"
 	"fmt"
+	"os"
 )
-
-//go:embed scripts
-var scripts embed.FS
 
 type stackEntryTag int
 
@@ -414,9 +411,9 @@ func newExecContext() *execContext {
 	ec.symbolsOfFunctions()  // functions.go
 	ec.symbolsOfBuffer()     // buffer.go
 	ec.symbolsOfMinibuffer() // minibuffer.go
+	ec.symbolsOfCallProc()   // callproc.go
 
 	ec.defVar(&ec.g.nonInteractive, "noninteractive", ec.t)
-	ec.defVar(nil, "pimacs-testing", ec.nil_)
 
 	// Load Emacs stubs at the end, without erroring out
 	// on repeated defuns or defvars
@@ -428,18 +425,31 @@ func newExecContext() *execContext {
 
 	ec.initBuffer() // buffer.go
 
+	loadPath, ok := os.LookupEnv("PIMACS_ELISP")
+	if !ok {
+		// Use relative path from CWD
+		loadPath = "elisp"
+	}
+	xSymbol(ec.g.loadPath).value = ec.makeList(ec.makeString(loadPath))
+
+	err := ec.loadElisp()
+	if err != nil {
+		panic(err)
+	}
+
 	return &ec
 }
 
-func (ec *execContext) loadBaseElisp() error {
-	contents, err := scripts.ReadFile("scripts/pimacs/base.el")
-	if err != nil {
-		ec.terminate("open script error: '%v'", err)
+func (ec *execContext) loadElisp() error {
+	files := []string{"base.el"}
+
+	for _, path := range files {
+		_, err := ec.load(ec.makeString(path), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
+		if err != nil {
+			return err
+		}
 	}
 
-	source := ec.makeString(string(contents))
-	result, _, err := ec.readInternalStart(source, ec.nil_, ec.nil_)
-	xEnsure(ec.evalSub(xEnsure(result, err)))
 	return nil
 }
 
@@ -569,6 +579,7 @@ func (ec *execContext) false_() (lispObject, error) {
 }
 
 func (ec *execContext) stub(name string) (lispObject, error) {
+	println("stub invoked:", name)
 	return ec.nil_, nil
 }
 

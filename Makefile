@@ -1,22 +1,25 @@
 SHELL = bash
+PIMACS_ELISP = $(CURDIR)/elisp
 
 clean:
 	rm -rf pimacs
 
 build:
+	go clean
 	go build
 
 fmt:
 	gofmt -s -w -l .
 
 run:
-	go build && ./pimacs
+	make build && ./pimacs
 
 run-file:
-	go build && ./pimacs --load test.el
+	make build && ./pimacs --load test.el
 
 test:
-	go test -v ./...
+	go clean -testcache
+	PIMACS_TESTING=true PIMACS_ELISP=$(PIMACS_ELISP) go test -v ./...
 
 debug:
 	dlv debug -- --load test.el

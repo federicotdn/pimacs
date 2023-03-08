@@ -1,6 +1,9 @@
 package core
 
 import (
+	"bufio"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -25,6 +28,12 @@ type readContextString struct {
 	runes  []rune
 	i      int
 	end    int
+}
+
+type readContextFile struct {
+	reader     *bufio.Reader
+	unreadRune rune
+	i          int
 }
 
 type readStackElem struct {
@@ -61,6 +70,43 @@ func (ctx *readContextString) unread(c rune) {
 }
 
 func (ctx *readContextString) position() int {
+	return ctx.i
+}
+
+func (ctx *readContextFile) read() rune {
+	if ctx.unreadRune >= 0 {
+		r := ctx.unreadRune
+		ctx.unreadRune = -1
+		return r
+	}
+
+	r, _, err := ctx.reader.ReadRune()
+	if err != nil {
+		return eofRune
+	}
+
+	ctx.i++
+	return r
+}
+
+func (ctx *readContextFile) unread(c rune) {
+	if c == eofRune {
+		return
+	}
+
+	if ctx.i == 0 {
+		terminate("unbalanced read/unread call with rune: '%v'", c)
+	}
+
+	if ctx.unreadRune >= 0 {
+		terminate("only one rune can be unread")
+	}
+
+	ctx.unreadRune = c
+	ctx.i--
+}
+
+func (ctx *readContextFile) position() int {
 	return ctx.i
 }
 
@@ -452,14 +498,14 @@ read_obj:
 
 }
 
-func (ec *execContext) readInternalStart(stream, start, end lispObject) (lispObject, readContext, error) {
+func (ec *execContext) streamReadContext(stream, start, end lispObject) (readContext, error) {
 	var ctx readContext
 
 	switch stream.getType() {
 	case lispTypeString:
 		length, err := ec.length(stream)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		lengthInt := int(xIntegerValue(length))
@@ -473,7 +519,7 @@ func (ec *execContext) readInternalStart(stream, start, end lispObject) (lispObj
 				startInt += lengthInt
 			}
 		} else if start != ec.nil_ {
-			return nil, nil, xErrOnly(ec.wrongTypeArgument(ec.g.integerp, start))
+			return nil, xErrOnly(ec.wrongTypeArgument(ec.g.integerp, start))
 		}
 
 		if integerp(end) {
@@ -484,11 +530,11 @@ func (ec *execContext) readInternalStart(stream, start, end lispObject) (lispObj
 			}
 
 		} else if end != ec.nil_ {
-			return nil, nil, xErrOnly(ec.wrongTypeArgument(ec.g.integerp, end))
+			return nil, xErrOnly(ec.wrongTypeArgument(ec.g.integerp, end))
 		}
 
 		if !(0 <= startInt && startInt <= endInt && endInt <= lengthInt) {
-			return nil, nil, xErrOnly(ec.signalN(ec.g.argsOutOfRange, stream, start, end))
+			return nil, xErrOnly(ec.signalN(ec.g.argsOutOfRange, stream, start, end))
 		}
 
 		str := xStringValue(stream)
@@ -500,11 +546,10 @@ func (ec *execContext) readInternalStart(stream, start, end lispObject) (lispObj
 			end:    endInt,
 		}
 	default:
-		return nil, nil, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown source type"))
+		return nil, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown source type"))
 	}
 
-	result, err := ec.read0(ctx)
-	return result, ctx, err
+	return ctx, nil
 }
 
 func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
@@ -523,6 +568,56 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	return sym, nil
 }
 
+func (ec *execContext) readEvalLoop(stream lispObject, f *os.File) error {
+	var ctx readContext
+	var err error
+
+	if f != nil {
+		ctx = &readContextFile{reader: bufio.NewReader(f), unreadRune: -1}
+	} else {
+		ctx, err = ec.streamReadContext(stream, ec.nil_, ec.nil_)
+		if err != nil {
+			return err
+		}
+	}
+
+	for {
+		c := ctx.read()
+
+		if c == ';' {
+			for {
+				c = ctx.read()
+				if c == eofRune || c == '\n' {
+					break
+				}
+			}
+			continue
+		}
+
+		if c == eofRune {
+			break
+		}
+
+		if c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r' || c == nbsp {
+			continue
+		}
+
+		ctx.unread(c)
+
+		val, err := ec.read0(ctx)
+		if err != nil {
+			return err
+		}
+
+		val, err = ec.evalSub(val)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (ec *execContext) read(stream lispObject) (lispObject, error) {
 	if stream == ec.nil_ {
 		stream = xSymbolValue(ec.g.standardInput)
@@ -536,8 +631,11 @@ func (ec *execContext) read(stream lispObject) (lispObject, error) {
 		return ec.funcall(ec.g.readFromMinibuffer, ec.makeString("Lisp expression: "))
 	}
 
-	result, _, err := ec.readInternalStart(stream, ec.nil_, ec.nil_)
-	return result, err
+	ctx, err := ec.streamReadContext(stream, ec.nil_, ec.nil_)
+	if err != nil {
+		return nil, err
+	}
+	return ec.read0(ctx)
 }
 
 func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, error) {
@@ -545,7 +643,11 @@ func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, e
 		return ec.wrongTypeArgument(ec.g.stringp, str)
 	}
 
-	result, ctx, err := ec.readInternalStart(str, start, end)
+	ctx, err := ec.streamReadContext(str, ec.nil_, ec.nil_)
+	if err != nil {
+		return nil, err
+	}
+	result, err := ec.read0(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -559,7 +661,45 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 		return ec.wrongTypeArgument(ec.g.stringp, file)
 	}
 
-	return nil, nil
+	loadPath := xSymbol(ec.g.loadPath).value
+	iter := ec.iterate(loadPath)
+	var f *os.File
+
+	for ; iter.hasNext(); loadPath = iter.next() {
+		loadPath = xCar(loadPath)
+
+		if !stringp(loadPath) {
+			return ec.wrongTypeArgument(ec.g.stringp, loadPath)
+		}
+
+		base := xStringValue(loadPath)
+		fullPath := filepath.Join(base, xStringValue(file))
+
+		var err error
+		f, err = os.Open(fullPath)
+		if err == nil {
+			defer f.Close()
+			break
+		}
+	}
+
+	if iter.hasError() {
+		return iter.error()
+	}
+
+	if f == nil {
+		if noError == ec.nil_ {
+			return ec.signalN(ec.g.fileMissing, file)
+		}
+		return ec.nil_, nil
+	}
+
+	err := ec.readEvalLoop(ec.nil_, f)
+	if err != nil {
+		return nil, err
+	}
+
+	return ec.t, nil
 }
 
 func (ec *execContext) symbolsOfRead() {

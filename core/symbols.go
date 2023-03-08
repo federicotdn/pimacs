@@ -48,6 +48,7 @@ type lispGlobals struct {
 	invalidReadSyntax      lispObject
 	pimacsUnimplemented    lispObject
 	circularList           lispObject
+	fileMissing            lispObject
 	// 4. Misc. symbols
 	errorConditions lispObject
 	errorMessage    lispObject

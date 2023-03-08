@@ -54,6 +54,7 @@ func (ec *execContext) symbolsOfErrors() {
 	ec.defVar(&ec.g.invalidReadSyntax, "invalid-read-syntax", ec.g.unbound)
 	ec.defVar(&ec.g.pimacsUnimplemented, "pimacs-unimplemented", ec.g.unbound)
 	ec.defVar(&ec.g.circularList, "circular-list", ec.g.unbound)
+	ec.defVar(&ec.g.fileMissing, "file-missing", ec.g.unbound)
 	ec.defVarUninterned(&ec.g.errorConditions, "error-conditions", ec.g.unbound)
 	ec.defVarUninterned(&ec.g.errorMessage, "error-message", ec.g.unbound)
 
@@ -77,4 +78,5 @@ func (ec *execContext) symbolsOfErrors() {
 	ec.putError(ec.g.invalidReadSyntax, errorTail, "Invalid read syntax")
 	ec.putError(ec.g.pimacsUnimplemented, errorTail, "Unimplemented feature")
 	ec.putError(ec.g.circularList, errorTail, "List contains a loop")
+	ec.putError(ec.g.fileMissing, errorTail, "No such file or directory")
 }
