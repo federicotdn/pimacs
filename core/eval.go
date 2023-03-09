@@ -627,7 +627,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		defer ec.unwind()()
 		ec.stackPushLet(ec.g.lexicalBinding, val)
 
-		exp, err := ec.funcall(xCdr(fn), originalArgs)
+		exp, err := ec.apply([]lispObject{xCdr(fn), originalArgs}...)
 		if err != nil {
 			return nil, err
 		}

@@ -100,6 +100,22 @@ func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 	return definition, nil
 }
 
+func (ec *execContext) symbolValue(symbol lispObject) (lispObject, error) {
+	if !symbolp(symbol) {
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+	}
+
+	return xSymbolValue(symbol), nil
+}
+
+func (ec *execContext) symbolFunction(symbol lispObject) (lispObject, error) {
+	if !symbolp(symbol) {
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+	}
+
+	return xSymbol(symbol).function, nil
+}
+
 func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 	return ec.bool(obj1 == obj2)
 }
@@ -174,6 +190,8 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(nil, "symbol-name", ec.symbolName, 1)
 	ec.defSubr2(nil, "set", ec.set, 2)
 	ec.defSubr2(nil, "fset", ec.fset, 2)
+	ec.defSubr1(nil, "symbol-value", ec.symbolValue, 1)
+	ec.defSubr1(nil, "symbol-function", ec.symbolFunction, 1)
 	ec.defSubr2(nil, "eq", ec.eq, 2)
 	ec.defSubr3(nil, "defalias", ec.defalias, 2)
 	ec.defSubrM(nil, "+", ec.plusSign, 0)

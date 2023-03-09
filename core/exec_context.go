@@ -63,27 +63,44 @@ func (jmp *stackJumpTag) Error() string {
 }
 
 func (jmp *stackJumpSignal) Error() string {
-	format := "stack jump: signal: '%+v' '%+v'"
-	message := "<unknown>"
+	message := "stack jump: signal: "
 
-	if consp(jmp.data) {
-		data := xCdr(jmp.data)
-		if consp(data) {
-			first := xCar(data)
+	if !symbolp(jmp.errorSymbol) {
+		message += fmt.Sprintf("'%+v' '<unknown>'", jmp.errorSymbol)
+		return message
+	}
 
-			if stringp(first) {
-				message = xStringValue(first)
-			} else if symbolp(first) {
-				message = xSymbol(first).name
-			}
+	name := xSymbol(jmp.errorSymbol).name
+	message += "'" + name + "' "
+
+	data := xCdr(jmp.data)
+
+	switch name {
+	case "error":
+		message = xStringValue(xCar(data))
+	case "wrong-type-argument":
+		pred := xCar(data)
+		val := xCar(xCdr(data))
+		message += fmt.Sprintf("'%+v' '%+v'", xSymbol(pred).name, val)
+	case "wrong-number-of-arguments":
+		fn := xCar(data)
+
+		for ; consp(fn); fn = xCar(fn) {
 		}
+
+		if symbolp(fn) {
+			message += fmt.Sprintf("'%+v' ", xSymbol(fn).name)
+		} else if subroutinep(fn) {
+			message += fmt.Sprintf("'%+v' ", xSubroutine(fn).name)
+		} else {
+			message += "'<function>' "
+		}
+
+		count := xCar(xCdr(data))
+		message += fmt.Sprintf("'%+v'", xIntegerValue(count))
 	}
 
-	if symbolp(jmp.errorSymbol) {
-		return fmt.Sprintf(format, xSymbol(jmp.errorSymbol).name, message)
-	}
-
-	return fmt.Sprintf(format, jmp.errorSymbol, message)
+	return message
 }
 
 func (se *stackEntryLet) tag() stackEntryTag {
