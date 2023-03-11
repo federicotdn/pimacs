@@ -34,7 +34,7 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 		result, err = ec.funcallSubroutine(fn, args...)
 	} else {
 		// Handle case: maxArgs == argsUnevalled
-		result, err = sub.callabe1(originalArgs)
+		result, err = sub.callabe.(lispFn1)(originalArgs)
 	}
 
 	if result == nil && err == nil {
@@ -70,25 +70,25 @@ func (ec *execContext) funcallSubroutine(fn lispObject, args ...lispObject) (lis
 
 	switch sub.maxArgs {
 	case 0:
-		result, err = sub.callabe0()
+		result, err = sub.callabe.(lispFn0)()
 	case 1:
-		result, err = sub.callabe1(args[0])
+		result, err = sub.callabe.(lispFn1)(args[0])
 	case 2:
-		result, err = sub.callabe2(args[0], args[1])
+		result, err = sub.callabe.(lispFn2)(args[0], args[1])
 	case 3:
-		result, err = sub.callabe3(args[0], args[1], args[2])
+		result, err = sub.callabe.(lispFn3)(args[0], args[1], args[2])
 	case 4:
-		result, err = sub.callabe4(args[0], args[1], args[2], args[3])
+		result, err = sub.callabe.(lispFn4)(args[0], args[1], args[2], args[3])
 	case 5:
-		result, err = sub.callabe5(args[0], args[1], args[2], args[3], args[4])
+		result, err = sub.callabe.(lispFn5)(args[0], args[1], args[2], args[3], args[4])
 	case 6:
-		result, err = sub.callabe6(args[0], args[1], args[2], args[3], args[4], args[5])
+		result, err = sub.callabe.(lispFn6)(args[0], args[1], args[2], args[3], args[4], args[5])
 	case 7:
-		result, err = sub.callabe7(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+		result, err = sub.callabe.(lispFn7)(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
 	case 8:
-		result, err = sub.callabe8(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+		result, err = sub.callabe.(lispFn8)(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
 	case argsMany:
-		result, err = sub.callabem(args...)
+		result, err = sub.callabe.(lispFnM)(args...)
 	default:
 		ec.terminate("unknown subroutine maxargs value")
 	}

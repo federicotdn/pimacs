@@ -251,16 +251,23 @@ func (li *listIter) error() (lispObject, error) {
 	return nil, li.err
 }
 
-func (ec *execContext) defSubr(symbol *lispObject, sub *subroutine) {
+func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name string, minArgs, maxArgs int) *subroutine {
+	sub := &subroutine{
+		callabe: fn,
+		name:    name,
+		minArgs: minArgs,
+		maxArgs: maxArgs,
+	}
+
 	if symbol != nil && *symbol != nil {
 		if ec.errorOnVarRedefine {
 			ec.terminate("subroutine value already set: '%+v'", *symbol)
 		}
-		return
+		return sub
 	}
 
 	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
-		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", sub)
+		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", name)
 	}
 
 	sym := ec.defVar(symbol, sub.name, ec.g.unbound) // Create a variable with value = unbound
@@ -270,125 +277,52 @@ func (ec *execContext) defSubr(symbol *lispObject, sub *subroutine) {
 	if symbol != nil {
 		*symbol = sym
 	}
+
+	return sub
 }
 
 func (ec *execContext) defSubr0(symbol *lispObject, name string, fn lispFn0) *subroutine {
-	sub := &subroutine{
-		callabe0: fn,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, 0, 0)
 }
 
 func (ec *execContext) defSubr1(symbol *lispObject, name string, fn lispFn1, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe1: fn,
-		minArgs:  minArgs,
-		maxArgs:  1,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, 1)
 }
 
 func (ec *execContext) defSubr2(symbol *lispObject, name string, fn lispFn2, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe2: fn,
-		minArgs:  minArgs,
-		maxArgs:  2,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, 2)
 }
 
 func (ec *execContext) defSubr3(symbol *lispObject, name string, fn lispFn3, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe3: fn,
-		minArgs:  minArgs,
-		maxArgs:  3,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, 3)
 }
 
 func (ec *execContext) defSubr4(symbol *lispObject, name string, fn lispFn4, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe4: fn,
-		minArgs:  minArgs,
-		maxArgs:  4,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, 4)
 }
 
 func (ec *execContext) defSubr5(symbol *lispObject, name string, fn lispFn5, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe5: fn,
-		minArgs:  minArgs,
-		maxArgs:  5,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, 5)
 }
 
 func (ec *execContext) defSubr6(symbol *lispObject, name string, fn lispFn6, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe6: fn,
-		minArgs:  minArgs,
-		maxArgs:  6,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, 6)
 }
 
 func (ec *execContext) defSubr7(symbol *lispObject, name string, fn lispFn7, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe7: fn,
-		minArgs:  minArgs,
-		maxArgs:  7,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, 7)
 }
 
 func (ec *execContext) defSubr8(symbol *lispObject, name string, fn lispFn8, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe8: fn,
-		minArgs:  minArgs,
-		maxArgs:  8,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, 8)
 }
 
 func (ec *execContext) defSubrM(symbol *lispObject, name string, fn lispFnM, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabem: fn,
-		minArgs:  minArgs,
-		maxArgs:  argsMany,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, argsMany)
 }
 
 func (ec *execContext) defSubrU(symbol *lispObject, name string, fn lispFn1, minArgs int) *subroutine {
-	sub := &subroutine{
-		callabe1: fn,
-		minArgs:  minArgs,
-		maxArgs:  argsUnevalled,
-		name:     name,
-	}
-	ec.defSubr(symbol, sub)
-	return sub
+	return ec.defSubrInternal(symbol, fn, name, minArgs, argsUnevalled)
 }
 
 func (ec *execContext) defVarUninterned(symbol *lispObject, name string, value lispObject) *lispSymbol {

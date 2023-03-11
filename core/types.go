@@ -33,18 +33,10 @@ type lispFn6 func(lispObject, lispObject, lispObject, lispObject, lispObject, li
 type lispFn7 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
 type lispFn8 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
 type lispFnM func(...lispObject) (lispObject, error)
+type lispFn interface{}
 
 type subroutine struct {
-	callabe0 lispFn0
-	callabe1 lispFn1
-	callabe2 lispFn2
-	callabe3 lispFn3
-	callabe4 lispFn4
-	callabe5 lispFn5
-	callabe6 lispFn6
-	callabe7 lispFn7
-	callabe8 lispFn8
-	callabem lispFnM
+	callabe  lispFn
 	minArgs  int
 	maxArgs  int
 	noReturn bool
