@@ -31,9 +31,9 @@ type readContextString struct {
 }
 
 type readContextFile struct {
-	reader     *bufio.Reader
-	unreadRune rune
-	i          int
+	reader      *bufio.Reader
+	unreadRunes []rune
+	i           int
 }
 
 type readStackElem struct {
@@ -74,9 +74,10 @@ func (ctx *readContextString) position() int {
 }
 
 func (ctx *readContextFile) read() rune {
-	if ctx.unreadRune >= 0 {
-		r := ctx.unreadRune
-		ctx.unreadRune = -1
+	if len(ctx.unreadRunes) > 0 {
+		r := ctx.unreadRunes[len(ctx.unreadRunes)-1]
+		ctx.unreadRunes = ctx.unreadRunes[:len(ctx.unreadRunes)-1]
+		ctx.i++
 		return r
 	}
 
@@ -98,11 +99,7 @@ func (ctx *readContextFile) unread(c rune) {
 		terminate("unbalanced read/unread call with rune: '%v'", c)
 	}
 
-	if ctx.unreadRune >= 0 {
-		terminate("only one rune can be unread")
-	}
-
-	ctx.unreadRune = c
+	ctx.unreadRunes = append(ctx.unreadRunes, c)
 	ctx.i--
 }
 
@@ -568,12 +565,42 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	return sym, nil
 }
 
+func lexicallyBoundp(ctx readContext) bool {
+	c := ctx.read()
+
+	if c == '#' {
+		c = ctx.read()
+		if c != '!' {
+			ctx.unread(c)
+			ctx.unread('#')
+			return false
+		}
+
+		for c != '\n' && c != eofRune {
+			c = ctx.read()
+		}
+
+		if c == '\n' {
+			c = ctx.read()
+		}
+	}
+
+	if c != ';' {
+		ctx.unread(c)
+		return false
+	}
+
+	return false
+}
+
 func (ec *execContext) readEvalLoop(stream lispObject, f *os.File) error {
 	var ctx readContext
 	var err error
 
+	// TODO: Create lex environment
+
 	if f != nil {
-		ctx = &readContextFile{reader: bufio.NewReader(f), unreadRune: -1}
+		ctx = &readContextFile{reader: bufio.NewReader(f)}
 	} else {
 		ctx, err = ec.streamReadContext(stream, ec.nil_, ec.nil_)
 		if err != nil {
@@ -693,6 +720,10 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 		}
 		return ec.nil_, nil
 	}
+
+	defer ec.unwind()()
+	// Load is dynamic by default
+	ec.stackPushLet(ec.g.lexicalBinding, ec.nil_)
 
 	err := ec.readEvalLoop(ec.nil_, f)
 	if err != nil {
