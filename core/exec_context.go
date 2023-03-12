@@ -78,7 +78,11 @@ func (jmp *stackJumpSignal) Error() string {
 
 	switch name {
 	case "error":
-		message = xStringValue(xCar(data))
+		message += fmt.Sprintf("'%+v' ", xStringValue(xCar(data)))
+	case "void-variable":
+		message += fmt.Sprintf("'%+v' ", xSymbol(xCar(data)).name)
+	case "void-function":
+		message += fmt.Sprintf("'%+v' ", xCar(data))
 	case "wrong-type-argument":
 		pred := xCar(data)
 		val := xCar(xCdr(data))
