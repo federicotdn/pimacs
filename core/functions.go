@@ -1,5 +1,9 @@
 package core
 
+import (
+	"unicode/utf8"
+)
+
 func (ec *execContext) listLength(obj lispObject) (int, error) {
 	num := 0
 
@@ -21,7 +25,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 	switch obj.getType() {
 	case lispTypeString:
-		num = len(xString(obj).value)
+		num = utf8.RuneCountInString(xString(obj).value)
 	case lispTypeCons:
 		var err error
 		num, err = ec.listLength(obj)

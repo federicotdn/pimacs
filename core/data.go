@@ -48,7 +48,7 @@ func (ec *execContext) car(obj lispObject) (lispObject, error) {
 	if !consp(obj) {
 		return ec.wrongTypeArgument(ec.g.listp, obj)
 	}
-	return xCons(obj).car, nil
+	return xCar(obj), nil
 }
 
 func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
@@ -59,7 +59,7 @@ func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
 	if !consp(obj) {
 		return ec.wrongTypeArgument(ec.g.listp, obj)
 	}
-	return xCons(obj).cdr, nil
+	return xCdr(obj), nil
 }
 
 func (ec *execContext) setCar(obj, newCar lispObject) (lispObject, error) {

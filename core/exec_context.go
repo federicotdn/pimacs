@@ -25,6 +25,7 @@ type stackJumpTag struct {
 type stackJumpSignal struct {
 	errorSymbol lispObject
 	data        lispObject
+	goStack     string
 }
 
 type execContext struct {
@@ -100,6 +101,8 @@ func (jmp *stackJumpSignal) Error() string {
 		message += fmt.Sprintf("'%+v'", xIntegerValue(count))
 	}
 
+	message += "\nGo stack for jump:\n" + jmp.goStack
+
 	return message
 }
 
@@ -117,7 +120,8 @@ func (se *stackEntryFnLispObject) tag() stackEntryTag {
 
 func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
 	return &lispSymbol{
-		name: name,
+		name:    name,
+		special: false,
 	}
 }
 
@@ -376,10 +380,10 @@ func newExecContext() *execContext {
 
 	ec.initBuffer() // buffer.go
 
-	loadPath, ok := os.LookupEnv("PIMACS_ELISP")
+	loadPath, ok := os.LookupEnv("PIMACS_LISP")
 	if !ok {
 		// Use relative path from CWD
-		loadPath = "elisp"
+		loadPath = "lisp"
 	}
 	xSymbol(ec.g.loadPath).value = ec.makeList(ec.makeString(loadPath))
 
@@ -392,7 +396,7 @@ func newExecContext() *execContext {
 }
 
 func (ec *execContext) loadElisp() error {
-	files := []string{"base.el"}
+	files := []string{"pimacs.el"}
 
 	for _, path := range files {
 		_, err := ec.load(ec.makeString(path), ec.nil_, ec.nil_, ec.nil_, ec.nil_)

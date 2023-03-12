@@ -1,5 +1,5 @@
 SHELL = bash
-PIMACS_ELISP = $(CURDIR)/elisp
+PIMACS_LISP = $(CURDIR)/lisp
 
 clean:
 	rm -rf pimacs
@@ -19,7 +19,7 @@ run-file:
 
 test:
 	go clean -testcache
-	PIMACS_TESTING=true PIMACS_ELISP=$(PIMACS_ELISP) go test -v ./...
+	PIMACS_TESTING=true PIMACS_LISP=$(PIMACS_LISP) go test -v ./...
 
 debug:
 	dlv debug -- --load test.el

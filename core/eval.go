@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"runtime"
 )
 
 const (
@@ -209,11 +210,11 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 		ec.stackPushLet(ec.g.internalInterpreterEnv, lexEnv)
 	}
 
-	if consp(fn) {
-		return ec.progn(xCdr(xCdr(fn)))
+	if !consp(fn) {
+		return ec.pimacsUnimplemented(ec.g.eval, "unknown lambda body type")
 	}
 
-	return ec.pimacsUnimplemented(ec.g.eval, "unknown lambda body type")
+	return ec.progn(xCdr(xCdr(fn)))
 }
 
 func (ec *execContext) progIgnore(body lispObject) error {
@@ -434,9 +435,17 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 
 func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) {
 	// TAGS: incomplete
+	buf := make([]byte, 4096)
+	n := runtime.Stack(buf, false)
+
+	if errorSymbol == ec.nil_ && data == ec.nil_ {
+		errorSymbol = ec.g.error_
+	}
+
 	return nil, &stackJumpSignal{
 		errorSymbol: errorSymbol,
 		data:        ec.makeCons(errorSymbol, data),
+		goStack:     string(buf[:n]),
 	}
 }
 
@@ -522,6 +531,47 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	return val, nil
 }
 
+func (ec *execContext) setq(originalArgs lispObject) (lispObject, error) {
+	args, err := ec.listToSlice(originalArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	val := originalArgs
+
+	for i, elem := range args {
+		if i%2 == 0 && i == len(args)-1 {
+			return ec.wrongNumberOfArguments(ec.g.setq, lispInt(i+1))
+		}
+
+		if i%2 == 1 {
+			continue
+		}
+
+		sym := elem
+		val, err = ec.evalSub(args[i+1])
+		if err != nil {
+			return nil, err
+		}
+
+		lexBinding := ec.nil_
+		if symbolp(sym) {
+			lexBinding, err = ec.assq(sym, xSymbolValue(ec.g.internalInterpreterEnv))
+		}
+
+		if lexBinding != ec.nil_ {
+			xSetCdr(lexBinding, val) // Lexically bound
+		} else {
+			_, err = ec.set(sym, val)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return val, nil
+}
+
 func (ec *execContext) function(args lispObject) (lispObject, error) {
 	quoted := xCar(args)
 
@@ -543,6 +593,86 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 	}
 
 	return quoted, nil
+}
+
+func (ec *execContext) let(args lispObject) (lispObject, error) {
+	defer ec.unwind()()
+
+	varList, err := ec.listToSlice(xCar(args))
+	if err != nil {
+		return nil, err
+	}
+
+	temps := make([]lispObject, len(varList))
+
+	for argnum, elt := range varList {
+		if symbolp(elt) {
+			temps[argnum] = ec.nil_
+		} else {
+			cdr, err := ec.cdr(elt)
+			if err != nil {
+				return nil, err
+			}
+
+			cddr, err := ec.cdr(cdr)
+			if err != nil {
+				return nil, err
+			}
+
+			if cddr != ec.nil_ {
+				return ec.signalError("`let' bindings can only have one value-form '%+v'", elt)
+			}
+
+			cadr, err := ec.car(cdr)
+			if err != nil {
+				return nil, err
+			}
+
+			val, err := ec.evalSub(cadr)
+			if err != nil {
+				return nil, err
+			}
+
+			temps[argnum] = val
+		}
+	}
+
+	lexEnv := xSymbolValue(ec.g.internalInterpreterEnv)
+
+	for argnum, elt := range varList {
+		var variable lispObject
+		if symbolp(elt) {
+			variable = elt
+		} else {
+			var err error
+			variable, err = ec.car(elt)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		tem := temps[argnum]
+		included, err := ec.memq(variable, xSymbolValue(ec.g.internalInterpreterEnv))
+		if err != nil {
+			return nil, err
+		}
+
+		if lexEnv != ec.nil_ && symbolp(variable) &&
+			!xSymbol(variable).special &&
+			included == ec.nil_ {
+			// Bind variable lexically
+			lexEnv = ec.makeCons(ec.makeCons(variable, tem), lexEnv)
+		} else {
+			// Bind variable dynamically
+			ec.stackPushLet(variable, tem)
+		}
+	}
+
+	if lexEnv != ec.g.internalInterpreterEnv {
+		ec.stackPushLet(ec.g.internalInterpreterEnv, lexEnv)
+	}
+
+	return ec.progn(xCdr(args))
 }
 
 func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
@@ -652,11 +782,13 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubrM(nil, "funcall", ec.funcall, 1)
 	ec.defSubrM(nil, "apply", ec.apply, 1)
 	ec.defSubrU(nil, "progn", ec.progn, 0)
+	ec.defSubrU(&ec.g.setq, "setq", ec.setq, 0)
 	ec.defSubrU(nil, "if", ec.if_, 2)
 	ec.defSubrU(nil, "while", ec.while, 1)
 	ec.defSubrU(&ec.g.quote, "quote", ec.quote, 1)
 	ec.defSubrU(&ec.g.backquote, "`", ec.backquote, 1)
 	ec.defSubrU(&ec.g.function, "function", ec.function, 1)
+	ec.defSubrU(nil, "let", ec.let, 1)
 	ec.defSubrU(nil, "catch", ec.catch, 1)
 	ec.defSubrU(nil, "unwind-protect", ec.unwindProtect, 1)
 	ec.defSubrU(nil, "condition-case", ec.conditionCase, 2)

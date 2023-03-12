@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 type readStackElementType int
@@ -24,10 +25,9 @@ type readContext interface {
 }
 
 type readContextString struct {
-	source string
-	runes  []rune
-	i      int
-	end    int
+	runes []rune
+	i     int
+	end   int
 }
 
 type readContextFile struct {
@@ -537,10 +537,9 @@ func (ec *execContext) streamReadContext(stream, start, end lispObject) (readCon
 		str := xStringValue(stream)
 
 		ctx = &readContextString{
-			source: str,
-			runes:  []rune(str),
-			i:      startInt,
-			end:    endInt,
+			runes: []rune(str),
+			i:     startInt,
+			end:   endInt,
 		}
 	default:
 		return nil, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown source type"))
@@ -565,7 +564,7 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	return sym, nil
 }
 
-func lexicallyBoundp(ctx readContext) bool {
+func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 	c := ctx.read()
 
 	if c == '#' {
@@ -590,22 +589,71 @@ func lexicallyBoundp(ctx readContext) bool {
 		return false
 	}
 
+	builder := strings.Builder{}
+
+	for {
+		c = ctx.read()
+		if c == '\n' || c == eofRune {
+			break
+		}
+
+		builder.WriteRune(c)
+	}
+
+	line := strings.TrimRight(builder.String(), " \t")
+	line, found := strings.CutSuffix(line, "-*-")
+	if !found {
+		return false
+	}
+
+	parts := strings.Split(line, "-*-")
+	if len(parts) == 1 {
+		return false
+	}
+	line = parts[1]
+
+	strCtx := readContextString{runes: []rune(line), end: utf8.RuneCountInString(line)}
+
+	for {
+		variable, err := ec.read0(&strCtx)
+		if err != nil || !symbolp(variable) || !strings.HasSuffix(xSymbol(variable).name, ":") {
+			return false
+		}
+
+		value, err := ec.read0(&strCtx)
+		if err != nil {
+			return false
+		}
+
+		// The reader will include the ":" in the symbol name, so use it here too
+		if xSymbol(variable).name == "lexical-binding:" {
+			return (value != ec.nil_)
+		}
+
+		for {
+			c = strCtx.read()
+			if c != ' ' && c != '\t' && c != ';' {
+				strCtx.unread(c)
+				break
+			}
+		}
+
+		if c == eofRune || c == '\n' {
+			break
+		}
+	}
+
 	return false
 }
 
-func (ec *execContext) readEvalLoop(stream lispObject, f *os.File) error {
-	var ctx readContext
-	var err error
+func (ec *execContext) readEvalLoop(ctx readContext) error {
+	defer ec.unwind()()
 
-	// TODO: Create lex environment
-
-	if f != nil {
-		ctx = &readContextFile{reader: bufio.NewReader(f)}
+	lex := xSymbolValue(ec.g.lexicalBinding)
+	if lex == ec.nil_ || lex == ec.g.unbound {
+		ec.stackPushLet(ec.g.internalInterpreterEnv, ec.nil_)
 	} else {
-		ctx, err = ec.streamReadContext(stream, ec.nil_, ec.nil_)
-		if err != nil {
-			return err
-		}
+		ec.stackPushLet(ec.g.internalInterpreterEnv, ec.makeList(ec.t))
 	}
 
 	for {
@@ -725,7 +773,13 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 	// Load is dynamic by default
 	ec.stackPushLet(ec.g.lexicalBinding, ec.nil_)
 
-	err := ec.readEvalLoop(ec.nil_, f)
+	ctx := readContextFile{reader: bufio.NewReader(f)}
+
+	if ec.lexicallyBoundp(&ctx) {
+		ec.stackPushLet(ec.g.lexicalBinding, ec.t)
+	}
+
+	err := ec.readEvalLoop(&ctx)
 	if err != nil {
 		return nil, err
 	}

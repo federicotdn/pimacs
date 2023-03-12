@@ -54,6 +54,7 @@ type lispSymbol struct {
 	value    lispObject
 	function lispObject
 	plist    lispObject
+	special  bool
 }
 
 type lispCons struct {

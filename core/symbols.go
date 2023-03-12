@@ -29,6 +29,7 @@ type lispGlobals struct {
 	read               lispObject
 	equal              lispObject
 	eval               lispObject
+	setq               lispObject
 	prin1              lispObject
 	readFromMinibuffer lispObject
 	// 3. Errors
