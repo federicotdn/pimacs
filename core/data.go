@@ -40,6 +40,36 @@ func (ec *execContext) bufferp(object lispObject) (lispObject, error) {
 	return ec.bool(bufferp(object))
 }
 
+func (ec *execContext) boundp(symbol lispObject) (lispObject, error) {
+	if !symbolp(symbol) {
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+	}
+	return ec.bool(xSymbolValue(symbol) != ec.g.unbound)
+}
+
+func (ec *execContext) fboundp(symbol lispObject) (lispObject, error) {
+	if !symbolp(symbol) {
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+	}
+	return ec.bool(xSymbol(symbol).function != ec.g.unbound)
+}
+
+func (ec *execContext) makunbound(symbol lispObject) (lispObject, error) {
+	if !symbolp(symbol) {
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+	}
+	xSymbol(symbol).value = ec.g.unbound
+	return symbol, nil
+}
+
+func (ec *execContext) fmakunbound(symbol lispObject) (lispObject, error) {
+	if !symbolp(symbol) {
+		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+	}
+	xSymbol(symbol).function = ec.g.unbound
+	return symbol, nil
+}
+
 func (ec *execContext) car(obj lispObject) (lispObject, error) {
 	if obj == ec.nil_ {
 		return ec.nil_, nil
@@ -182,6 +212,10 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.g.charOrStringp, "char-or-string-p", ec.charOrStringp, 1)
 	ec.defSubr1(&ec.g.integerp, "integerp", ec.numberOrMarkerp, 1)
 	ec.defSubr1(&ec.g.bufferp, "bufferp", ec.bufferp, 1)
+	ec.defSubr1(nil, "boundp", ec.boundp, 1)
+	ec.defSubr1(nil, "fboundp", ec.fboundp, 1)
+	ec.defSubr1(nil, "makunbound", ec.makunbound, 1)
+	ec.defSubr1(nil, "fmakunbound", ec.fmakunbound, 1)
 	ec.defSubr1(nil, "car", ec.car, 1)
 	ec.defSubr1(nil, "cdr", ec.cdr, 1)
 	ec.defSubr2(nil, "setcar", ec.setCar, 2)
