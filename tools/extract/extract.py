@@ -81,7 +81,9 @@ DEFUN_EXPR = (
     )
 )
 
-GoDefun = namedtuple("GoDefun", "subr_fn numargs minargs lname fnname args")
+GoDefun = namedtuple(
+    "GoDefun", "subr_fn numargs minargs lname fnname args attributes path"
+)
 GoConstant = namedtuple("GoConstant", "name value")
 
 
@@ -119,6 +121,7 @@ def extract_declarations(path: Path) -> tuple:
                 "args": parsed.get("args"),
                 "attributes": parsed.get("attributes"),
                 "doc": parsed["doc"].strip(),
+                "path": str(path.name),
             }
 
             defuns.append(result)
@@ -187,8 +190,12 @@ def get_go_declarations(defuns: list[dict]) -> tuple:
         go_defun_counts[lname] += 1
 
         fnname = fnname_to_go(defun["fnname"], count)
+        attributes = defun["attributes"]
+        path = defun["path"]
 
-        go_defun = GoDefun(subr_fn, numargs, minargs, lname, fnname, args)
+        go_defun = GoDefun(
+            subr_fn, numargs, minargs, lname, fnname, args, attributes, path
+        )
         go_defuns[lname].append(go_defun)
 
     return sum(go_defuns.values(), []), go_constants
@@ -211,8 +218,10 @@ def generate_go_file(defuns: list[dict], emacs_commit: str, emacs_branch: str) -
         elif defun.subr_fn != "defSubr0":
             s += ", ".join(defun.args) + " lispObject"
         s += ") (lispObject, error) {\n"
-        s += f'\treturn ec.stub("{defun.lname}")\n'
-        s += "}\n\n"
+        s += f'\treturn ec.stub("{defun.lname}") // Source file: {defun.path}'
+        if defun.attributes:
+            s += f", attributes: {defun.attributes}"
+        s += "\n}\n\n"
 
     s += f"func (ec *execContext) symbolsOfEmacs{AUTOGEN_SUFFIX}() {{\n"
 
@@ -241,12 +250,12 @@ def main() -> None:
 
     all_defuns = []
 
-    for p in emacs_base.joinpath("src").rglob("*"):
+    for p in sorted(emacs_base.joinpath("src").rglob("*")):
         if not p.suffix == ".c" or p.name == "msdos.c":
             continue
 
         defuns, *_ = extract_declarations(p)
-        all_defuns.extend(defuns)
+        all_defuns.extend(sorted(defuns, key=lambda e: e["lname"]))
 
     contents = generate_go_file(all_defuns, emacs_commit, emacs_branch)
     target = pimacs_base.joinpath(f"{PACKAGE}/emacs_autogen.go")
