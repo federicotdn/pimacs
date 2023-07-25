@@ -462,7 +462,10 @@ read_obj:
 			goto read_obj
 
 		case readStackListDot:
-			ec.skipSpaceAndComments(ctx)
+			err := ec.skipSpaceAndComments(ctx)
+			if err != nil {
+				return nil, err
+			}
 			ch := ctx.read()
 			if ch != ')' {
 				return ec.signalN(ec.g.invalidReadSyntax, ec.makeString("expected )"))
@@ -753,7 +756,9 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 		var err error
 		f, err = os.Open(fullPath)
 		if err == nil {
-			defer f.Close()
+			defer func() {
+				_ = f.Close()
+			}()
 			break
 		}
 	}
