@@ -1,6 +1,6 @@
 // Automatically generated with pimacs.extract
 // DO NOT MODIFY!
-// Generated from GNU Emacs commit: 4b6f2a7028b91128934a19f83572f24106782225, branch: emacs-29
+// Generated from GNU Emacs commit: c2d95dd00e6cb0abaf4e7550f38c8c2c9ca22f2d, branch: emacs-29
 
 package core
 
@@ -1715,12 +1715,12 @@ func (ec *execContext) insertChar_autogen(character, count, inherit lispObject) 
 	return ec.stub("insert-char") // Source file: editfns.c
 }
 
-func (ec *execContext) internalLockNarrowing_autogen(tag lispObject) (lispObject, error) {
-	return ec.stub("internal--lock-narrowing") // Source file: editfns.c
+func (ec *execContext) internalLabeledNarrowToRegion_autogen(start, end, label lispObject) (lispObject, error) {
+	return ec.stub("internal--labeled-narrow-to-region") // Source file: editfns.c
 }
 
-func (ec *execContext) internalUnlockNarrowing_autogen(tag lispObject) (lispObject, error) {
-	return ec.stub("internal--unlock-narrowing") // Source file: editfns.c
+func (ec *execContext) internalUnlabelRestriction_autogen(label lispObject) (lispObject, error) {
+	return ec.stub("internal--unlabel-restriction") // Source file: editfns.c
 }
 
 func (ec *execContext) lineBeginningPosition_autogen(n lispObject) (lispObject, error) {
@@ -7299,8 +7299,8 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr3(nil, "insert-buffer-substring", ec.insertBufferSubstring_autogen, 1)
 	ec.defSubr3(nil, "insert-byte", ec.insertByte_autogen, 2)
 	ec.defSubr3(nil, "insert-char", ec.insertChar_autogen, 1)
-	ec.defSubr1(nil, "internal--lock-narrowing", ec.internalLockNarrowing_autogen, 1)
-	ec.defSubr1(nil, "internal--unlock-narrowing", ec.internalUnlockNarrowing_autogen, 1)
+	ec.defSubr3(nil, "internal--labeled-narrow-to-region", ec.internalLabeledNarrowToRegion_autogen, 3)
+	ec.defSubr1(nil, "internal--unlabel-restriction", ec.internalUnlabelRestriction_autogen, 1)
 	ec.defSubr1(nil, "line-beginning-position", ec.lineBeginningPosition_autogen, 0)
 	ec.defSubr1(nil, "line-end-position", ec.lineEndPosition_autogen, 0)
 	ec.defSubr0(nil, "mark-marker", ec.markMarker_autogen)
