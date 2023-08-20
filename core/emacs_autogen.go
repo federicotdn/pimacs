@@ -1,6 +1,6 @@
 // Automatically generated with pimacs.extract
 // DO NOT MODIFY!
-// Generated from GNU Emacs commit: c2d95dd00e6cb0abaf4e7550f38c8c2c9ca22f2d, branch: emacs-29
+// Generated from GNU Emacs commit: 652e45b70d82e6f615febe00553dbded80557845, branch: master
 
 package core
 
@@ -97,6 +97,478 @@ func (ec *execContext) suspiciousObject_autogen(obj lispObject) (lispObject, err
 
 func (ec *execContext) vector_autogen(args ...lispObject) (lispObject, error) {
 	return ec.stub("vector") // Source file: alloc.c
+}
+
+func (ec *execContext) androidDetectMouse_autogen() (lispObject, error) {
+	return ec.stub("android-detect-mouse") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidDisplayMonitorAttributesList_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("android-display-monitor-attributes-list") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidFrameEdges_autogen(frame, type_ lispObject) (lispObject, error) {
+	return ec.stub("android-frame-edges") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidFrameGeometry_autogen(frame lispObject) (lispObject, error) {
+	return ec.stub("android-frame-geometry") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidFrameListZOrder_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("android-frame-list-z-order") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidFrameRestack_autogen(frame1, frame2, frame3 lispObject) (lispObject, error) {
+	return ec.stub("android-frame-restack") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidGetConnection_autogen() (lispObject, error) {
+	return ec.stub("android-get-connection") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidMouseAbsolutePixelPosition_autogen() (lispObject, error) {
+	return ec.stub("android-mouse-absolute-pixel-position") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidQueryBattery_autogen() (lispObject, error) {
+	return ec.stub("android-query-battery") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidRequestDirectoryAccess_autogen() (lispObject, error) {
+	return ec.stub("android-request-directory-access") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidSetMouseAbsolutePixelPosition_autogen(x, y lispObject) (lispObject, error) {
+	return ec.stub("android-set-mouse-absolute-pixel-position") // Source file: androidfns.c
+}
+
+func (ec *execContext) androidToggleOnScreenKeyboard_autogen(frame, hide lispObject) (lispObject, error) {
+	return ec.stub("android-toggle-on-screen-keyboard") // Source file: androidfns.c
+}
+
+func (ec *execContext) xCreateFrame_autogen(parms lispObject) (lispObject, error) {
+	return ec.stub("x-create-frame") // Source file: androidfns.c
+}
+
+func (ec *execContext) xCreateFrame_1_autogen(parms lispObject) (lispObject, error) {
+	return ec.stub("x-create-frame") // Source file: haikufns.c
+}
+
+func (ec *execContext) xCreateFrame_2_autogen(parms lispObject) (lispObject, error) {
+	return ec.stub("x-create-frame") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xCreateFrame_3_autogen(parameters lispObject) (lispObject, error) {
+	return ec.stub("x-create-frame") // Source file: w32fns.c
+}
+
+func (ec *execContext) xCreateFrame_4_autogen(parms lispObject) (lispObject, error) {
+	return ec.stub("x-create-frame") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayBackingStore_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-backing-store") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayBackingStore_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-backing-store") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayBackingStore_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-backing-store") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayBackingStore_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-backing-store") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayBackingStore_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-backing-store") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayColorCells_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-color-cells") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayColorCells_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-color-cells") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayColorCells_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-color-cells") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayColorCells_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-color-cells") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayColorCells_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-color-cells") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayGrayscaleP_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-grayscale-p") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayGrayscaleP_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-grayscale-p") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayGrayscaleP_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-grayscale-p") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayGrayscaleP_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-grayscale-p") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayGrayscaleP_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-grayscale-p") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayList_autogen() (lispObject, error) {
+	return ec.stub("x-display-list") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayList_1_autogen() (lispObject, error) {
+	return ec.stub("x-display-list") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayList_2_autogen() (lispObject, error) {
+	return ec.stub("x-display-list") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayList_3_autogen() (lispObject, error) {
+	return ec.stub("x-display-list") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayList_4_autogen() (lispObject, error) {
+	return ec.stub("x-display-list") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayMmHeight_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-height") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayMmHeight_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-height") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayMmHeight_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-height") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayMmHeight_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-height") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayMmHeight_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-height") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayMmWidth_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-width") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayMmWidth_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-width") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayMmWidth_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-width") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayMmWidth_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-width") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayMmWidth_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-mm-width") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayPixelHeight_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-height") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayPixelHeight_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-height") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayPixelHeight_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-height") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayPixelHeight_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-height") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayPixelHeight_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-height") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayPixelWidth_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-width") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayPixelWidth_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-width") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayPixelWidth_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-width") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayPixelWidth_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-width") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayPixelWidth_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-pixel-width") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayPlanes_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-planes") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayPlanes_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-planes") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayPlanes_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-planes") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayPlanes_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-planes") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayPlanes_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-planes") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayScreens_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-screens") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayScreens_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-screens") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayScreens_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-screens") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayScreens_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-screens") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayScreens_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-screens") // Source file: xfns.c
+}
+
+func (ec *execContext) xDisplayVisualClass_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-visual-class") // Source file: androidfns.c
+}
+
+func (ec *execContext) xDisplayVisualClass_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-visual-class") // Source file: haikufns.c
+}
+
+func (ec *execContext) xDisplayVisualClass_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-visual-class") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xDisplayVisualClass_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("x-display-visual-class") // Source file: w32fns.c
+}
+
+func (ec *execContext) xDisplayVisualClass_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-display-visual-class") // Source file: xfns.c
+}
+
+func (ec *execContext) xHideTip_autogen() (lispObject, error) {
+	return ec.stub("x-hide-tip") // Source file: androidfns.c
+}
+
+func (ec *execContext) xHideTip_1_autogen() (lispObject, error) {
+	return ec.stub("x-hide-tip") // Source file: haikufns.c
+}
+
+func (ec *execContext) xHideTip_2_autogen() (lispObject, error) {
+	return ec.stub("x-hide-tip") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xHideTip_3_autogen() (lispObject, error) {
+	return ec.stub("x-hide-tip") // Source file: w32fns.c
+}
+
+func (ec *execContext) xHideTip_4_autogen() (lispObject, error) {
+	return ec.stub("x-hide-tip") // Source file: xfns.c
+}
+
+func (ec *execContext) xServerVendor_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-vendor") // Source file: androidfns.c
+}
+
+func (ec *execContext) xServerVendor_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-vendor") // Source file: haikufns.c
+}
+
+func (ec *execContext) xServerVendor_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-vendor") // Source file: w32fns.c
+}
+
+func (ec *execContext) xServerVendor_3_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-vendor") // Source file: xfns.c
+}
+
+func (ec *execContext) xServerVersion_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-version") // Source file: androidfns.c
+}
+
+func (ec *execContext) xServerVersion_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-version") // Source file: haikufns.c
+}
+
+func (ec *execContext) xServerVersion_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-version") // Source file: w32fns.c
+}
+
+func (ec *execContext) xServerVersion_3_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("x-server-version") // Source file: xfns.c
+}
+
+func (ec *execContext) xShowTip_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return ec.stub("x-show-tip") // Source file: androidfns.c
+}
+
+func (ec *execContext) xShowTip_1_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return ec.stub("x-show-tip") // Source file: haikufns.c
+}
+
+func (ec *execContext) xShowTip_2_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return ec.stub("x-show-tip") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xShowTip_3_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return ec.stub("x-show-tip") // Source file: w32fns.c
+}
+
+func (ec *execContext) xShowTip_4_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return ec.stub("x-show-tip") // Source file: xfns.c
+}
+
+func (ec *execContext) xwColorDefinedP_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-defined-p") // Source file: androidfns.c
+}
+
+func (ec *execContext) xwColorDefinedP_1_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-defined-p") // Source file: haikufns.c
+}
+
+func (ec *execContext) xwColorDefinedP_2_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-defined-p") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xwColorDefinedP_3_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-defined-p") // Source file: w32fns.c
+}
+
+func (ec *execContext) xwColorDefinedP_4_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-defined-p") // Source file: xfns.c
+}
+
+func (ec *execContext) xwColorValues_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-values") // Source file: androidfns.c
+}
+
+func (ec *execContext) xwColorValues_1_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-values") // Source file: haikufns.c
+}
+
+func (ec *execContext) xwColorValues_2_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-values") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xwColorValues_3_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-values") // Source file: w32fns.c
+}
+
+func (ec *execContext) xwColorValues_4_autogen(color, frame lispObject) (lispObject, error) {
+	return ec.stub("xw-color-values") // Source file: xfns.c
+}
+
+func (ec *execContext) xwDisplayColorP_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("xw-display-color-p") // Source file: androidfns.c
+}
+
+func (ec *execContext) xwDisplayColorP_1_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("xw-display-color-p") // Source file: haikufns.c
+}
+
+func (ec *execContext) xwDisplayColorP_2_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("xw-display-color-p") // Source file: pgtkfns.c
+}
+
+func (ec *execContext) xwDisplayColorP_3_autogen(display lispObject) (lispObject, error) {
+	return ec.stub("xw-display-color-p") // Source file: w32fns.c
+}
+
+func (ec *execContext) xwDisplayColorP_4_autogen(terminal lispObject) (lispObject, error) {
+	return ec.stub("xw-display-color-p") // Source file: xfns.c
+}
+
+func (ec *execContext) menuOrPopupActiveP_autogen() (lispObject, error) {
+	return ec.stub("menu-or-popup-active-p") // Source file: androidmenu.c
+}
+
+func (ec *execContext) menuOrPopupActiveP_1_autogen() (lispObject, error) {
+	return ec.stub("menu-or-popup-active-p") // Source file: haikumenu.c
+}
+
+func (ec *execContext) menuOrPopupActiveP_2_autogen() (lispObject, error) {
+	return ec.stub("menu-or-popup-active-p") // Source file: pgtkmenu.c
+}
+
+func (ec *execContext) menuOrPopupActiveP_3_autogen() (lispObject, error) {
+	return ec.stub("menu-or-popup-active-p") // Source file: w32menu.c
+}
+
+func (ec *execContext) menuOrPopupActiveP_4_autogen() (lispObject, error) {
+	return ec.stub("menu-or-popup-active-p") // Source file: xmenu.c
+}
+
+func (ec *execContext) androidBrowseUrl_autogen(url, send lispObject) (lispObject, error) {
+	return ec.stub("android-browse-url") // Source file: androidselect.c
+}
+
+func (ec *execContext) androidClipboardExistsP_autogen() (lispObject, error) {
+	return ec.stub("android-clipboard-exists-p") // Source file: androidselect.c
+}
+
+func (ec *execContext) androidClipboardOwnerP_autogen() (lispObject, error) {
+	return ec.stub("android-clipboard-owner-p") // Source file: androidselect.c
+}
+
+func (ec *execContext) androidGetClipboard_autogen() (lispObject, error) {
+	return ec.stub("android-get-clipboard") // Source file: androidselect.c
+}
+
+func (ec *execContext) androidGetClipboardData_autogen(type_ lispObject) (lispObject, error) {
+	return ec.stub("android-get-clipboard-data") // Source file: androidselect.c
+}
+
+func (ec *execContext) androidGetClipboardTargets_autogen() (lispObject, error) {
+	return ec.stub("android-get-clipboard-targets") // Source file: androidselect.c
+}
+
+func (ec *execContext) androidNotificationsNotify_autogen(args ...lispObject) (lispObject, error) {
+	return ec.stub("android-notifications-notify") // Source file: androidselect.c
+}
+
+func (ec *execContext) androidSetClipboard_autogen(string lispObject) (lispObject, error) {
+	return ec.stub("android-set-clipboard") // Source file: androidselect.c
 }
 
 func (ec *execContext) debugTimerCheck_autogen() (lispObject, error) {
@@ -1495,6 +1967,10 @@ func (ec *execContext) documentationProperty_autogen(symbol, prop, raw lispObjec
 	return ec.stub("documentation-property") // Source file: doc.c
 }
 
+func (ec *execContext) subrDocumentation_autogen(function lispObject) (lispObject, error) {
+	return ec.stub("internal-subr-documentation") // Source file: doc.c
+}
+
 func (ec *execContext) textQuotingStyle_autogen() (lispObject, error) {
 	return ec.stub("text-quoting-style") // Source file: doc.c
 }
@@ -1719,8 +2195,8 @@ func (ec *execContext) internalLabeledNarrowToRegion_autogen(start, end, label l
 	return ec.stub("internal--labeled-narrow-to-region") // Source file: editfns.c
 }
 
-func (ec *execContext) internalUnlabelRestriction_autogen(label lispObject) (lispObject, error) {
-	return ec.stub("internal--unlabel-restriction") // Source file: editfns.c
+func (ec *execContext) internalLabeledWiden_autogen(label lispObject) (lispObject, error) {
+	return ec.stub("internal--labeled-widen") // Source file: editfns.c
 }
 
 func (ec *execContext) lineBeginningPosition_autogen(n lispObject) (lispObject, error) {
@@ -2119,8 +2595,8 @@ func (ec *execContext) deleteDirectoryInternal_autogen(directory lispObject) (li
 	return ec.stub("delete-directory-internal") // Source file: fileio.c
 }
 
-func (ec *execContext) deleteFile_autogen(filename, trash lispObject) (lispObject, error) {
-	return ec.stub("delete-file") // Source file: fileio.c
+func (ec *execContext) deleteFileInternal_autogen(filename lispObject) (lispObject, error) {
+	return ec.stub("delete-file-internal") // Source file: fileio.c
 }
 
 func (ec *execContext) directoryFileName_autogen(directory lispObject) (lispObject, error) {
@@ -3391,166 +3867,6 @@ func (ec *execContext) xCloseConnection_3_autogen(terminal lispObject) (lispObje
 	return ec.stub("x-close-connection") // Source file: xfns.c
 }
 
-func (ec *execContext) xCreateFrame_autogen(parms lispObject) (lispObject, error) {
-	return ec.stub("x-create-frame") // Source file: haikufns.c
-}
-
-func (ec *execContext) xCreateFrame_1_autogen(parms lispObject) (lispObject, error) {
-	return ec.stub("x-create-frame") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xCreateFrame_2_autogen(parameters lispObject) (lispObject, error) {
-	return ec.stub("x-create-frame") // Source file: w32fns.c
-}
-
-func (ec *execContext) xCreateFrame_3_autogen(parms lispObject) (lispObject, error) {
-	return ec.stub("x-create-frame") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayBackingStore_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-backing-store") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayBackingStore_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-backing-store") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayBackingStore_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-backing-store") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayBackingStore_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-backing-store") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayColorCells_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-color-cells") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayColorCells_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-color-cells") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayColorCells_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-color-cells") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayColorCells_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-color-cells") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayGrayscaleP_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-grayscale-p") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayGrayscaleP_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-grayscale-p") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayGrayscaleP_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-grayscale-p") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayGrayscaleP_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-grayscale-p") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayList_autogen() (lispObject, error) {
-	return ec.stub("x-display-list") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayList_1_autogen() (lispObject, error) {
-	return ec.stub("x-display-list") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayList_2_autogen() (lispObject, error) {
-	return ec.stub("x-display-list") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayList_3_autogen() (lispObject, error) {
-	return ec.stub("x-display-list") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayMmHeight_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-mm-height") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayMmHeight_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-mm-height") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayMmHeight_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-mm-height") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayMmHeight_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-mm-height") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayMmWidth_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-mm-width") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayMmWidth_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-mm-width") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayMmWidth_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-mm-width") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayMmWidth_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-mm-width") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayPixelHeight_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-pixel-height") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayPixelHeight_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-pixel-height") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayPixelHeight_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-pixel-height") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayPixelHeight_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-pixel-height") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayPixelWidth_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-pixel-width") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayPixelWidth_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-pixel-width") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayPixelWidth_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-pixel-width") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayPixelWidth_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-pixel-width") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayPlanes_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-planes") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayPlanes_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-planes") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayPlanes_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-planes") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayPlanes_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-planes") // Source file: xfns.c
-}
-
 func (ec *execContext) xDisplaySaveUnder_autogen(terminal lispObject) (lispObject, error) {
 	return ec.stub("x-display-save-under") // Source file: haikufns.c
 }
@@ -3567,60 +3883,12 @@ func (ec *execContext) xDisplaySaveUnder_3_autogen(terminal lispObject) (lispObj
 	return ec.stub("x-display-save-under") // Source file: xfns.c
 }
 
-func (ec *execContext) xDisplayScreens_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-screens") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayScreens_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-screens") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayScreens_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-screens") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayScreens_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-screens") // Source file: xfns.c
-}
-
-func (ec *execContext) xDisplayVisualClass_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-visual-class") // Source file: haikufns.c
-}
-
-func (ec *execContext) xDisplayVisualClass_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-visual-class") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xDisplayVisualClass_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("x-display-visual-class") // Source file: w32fns.c
-}
-
-func (ec *execContext) xDisplayVisualClass_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-display-visual-class") // Source file: xfns.c
-}
-
 func (ec *execContext) xDoubleBufferedP_autogen(frame lispObject) (lispObject, error) {
 	return ec.stub("x-double-buffered-p") // Source file: haikufns.c
 }
 
 func (ec *execContext) xDoubleBufferedP_1_autogen(frame lispObject) (lispObject, error) {
 	return ec.stub("x-double-buffered-p") // Source file: xfns.c
-}
-
-func (ec *execContext) xHideTip_autogen() (lispObject, error) {
-	return ec.stub("x-hide-tip") // Source file: haikufns.c
-}
-
-func (ec *execContext) xHideTip_1_autogen() (lispObject, error) {
-	return ec.stub("x-hide-tip") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xHideTip_2_autogen() (lispObject, error) {
-	return ec.stub("x-hide-tip") // Source file: w32fns.c
-}
-
-func (ec *execContext) xHideTip_3_autogen() (lispObject, error) {
-	return ec.stub("x-hide-tip") // Source file: xfns.c
 }
 
 func (ec *execContext) xOpenConnection_autogen(display, resource_string, must_succeed lispObject) (lispObject, error) {
@@ -3637,94 +3905,6 @@ func (ec *execContext) xOpenConnection_2_autogen(display, xrm_string, must_succe
 
 func (ec *execContext) xOpenConnection_3_autogen(display, xrm_string, must_succeed lispObject) (lispObject, error) {
 	return ec.stub("x-open-connection") // Source file: xfns.c
-}
-
-func (ec *execContext) xServerVendor_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-server-vendor") // Source file: haikufns.c
-}
-
-func (ec *execContext) xServerVendor_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-server-vendor") // Source file: w32fns.c
-}
-
-func (ec *execContext) xServerVendor_2_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-server-vendor") // Source file: xfns.c
-}
-
-func (ec *execContext) xServerVersion_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-server-version") // Source file: haikufns.c
-}
-
-func (ec *execContext) xServerVersion_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-server-version") // Source file: w32fns.c
-}
-
-func (ec *execContext) xServerVersion_2_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("x-server-version") // Source file: xfns.c
-}
-
-func (ec *execContext) xShowTip_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return ec.stub("x-show-tip") // Source file: haikufns.c
-}
-
-func (ec *execContext) xShowTip_1_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return ec.stub("x-show-tip") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xShowTip_2_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return ec.stub("x-show-tip") // Source file: w32fns.c
-}
-
-func (ec *execContext) xShowTip_3_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return ec.stub("x-show-tip") // Source file: xfns.c
-}
-
-func (ec *execContext) xwColorDefinedP_autogen(color, frame lispObject) (lispObject, error) {
-	return ec.stub("xw-color-defined-p") // Source file: haikufns.c
-}
-
-func (ec *execContext) xwColorDefinedP_1_autogen(color, frame lispObject) (lispObject, error) {
-	return ec.stub("xw-color-defined-p") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xwColorDefinedP_2_autogen(color, frame lispObject) (lispObject, error) {
-	return ec.stub("xw-color-defined-p") // Source file: w32fns.c
-}
-
-func (ec *execContext) xwColorDefinedP_3_autogen(color, frame lispObject) (lispObject, error) {
-	return ec.stub("xw-color-defined-p") // Source file: xfns.c
-}
-
-func (ec *execContext) xwColorValues_autogen(color, frame lispObject) (lispObject, error) {
-	return ec.stub("xw-color-values") // Source file: haikufns.c
-}
-
-func (ec *execContext) xwColorValues_1_autogen(color, frame lispObject) (lispObject, error) {
-	return ec.stub("xw-color-values") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xwColorValues_2_autogen(color, frame lispObject) (lispObject, error) {
-	return ec.stub("xw-color-values") // Source file: w32fns.c
-}
-
-func (ec *execContext) xwColorValues_3_autogen(color, frame lispObject) (lispObject, error) {
-	return ec.stub("xw-color-values") // Source file: xfns.c
-}
-
-func (ec *execContext) xwDisplayColorP_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("xw-display-color-p") // Source file: haikufns.c
-}
-
-func (ec *execContext) xwDisplayColorP_1_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("xw-display-color-p") // Source file: pgtkfns.c
-}
-
-func (ec *execContext) xwDisplayColorP_2_autogen(display lispObject) (lispObject, error) {
-	return ec.stub("xw-display-color-p") // Source file: w32fns.c
-}
-
-func (ec *execContext) xwDisplayColorP_3_autogen(terminal lispObject) (lispObject, error) {
-	return ec.stub("xw-display-color-p") // Source file: xfns.c
 }
 
 func (ec *execContext) fontGetSystemFont_autogen() (lispObject, error) {
@@ -3763,24 +3943,12 @@ func (ec *execContext) haikuMenuBarOpen_autogen(frame lispObject) (lispObject, e
 	return ec.stub("haiku-menu-bar-open") // Source file: haikumenu.c
 }
 
-func (ec *execContext) menuOrPopupActiveP_autogen() (lispObject, error) {
-	return ec.stub("menu-or-popup-active-p") // Source file: haikumenu.c
-}
-
-func (ec *execContext) menuOrPopupActiveP_1_autogen() (lispObject, error) {
-	return ec.stub("menu-or-popup-active-p") // Source file: pgtkmenu.c
-}
-
-func (ec *execContext) menuOrPopupActiveP_2_autogen() (lispObject, error) {
-	return ec.stub("menu-or-popup-active-p") // Source file: w32menu.c
-}
-
-func (ec *execContext) menuOrPopupActiveP_3_autogen() (lispObject, error) {
-	return ec.stub("menu-or-popup-active-p") // Source file: xmenu.c
-}
-
 func (ec *execContext) haikuDragMessage_autogen(frame, message, allow_same_frame, follow_tooltip lispObject) (lispObject, error) {
 	return ec.stub("haiku-drag-message") // Source file: haikuselect.c
+}
+
+func (ec *execContext) haikuNotificationsNotify_autogen(args ...lispObject) (lispObject, error) {
+	return ec.stub("haiku-notifications-notify") // Source file: haikuselect.c
 }
 
 func (ec *execContext) haikuRosterLaunch_autogen(file_or_type, args lispObject) (lispObject, error) {
@@ -3991,11 +4159,11 @@ func (ec *execContext) posnAtXY_autogen(x, y, frame_or_window, whole lispObject)
 	return ec.stub("posn-at-x-y") // Source file: keyboard.c
 }
 
-func (ec *execContext) readKeySequence_autogen(prompt, continue_echo, dont_downcase_last, can_return_switch_frame, cmd_loop lispObject) (lispObject, error) {
+func (ec *execContext) readKeySequence_autogen(prompt, continue_echo, dont_downcase_last, can_return_switch_frame, cmd_loop, disable_text_conversion lispObject) (lispObject, error) {
 	return ec.stub("read-key-sequence") // Source file: keyboard.c
 }
 
-func (ec *execContext) readKeySequenceVector_autogen(prompt, continue_echo, dont_downcase_last, can_return_switch_frame, cmd_loop lispObject) (lispObject, error) {
+func (ec *execContext) readKeySequenceVector_autogen(prompt, continue_echo, dont_downcase_last, can_return_switch_frame, cmd_loop, disable_text_conversion lispObject) (lispObject, error) {
 	return ec.stub("read-key-sequence-vector") // Source file: keyboard.c
 }
 
@@ -5007,6 +5175,10 @@ func (ec *execContext) stringMatch_autogen(regexp, string, start, inhibit_modify
 	return ec.stub("string-match") // Source file: search.c
 }
 
+func (ec *execContext) androidEnumerateFonts_autogen() (lispObject, error) {
+	return ec.stub("android-enumerate-fonts") // Source file: sfntfont-android.c
+}
+
 func (ec *execContext) playSoundInternal_autogen(sound lispObject) (lispObject, error) {
 	return ec.stub("play-sound-internal") // Source file: sound.c
 }
@@ -5241,6 +5413,10 @@ func (ec *execContext) terminalParameter_autogen(terminal, parameter lispObject)
 
 func (ec *execContext) terminalParameters_autogen(terminal lispObject) (lispObject, error) {
 	return ec.stub("terminal-parameters") // Source file: terminal.c
+}
+
+func (ec *execContext) setTextConversionStyle_autogen(value, after_key_sequence lispObject) (lispObject, error) {
+	return ec.stub("set-text-conversion-style") // Source file: textconv.c
 }
 
 func (ec *execContext) addFaceTextProperty_autogen(start, end, face, append, object lispObject) (lispObject, error) {
@@ -5513,6 +5689,10 @@ func (ec *execContext) treesitNodeFieldNameForChild_autogen(node, n lispObject) 
 
 func (ec *execContext) treesitNodeFirstChildForPos_autogen(node, pos, named lispObject) (lispObject, error) {
 	return ec.stub("treesit-node-first-child-for-pos") // Source file: treesit.c
+}
+
+func (ec *execContext) treesitNodeMatchP_autogen(node, predicate lispObject) (lispObject, error) {
+	return ec.stub("treesit-node-match-p") // Source file: treesit.c
 }
 
 func (ec *execContext) treesitNodeNextSibling_autogen(node, named lispObject) (lispObject, error) {
@@ -6655,6 +6835,10 @@ func (ec *execContext) xSetMouseAbsolutePixelPosition_autogen(x, y lispObject) (
 	return ec.stub("x-set-mouse-absolute-pixel-position") // Source file: xfns.c
 }
 
+func (ec *execContext) xTestStringConversion_autogen(frame, position, direction, operation, factor lispObject) (lispObject, error) {
+	return ec.stub("x-test-string-conversion") // Source file: xfns.c
+}
+
 func (ec *execContext) xTranslateCoordinates_autogen(frame, source_window, dest_window, source_x, source_y, require_child lispObject) (lispObject, error) {
 	return ec.stub("x-translate-coordinates") // Source file: xfns.c
 }
@@ -6895,6 +7079,124 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubrM(nil, "record", ec.record_autogen, 1)
 	ec.defSubr1(nil, "suspicious-object", ec.suspiciousObject_autogen, 1)
 	ec.defSubrM(nil, "vector", ec.vector_autogen, 0)
+	ec.defSubr0(nil, "android-detect-mouse", ec.androidDetectMouse_autogen)
+	ec.defSubr1(nil, "android-display-monitor-attributes-list", ec.androidDisplayMonitorAttributesList_autogen, 0)
+	ec.defSubr2(nil, "android-frame-edges", ec.androidFrameEdges_autogen, 0)
+	ec.defSubr1(nil, "android-frame-geometry", ec.androidFrameGeometry_autogen, 0)
+	ec.defSubr1(nil, "android-frame-list-z-order", ec.androidFrameListZOrder_autogen, 0)
+	ec.defSubr3(nil, "android-frame-restack", ec.androidFrameRestack_autogen, 2)
+	ec.defSubr0(nil, "android-get-connection", ec.androidGetConnection_autogen)
+	ec.defSubr0(nil, "android-mouse-absolute-pixel-position", ec.androidMouseAbsolutePixelPosition_autogen)
+	ec.defSubr0(nil, "android-query-battery", ec.androidQueryBattery_autogen)
+	ec.defSubr0(nil, "android-request-directory-access", ec.androidRequestDirectoryAccess_autogen)
+	ec.defSubr2(nil, "android-set-mouse-absolute-pixel-position", ec.androidSetMouseAbsolutePixelPosition_autogen, 2)
+	ec.defSubr2(nil, "android-toggle-on-screen-keyboard", ec.androidToggleOnScreenKeyboard_autogen, 2)
+	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_autogen, 1)
+	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_1_autogen, 1)
+	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_2_autogen, 1)
+	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_3_autogen, 1)
+	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_4_autogen, 1)
+	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_autogen, 0)
+	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_4_autogen, 0)
+	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_autogen, 0)
+	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_4_autogen, 0)
+	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_autogen, 0)
+	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_4_autogen, 0)
+	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_autogen)
+	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_1_autogen)
+	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_2_autogen)
+	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_3_autogen)
+	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_4_autogen)
+	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_4_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_4_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_4_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_4_autogen, 0)
+	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_autogen, 0)
+	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_4_autogen, 0)
+	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_autogen, 0)
+	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_4_autogen, 0)
+	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_autogen, 0)
+	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_3_autogen, 0)
+	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_4_autogen, 0)
+	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_autogen)
+	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_1_autogen)
+	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_2_autogen)
+	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_3_autogen)
+	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_4_autogen)
+	ec.defSubr1(nil, "x-server-vendor", ec.xServerVendor_autogen, 0)
+	ec.defSubr1(nil, "x-server-vendor", ec.xServerVendor_1_autogen, 0)
+	ec.defSubr1(nil, "x-server-vendor", ec.xServerVendor_2_autogen, 0)
+	ec.defSubr1(nil, "x-server-vendor", ec.xServerVendor_3_autogen, 0)
+	ec.defSubr1(nil, "x-server-version", ec.xServerVersion_autogen, 0)
+	ec.defSubr1(nil, "x-server-version", ec.xServerVersion_1_autogen, 0)
+	ec.defSubr1(nil, "x-server-version", ec.xServerVersion_2_autogen, 0)
+	ec.defSubr1(nil, "x-server-version", ec.xServerVersion_3_autogen, 0)
+	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_autogen, 1)
+	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_1_autogen, 1)
+	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_2_autogen, 1)
+	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_3_autogen, 1)
+	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_4_autogen, 1)
+	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_autogen, 1)
+	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_1_autogen, 1)
+	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_2_autogen, 1)
+	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_3_autogen, 1)
+	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_4_autogen, 1)
+	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_autogen, 1)
+	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_1_autogen, 1)
+	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_2_autogen, 1)
+	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_3_autogen, 1)
+	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_4_autogen, 1)
+	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_autogen, 0)
+	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_1_autogen, 0)
+	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_2_autogen, 0)
+	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_3_autogen, 0)
+	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_4_autogen, 0)
+	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_autogen)
+	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_1_autogen)
+	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_2_autogen)
+	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_3_autogen)
+	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_4_autogen)
+	ec.defSubr2(nil, "android-browse-url", ec.androidBrowseUrl_autogen, 1)
+	ec.defSubr0(nil, "android-clipboard-exists-p", ec.androidClipboardExistsP_autogen)
+	ec.defSubr0(nil, "android-clipboard-owner-p", ec.androidClipboardOwnerP_autogen)
+	ec.defSubr0(nil, "android-get-clipboard", ec.androidGetClipboard_autogen)
+	ec.defSubr1(nil, "android-get-clipboard-data", ec.androidGetClipboardData_autogen, 1)
+	ec.defSubr0(nil, "android-get-clipboard-targets", ec.androidGetClipboardTargets_autogen)
+	ec.defSubrM(nil, "android-notifications-notify", ec.androidNotificationsNotify_autogen, 0)
+	ec.defSubr1(nil, "android-set-clipboard", ec.androidSetClipboard_autogen, 1)
 	ec.defSubr0(nil, "debug-timer-check", ec.debugTimerCheck_autogen)
 	ec.defSubr1(nil, "barf-if-buffer-read-only", ec.barfIfBufferReadOnly_autogen, 0)
 	ec.defSubr1(nil, "buffer-base-buffer", ec.bufferBaseBuffer_autogen, 0)
@@ -7244,6 +7546,7 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "Snarf-documentation", ec.snarfDocumentation_autogen, 1)
 	ec.defSubr2(nil, "documentation", ec.documentation_autogen, 1)
 	ec.defSubr3(nil, "documentation-property", ec.documentationProperty_autogen, 2)
+	ec.defSubr1(nil, "internal-subr-documentation", ec.subrDocumentation_autogen, 1)
 	ec.defSubr0(nil, "text-quoting-style", ec.textQuotingStyle_autogen)
 	ec.defSubr1(nil, "file-system-info", ec.fileSystemInfo_autogen, 1)
 	ec.defSubr1(nil, "file-system-info", ec.fileSystemInfo_1_autogen, 1)
@@ -7300,7 +7603,7 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr3(nil, "insert-byte", ec.insertByte_autogen, 2)
 	ec.defSubr3(nil, "insert-char", ec.insertChar_autogen, 1)
 	ec.defSubr3(nil, "internal--labeled-narrow-to-region", ec.internalLabeledNarrowToRegion_autogen, 3)
-	ec.defSubr1(nil, "internal--unlabel-restriction", ec.internalUnlabelRestriction_autogen, 1)
+	ec.defSubr1(nil, "internal--labeled-widen", ec.internalLabeledWiden_autogen, 1)
 	ec.defSubr1(nil, "line-beginning-position", ec.lineBeginningPosition_autogen, 0)
 	ec.defSubr1(nil, "line-end-position", ec.lineEndPosition_autogen, 0)
 	ec.defSubr0(nil, "mark-marker", ec.markMarker_autogen)
@@ -7400,7 +7703,7 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr6(nil, "copy-file", ec.copyFile_autogen, 2)
 	ec.defSubr0(nil, "default-file-modes", ec.defaultFileModes_autogen)
 	ec.defSubr1(nil, "delete-directory-internal", ec.deleteDirectoryInternal_autogen, 1)
-	ec.defSubr2(nil, "delete-file", ec.deleteFile_autogen, 1)
+	ec.defSubr1(nil, "delete-file-internal", ec.deleteFileInternal_autogen, 1)
 	ec.defSubr1(nil, "directory-file-name", ec.directoryFileName_autogen, 1)
 	ec.defSubr1(nil, "directory-name-p", ec.directoryNameP_autogen, 1)
 	ec.defSubr2(nil, "do-auto-save", ec.doAutoSave_autogen, 0)
@@ -7718,90 +8021,16 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "x-close-connection", ec.xCloseConnection_1_autogen, 1)
 	ec.defSubr1(nil, "x-close-connection", ec.xCloseConnection_2_autogen, 1)
 	ec.defSubr1(nil, "x-close-connection", ec.xCloseConnection_3_autogen, 1)
-	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_autogen, 1)
-	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_1_autogen, 1)
-	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_2_autogen, 1)
-	ec.defSubr1(nil, "x-create-frame", ec.xCreateFrame_3_autogen, 1)
-	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_autogen, 0)
-	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-backing-store", ec.xDisplayBackingStore_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", ec.xDisplayColorCells_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", ec.xDisplayGrayscaleP_3_autogen, 0)
-	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_autogen)
-	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_1_autogen)
-	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_2_autogen)
-	ec.defSubr0(nil, "x-display-list", ec.xDisplayList_3_autogen)
-	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-height", ec.xDisplayMmHeight_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", ec.xDisplayMmWidth_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", ec.xDisplayPixelHeight_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", ec.xDisplayPixelWidth_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", ec.xDisplayPlanes_3_autogen, 0)
 	ec.defSubr1(nil, "x-display-save-under", ec.xDisplaySaveUnder_autogen, 0)
 	ec.defSubr1(nil, "x-display-save-under", ec.xDisplaySaveUnder_1_autogen, 0)
 	ec.defSubr1(nil, "x-display-save-under", ec.xDisplaySaveUnder_2_autogen, 0)
 	ec.defSubr1(nil, "x-display-save-under", ec.xDisplaySaveUnder_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", ec.xDisplayScreens_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", ec.xDisplayVisualClass_3_autogen, 0)
 	ec.defSubr1(nil, "x-double-buffered-p", ec.xDoubleBufferedP_autogen, 0)
 	ec.defSubr1(nil, "x-double-buffered-p", ec.xDoubleBufferedP_1_autogen, 0)
-	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_autogen)
-	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_1_autogen)
-	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_2_autogen)
-	ec.defSubr0(nil, "x-hide-tip", ec.xHideTip_3_autogen)
 	ec.defSubr3(nil, "x-open-connection", ec.xOpenConnection_autogen, 1)
 	ec.defSubr3(nil, "x-open-connection", ec.xOpenConnection_1_autogen, 1)
 	ec.defSubr3(nil, "x-open-connection", ec.xOpenConnection_2_autogen, 1)
 	ec.defSubr3(nil, "x-open-connection", ec.xOpenConnection_3_autogen, 1)
-	ec.defSubr1(nil, "x-server-vendor", ec.xServerVendor_autogen, 0)
-	ec.defSubr1(nil, "x-server-vendor", ec.xServerVendor_1_autogen, 0)
-	ec.defSubr1(nil, "x-server-vendor", ec.xServerVendor_2_autogen, 0)
-	ec.defSubr1(nil, "x-server-version", ec.xServerVersion_autogen, 0)
-	ec.defSubr1(nil, "x-server-version", ec.xServerVersion_1_autogen, 0)
-	ec.defSubr1(nil, "x-server-version", ec.xServerVersion_2_autogen, 0)
-	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_autogen, 1)
-	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_1_autogen, 1)
-	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_2_autogen, 1)
-	ec.defSubr6(nil, "x-show-tip", ec.xShowTip_3_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_1_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_2_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", ec.xwColorDefinedP_3_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_1_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_2_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", ec.xwColorValues_3_autogen, 1)
-	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_autogen, 0)
-	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_1_autogen, 0)
-	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_2_autogen, 0)
-	ec.defSubr1(nil, "xw-display-color-p", ec.xwDisplayColorP_3_autogen, 0)
 	ec.defSubr0(nil, "font-get-system-font", ec.fontGetSystemFont_autogen)
 	ec.defSubr0(nil, "font-get-system-font", ec.fontGetSystemFont_1_autogen)
 	ec.defSubr0(nil, "font-get-system-normal-font", ec.fontGetSystemNormalFont_autogen)
@@ -7811,11 +8040,8 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr2(nil, "x-select-font", ec.xSelectFont_2_autogen, 0)
 	ec.defSubr2(nil, "x-select-font", ec.xSelectFont_3_autogen, 0)
 	ec.defSubr1(nil, "haiku-menu-bar-open", ec.haikuMenuBarOpen_autogen, 0)
-	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_autogen)
-	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_1_autogen)
-	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_2_autogen)
-	ec.defSubr0(nil, "menu-or-popup-active-p", ec.menuOrPopupActiveP_3_autogen)
 	ec.defSubr4(nil, "haiku-drag-message", ec.haikuDragMessage_autogen, 2)
+	ec.defSubrM(nil, "haiku-notifications-notify", ec.haikuNotificationsNotify_autogen, 0)
 	ec.defSubr2(nil, "haiku-roster-launch", ec.haikuRosterLaunch_autogen, 2)
 	ec.defSubr2(nil, "haiku-selection-data", ec.haikuSelectionData_autogen, 2)
 	ec.defSubr1(nil, "haiku-selection-owner-p", ec.haikuSelectionOwnerP_autogen, 0)
@@ -7868,8 +8094,8 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "open-dribble-file", ec.openDribbleFile_autogen, 1)
 	ec.defSubr2(nil, "posn-at-point", ec.posnAtPoint_autogen, 0)
 	ec.defSubr4(nil, "posn-at-x-y", ec.posnAtXY_autogen, 2)
-	ec.defSubr5(nil, "read-key-sequence", ec.readKeySequence_autogen, 1)
-	ec.defSubr5(nil, "read-key-sequence-vector", ec.readKeySequenceVector_autogen, 1)
+	ec.defSubr6(nil, "read-key-sequence", ec.readKeySequence_autogen, 1)
+	ec.defSubr6(nil, "read-key-sequence-vector", ec.readKeySequenceVector_autogen, 1)
 	ec.defSubr1(nil, "recent-keys", ec.recentKeys_autogen, 0)
 	ec.defSubr0(nil, "recursion-depth", ec.recursionDepth_autogen)
 	ec.defSubr0(nil, "recursive-edit", ec.recursiveEdit_autogen)
@@ -8122,6 +8348,7 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr4(nil, "search-forward", ec.searchForward_autogen, 1)
 	ec.defSubr2(nil, "set-match-data", ec.setMatchData_autogen, 1)
 	ec.defSubr4(nil, "string-match", ec.stringMatch_autogen, 2)
+	ec.defSubr0(nil, "android-enumerate-fonts", ec.androidEnumerateFonts_autogen)
 	ec.defSubr1(nil, "play-sound-internal", ec.playSoundInternal_autogen, 1)
 	ec.defSubr0(nil, "sqlite-available-p", ec.sqliteAvailableP_autogen)
 	ec.defSubr1(nil, "sqlite-close", ec.sqliteClose_autogen, 1)
@@ -8181,6 +8408,7 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "terminal-name", ec.terminalName_autogen, 0)
 	ec.defSubr2(nil, "terminal-parameter", ec.terminalParameter_autogen, 2)
 	ec.defSubr1(nil, "terminal-parameters", ec.terminalParameters_autogen, 0)
+	ec.defSubr2(nil, "set-text-conversion-style", ec.setTextConversionStyle_autogen, 1)
 	ec.defSubr5(nil, "add-face-text-property", ec.addFaceTextProperty_autogen, 3)
 	ec.defSubr4(nil, "add-text-properties", ec.addTextProperties_autogen, 3)
 	ec.defSubr3(nil, "get-char-property", ec.getCharProperty_autogen, 2)
@@ -8249,6 +8477,7 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr2(nil, "treesit-node-eq", ec.treesitNodeEq_autogen, 2)
 	ec.defSubr2(nil, "treesit-node-field-name-for-child", ec.treesitNodeFieldNameForChild_autogen, 2)
 	ec.defSubr3(nil, "treesit-node-first-child-for-pos", ec.treesitNodeFirstChildForPos_autogen, 2)
+	ec.defSubr2(nil, "treesit-node-match-p", ec.treesitNodeMatchP_autogen, 2)
 	ec.defSubr2(nil, "treesit-node-next-sibling", ec.treesitNodeNextSibling_autogen, 1)
 	ec.defSubr1(nil, "treesit-node-p", ec.treesitNodeP_autogen, 1)
 	ec.defSubr1(nil, "treesit-node-parent", ec.treesitNodeParent_autogen, 1)
@@ -8534,6 +8763,7 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "x-print-frames-dialog", ec.xPrintFramesDialog_autogen, 0)
 	ec.defSubr1(nil, "x-server-input-extension-version", ec.xServerInputExtensionVersion_autogen, 0)
 	ec.defSubr2(nil, "x-set-mouse-absolute-pixel-position", ec.xSetMouseAbsolutePixelPosition_autogen, 2)
+	ec.defSubr5(nil, "x-test-string-conversion", ec.xTestStringConversion_autogen, 5)
 	ec.defSubr6(nil, "x-translate-coordinates", ec.xTranslateCoordinates_autogen, 1)
 	ec.defSubr0(nil, "x-uses-old-gtk-dialog", ec.xUsesOldGtkDialog_autogen)
 	ec.defSubr3(nil, "x-window-property-attributes", ec.xWindowPropertyAttributes_autogen, 1)
@@ -8590,5 +8820,5 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "xwidgetp", ec.xwidgetp_autogen, 1)
 }
 
-// Subroutines count: 1716
+// Subroutines count: 1762
 // Constants count: 2
