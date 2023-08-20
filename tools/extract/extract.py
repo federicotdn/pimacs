@@ -212,21 +212,23 @@ def generate_go_file(defuns: list[dict], emacs_commit: str, emacs_branch: str) -
         s += "\n"
 
     for defun in go_defuns:
-        s += f"func (ec *execContext) {defun.fnname}("
+        s += f"func (es *emacsStubs) {defun.fnname}("
         if defun.subr_fn == "defSubrM":
             s += "args ...lispObject"
         elif defun.subr_fn != "defSubr0":
             s += ", ".join(defun.args) + " lispObject"
         s += ") (lispObject, error) {\n"
-        s += f'\treturn ec.stub("{defun.lname}") // Source file: {defun.path}'
+        s += f'\treturn es.stub("{defun.lname}") // Source file: {defun.path}'
         if defun.attributes:
             s += f", attributes: {defun.attributes}"
         s += "\n}\n\n"
 
     s += f"func (ec *execContext) symbolsOfEmacs{AUTOGEN_SUFFIX}() {{\n"
+    s += "\tes := &emacsStubs{ec: ec}\n"
+    s += "\tec.stubs = es\n"
 
     for defun in go_defuns:
-        s += f'\tec.{defun.subr_fn}(nil, "{defun.lname}", ec.{defun.fnname}'
+        s += f'\tec.{defun.subr_fn}(nil, "{defun.lname}", es.{defun.fnname}'
         if defun.subr_fn != "defSubr0":
             s += f", {defun.minargs}"
         s += ")\n"
