@@ -1,10 +1,21 @@
-from pathlib import Path
 import subprocess
-from collections import namedtuple, defaultdict
 import os
-from pyparsing import Literal, Regex, QuotedString, SkipTo, Opt, delimited_list
+from pathlib import Path
+from collections import defaultdict
+from dataclasses import dataclass
 
-FILE_HEADER = """// Automatically generated with pimacs.extract
+from pyparsing import (
+    Literal,
+    Regex,
+    QuotedString,
+    SkipTo,
+    Opt,
+    StringStart,
+    StringEnd,
+    delimited_list,
+)
+
+FILE_HEADER = """// Automatically generated with pimacs.tools.extract
 // DO NOT MODIFY!
 // Generated from GNU Emacs commit: {}, branch: {}
 
@@ -46,7 +57,8 @@ EMACS_CONSTANTS = {
 DEFUN_EXPR_IDENTIFIER = Regex(r"[0-9a-zA-Z_-]+")
 DEFUN_EXPR_NUMBER = Regex(r"[0-9]+")
 DEFUN_EXPR = (
-    Literal("DEFUN")
+    StringStart()
+    + Literal("DEFUN")
     + "("
     + QuotedString('"')("lname")
     + ","
@@ -68,26 +80,58 @@ DEFUN_EXPR = (
     + "*/"
     + Opt("attributes:" + (Literal("noreturn") | "const")("attributes"))
     + ")"
-    + Opt(
-        "("
-        + (
-            delimited_list(
-                Opt("register") + "Lisp_Object" + DEFUN_EXPR_IDENTIFIER("args*"), min=1
+    + (
+        (
+            Literal("(")
+            + (
+                delimited_list(
+                    Opt("register") + "Lisp_Object" + DEFUN_EXPR_IDENTIFIER("args*"),
+                    min=1,
+                )
+                | "void"
+                | Literal("ptrdiff_t nargs, Lisp_Object *args")
+                | Literal("ptrdiff_t n, Lisp_Object *args")
             )
-            | "void"
-            | Literal("ptrdiff_t nargs, Lisp_Object *args")
+            + ")"
         )
-        + ")"
+        | StringEnd()
     )
 )
 
-GoDefun = namedtuple(
-    "GoDefun", "subr_fn numargs minargs lname fnname args attributes path"
-)
-GoConstant = namedtuple("GoConstant", "name value")
+
+@dataclass
+class EmacsDefun:
+    lname: str
+    fnname: str
+    sname: str
+    minargs: str
+    maxargs: str
+    intspec: str
+    args: list[str]
+    attributes: str
+    doc: str
+    path: str
 
 
-def extract_declarations(path: Path) -> tuple:
+@dataclass
+class GoDefun:
+    subr_fn: str
+    numargs: str
+    minargs: str
+    lname: str
+    fnname: str
+    args: list[str]
+    attributes: str
+    path: str
+
+
+@dataclass
+class GoConstant:
+    name: str
+    value: str
+
+
+def extract_declarations(path: Path) -> tuple[list[EmacsDefun]]:
     with open(path) as f:
         contents = f.read()
 
@@ -110,7 +154,14 @@ def extract_declarations(path: Path) -> tuple:
             defun = "\n".join(current_defun)
             current_defun.clear()
 
-            parsed = DEFUN_EXPR.parse_string(defun)
+            try:
+                parsed = DEFUN_EXPR.parse_string(defun, parse_all=True)
+            except Exception:
+                print(f"----- context: ----- (file: {path})")
+                print(defun)
+                print("--------------------")
+                raise
+
             result = {
                 "lname": parsed["lname"],
                 "fnname": parsed["fnname"],
@@ -124,7 +175,7 @@ def extract_declarations(path: Path) -> tuple:
                 "path": str(path.name),
             }
 
-            defuns.append(result)
+            defuns.append(EmacsDefun(**result))
         elif current_defun:
             current_defun.append(line)
 
@@ -150,48 +201,47 @@ def go_safe_identifier(identifier: str) -> str:
     return identifier if identifier not in GO_KEYWORDS else identifier + "_"
 
 
-def get_go_declarations(defuns: list[dict]) -> tuple:
+def get_go_declarations(
+    defuns: list[EmacsDefun],
+) -> tuple[list[GoDefun], list[GoConstant]]:
     go_defuns = defaultdict(list)
-    go_defun_counts = defaultdict(int)
     go_constants = []
 
     for defun in defuns:
         try:
-            maxargs = int(defun["maxargs"])
+            maxargs = int(defun.maxargs)
             if maxargs < 0 or maxargs > 8:
-                raise ValueError(defun["maxargs"])
+                raise ValueError(defun.maxargs)
 
             subr_fn = "defSubr" + str(maxargs)
             numargs = maxargs
         except ValueError:
-            if defun["maxargs"] == "MANY":
+            if defun.maxargs == "MANY":
                 subr_fn = "defSubrM"
                 numargs = None
-            elif defun["maxargs"] == "UNEVALLED":
+            elif defun.maxargs == "UNEVALLED":
                 subr_fn = "defSubrU"
                 numargs = 1
             else:
-                raise ValueError(defun["maxargs"])
+                raise ValueError(defun.maxargs)
 
         try:
-            minargs = int(defun["minargs"])
+            minargs = int(defun.minargs)
         except ValueError:
-            minargs = "emacsConstant_" + defun["minargs"] + AUTOGEN_SUFFIX
+            minargs = "emacsConstant_" + defun.minargs + AUTOGEN_SUFFIX
             go_constants.append(
-                GoConstant(minargs, str(EMACS_CONSTANTS[defun["minargs"]]))
+                GoConstant(minargs, str(EMACS_CONSTANTS[defun.minargs]))
             )
 
-        lname = defun["lname"]
+        lname = defun.lname
         args = None
-        if defun["args"] is not None:
-            args = [go_safe_identifier(arg) for arg in defun["args"]]
+        if defun.args is not None:
+            args = [go_safe_identifier(arg) for arg in defun.args]
 
-        count = go_defun_counts[lname]
-        go_defun_counts[lname] += 1
-
-        fnname = fnname_to_go(defun["fnname"], count)
-        attributes = defun["attributes"]
-        path = defun["path"]
+        count = len(go_defuns[lname])
+        fnname = fnname_to_go(defun.fnname, count)
+        attributes = defun.attributes
+        path = defun.path
 
         go_defun = GoDefun(
             subr_fn, numargs, minargs, lname, fnname, args, attributes, path
@@ -201,7 +251,9 @@ def get_go_declarations(defuns: list[dict]) -> tuple:
     return sum(go_defuns.values(), []), go_constants
 
 
-def generate_go_file(defuns: list[dict], emacs_commit: str, emacs_branch: str) -> str:
+def generate_go_file(
+    defuns: list[EmacsDefun], emacs_commit: str, emacs_branch: str
+) -> str:
     go_defuns, go_constants = get_go_declarations(defuns)
     s = FILE_HEADER.format(emacs_commit, emacs_branch) + f"package {PACKAGE}\n\n"
 
@@ -257,7 +309,7 @@ def main() -> None:
             continue
 
         defuns, *_ = extract_declarations(p)
-        all_defuns.extend(sorted(defuns, key=lambda e: e["lname"]))
+        all_defuns.extend(sorted(defuns, key=lambda e: e.lname))
 
     contents = generate_go_file(all_defuns, emacs_commit, emacs_branch)
     target = pimacs_base.joinpath(f"{PACKAGE}/emacs_autogen.go")

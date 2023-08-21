@@ -1,4 +1,4 @@
-// Automatically generated with pimacs.extract
+// Automatically generated with pimacs.tools.extract
 // DO NOT MODIFY!
 // Generated from GNU Emacs commit: 652e45b70d82e6f615febe00553dbded80557845, branch: master
 
