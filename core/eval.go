@@ -696,16 +696,9 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	var err error
 
 	if symbolp(form) {
-		var lex lispObject
-
-		envVal := xFwdObject(&ec.g.internalInterpreterEnv)
-		if envVal != ec.nil_ {
-			lex, err = ec.assq(form, envVal)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			lex = ec.nil_
+		lex, err := ec.assq(form, xFwdObject(&ec.g.internalInterpreterEnv))
+		if err != nil {
+			return nil, err
 		}
 
 		if lex != ec.nil_ {

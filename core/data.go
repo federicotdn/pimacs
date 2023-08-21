@@ -113,6 +113,7 @@ func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
 	}
 
+	// TODO: Handle symbol value forwarding
 	xSymbol(symbol).value = newVal
 	return newVal, nil
 }
