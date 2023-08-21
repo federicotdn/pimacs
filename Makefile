@@ -1,24 +1,21 @@
 SHELL = bash
 PIMACS_LISP = $(CURDIR)/lisp
 
+
+build: clean
+	go build
+
 clean:
 	rm -rf pimacs
-
-build:
-	go clean
-	go build
+	go clean -testcache
 
 fmt:
 	gofmt -s -w -l .
 
-run:
-	make build && ./pimacs
+run: build
+	./pimacs
 
-run-file:
-	make build && ./pimacs --load test.el
-
-test:
-	go clean -testcache
+test: clean
 	PIMACS_TESTING=true PIMACS_LISP=$(PIMACS_LISP) go test -v ./...
 
 debug:

@@ -2,6 +2,7 @@ package core
 
 type lispType int
 type vectorLikeType int
+type symbolFwdType int
 
 type lispInt int64
 type lispFp float64
@@ -21,6 +22,12 @@ const (
 	vectorLikeTypeNormal vectorLikeType = iota + 1
 	vectorLikeTypeSubroutine
 	vectorLikeTypeBuffer
+)
+
+const (
+	symbolFwdTypeLispObj symbolFwdType = iota + 1
+	symbolFwdTypeInt
+	symbolFwdTypeBool
 )
 
 type lispFn0 func() (lispObject, error)
@@ -55,6 +62,15 @@ type lispSymbol struct {
 	function lispObject
 	plist    lispObject
 	special  bool
+	redirect *forwardValue
+}
+
+type forwardValue struct {
+	sym     *lispSymbol
+	valLisp lispObject
+	valBool bool
+	valInt  lispInt
+	fwdType symbolFwdType
 }
 
 type lispCons struct {

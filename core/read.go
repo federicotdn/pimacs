@@ -652,11 +652,11 @@ func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 func (ec *execContext) readEvalLoop(ctx readContext) error {
 	defer ec.unwind()()
 
-	lex := xSymbolValue(ec.g.lexicalBinding)
+	lex := xFwdObject(&ec.g.lexicalBinding)
 	if lex == ec.nil_ || lex == ec.g.unbound {
-		ec.stackPushLet(ec.g.internalInterpreterEnv, ec.nil_)
+		ec.stackPushLet(ec.g.internalInterpreterEnv.sym, ec.nil_)
 	} else {
-		ec.stackPushLet(ec.g.internalInterpreterEnv, ec.makeList(ec.t))
+		ec.stackPushLet(ec.g.internalInterpreterEnv.sym, ec.makeList(ec.t))
 	}
 
 	for {
@@ -698,7 +698,7 @@ func (ec *execContext) readEvalLoop(ctx readContext) error {
 
 func (ec *execContext) read(stream lispObject) (lispObject, error) {
 	if stream == ec.nil_ {
-		stream = xSymbolValue(ec.g.standardInput)
+		stream = xFwdObject(&ec.g.standardInput)
 	}
 
 	if stream == ec.t {
@@ -739,7 +739,7 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 		return ec.wrongTypeArgument(ec.g.stringp, file)
 	}
 
-	loadPath := xSymbol(ec.g.loadPath).value
+	loadPath := xFwdObject(&ec.g.loadPath)
 	iter := ec.iterate(loadPath)
 	var f *os.File
 
@@ -776,12 +776,12 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 
 	defer ec.unwind()()
 	// Load is dynamic by default
-	ec.stackPushLet(ec.g.lexicalBinding, ec.nil_)
+	ec.stackPushLet(ec.g.lexicalBinding.sym, ec.nil_)
 
 	ctx := readContextFile{reader: bufio.NewReader(f)}
 
 	if ec.lexicallyBoundp(&ctx) {
-		ec.stackPushLet(ec.g.lexicalBinding, ec.t)
+		ec.stackPushLet(ec.g.lexicalBinding.sym, ec.t)
 	}
 
 	err := ec.readEvalLoop(&ctx)
@@ -793,10 +793,10 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 }
 
 func (ec *execContext) symbolsOfRead() {
-	ec.defVar(&ec.g.standardInput, "standard-input", ec.t)
-	ec.defVar(&ec.g.lexicalBinding, "lexical-binding", ec.nil_)
-	ec.defVar(&ec.g.loadPath, "load-path", ec.nil_)
-	ec.defVarUninterned(&ec.g.readChar, "read-char", ec.g.unbound)
+	ec.defVarLisp(&ec.g.standardInput, "standard-input", ec.t)
+	ec.defVarLisp(&ec.g.lexicalBinding, "lexical-binding", ec.nil_)
+	ec.defVarLisp(&ec.g.loadPath, "load-path", ec.nil_)
+	ec.defSym(&ec.g.readChar, "read-char")
 
 	ec.defSubr2(nil, "intern", ec.intern, 1)
 	ec.defSubr3(nil, "read-from-string", ec.readFromString, 1)

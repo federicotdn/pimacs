@@ -9,6 +9,7 @@ type stackEntryTag int
 
 const (
 	entryLet stackEntryTag = iota + 1
+	entryLetForwarded
 	entryCatch
 	entryFnLispObject
 )
@@ -46,6 +47,11 @@ type emacsStubs struct {
 }
 
 type stackEntryLet struct {
+	symbol *lispSymbol
+	oldVal lispObject
+}
+
+type stackEntryLetForwarded struct {
 	symbol *lispSymbol
 	oldVal lispObject
 }
@@ -117,6 +123,10 @@ func (jmp *stackJumpSignal) Error() string {
 
 func (se *stackEntryLet) tag() stackEntryTag {
 	return entryLet
+}
+
+func (se *stackEntryLetForwarded) tag() stackEntryTag {
+	return entryLetForwarded
 }
 
 func (se *stackEntryCatch) tag() stackEntryTag {
@@ -283,7 +293,7 @@ func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name strin
 		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", name)
 	}
 
-	sym := ec.defVar(symbol, sub.name, ec.g.unbound) // Create a variable with value = unbound
+	sym := ec.defSym(symbol, sub.name) // Create a variable with value = unbound
 	vec := ec.makeVectorLike(vectorLikeTypeSubroutine, sub)
 	sym.function = vec
 
@@ -338,24 +348,46 @@ func (ec *execContext) defSubrU(symbol *lispObject, name string, fn lispFn1, min
 	return ec.defSubrInternal(symbol, fn, name, minArgs, argsUnevalled)
 }
 
-func (ec *execContext) defVarUninterned(symbol *lispObject, name string, value lispObject) *lispSymbol {
+func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 	if symbol != nil && *symbol != nil {
 		ec.terminate("variable value already set: '%+v'", *symbol)
 	}
 
 	sym := ec.makeSymbol(name)
-	sym.value = value
+	sym.value = ec.g.unbound
 
 	if symbol != nil {
 		*symbol = sym
 	}
+
+	ec.internNewSymbol(sym, ec.errorOnVarRedefine)
 	return sym
 }
 
-func (ec *execContext) defVar(symbol *lispObject, name string, value lispObject) *lispSymbol {
-	sym := ec.defVarUninterned(symbol, name, value)
-	ec.internNewSymbol(sym, ec.errorOnVarRedefine)
-	return sym
+func (ec *execContext) defVarInternal(fwd *forwardValue, name string) *forwardValue {
+	if fwd == nil {
+		ec.terminate("symbol forward value pointer is nil")
+	} else if fwd.sym != nil {
+		ec.terminate("symbol forward value already set: '%+v'", fwd)
+	}
+
+	fwd.sym = ec.defSym(nil, name)
+	fwd.sym.redirect = fwd
+	return fwd
+}
+
+func (ec *execContext) defVarLisp(fwd *forwardValue, name string, value lispObject) *forwardValue {
+	ec.defVarInternal(fwd, name)
+	fwd.valLisp = value
+	fwd.fwdType = symbolFwdTypeLispObj
+	return fwd
+}
+
+func (ec *execContext) defVarBool(fwd *forwardValue, name string, value bool) *forwardValue {
+	ec.defVarInternal(fwd, name)
+	fwd.valBool = value
+	fwd.fwdType = symbolFwdTypeBool
+	return fwd
 }
 
 func newExecContext() *execContext {
@@ -377,7 +409,7 @@ func newExecContext() *execContext {
 	ec.symbolsOfMinibuffer() // minibuffer.go
 	ec.symbolsOfCallProc()   // callproc.go
 
-	ec.defVar(&ec.g.nonInteractive, "noninteractive", ec.t)
+	ec.defVarBool(&ec.g.nonInteractive, "noninteractive", true)
 
 	// Load Emacs stubs at the end, without erroring out
 	// on repeated defuns or defvars
@@ -385,7 +417,7 @@ func newExecContext() *execContext {
 	ec.symbolsOfEmacs_autogen()
 	ec.errorOnVarRedefine = true
 
-	ec.checkSymbols()
+	ec.checkSymbolValues()
 
 	ec.initBuffer() // buffer.go
 
@@ -394,7 +426,7 @@ func newExecContext() *execContext {
 		// Use relative path from CWD
 		loadPath = "lisp"
 	}
-	xSymbol(ec.g.loadPath).value = ec.makeList(ec.makeString(loadPath))
+	xFwdSetObject(&ec.g.loadPath, ec.makeList(ec.makeString(loadPath)))
 
 	err := ec.loadElisp()
 	if err != nil {
@@ -445,12 +477,21 @@ func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
 
 func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) {
 	sym := xSymbol(symbol)
-	ec.stack = append(ec.stack, &stackEntryLet{
-		symbol: sym,
-		oldVal: sym.value,
-	})
 
-	sym.value = value
+	if sym.redirect == nil {
+		ec.stack = append(ec.stack, &stackEntryLet{
+			symbol: sym,
+			oldVal: sym.value,
+		})
+		sym.value = value
+	} else {
+		// TODO: Also cover other forward types?
+		ec.stack = append(ec.stack, &stackEntryLetForwarded{
+			symbol: sym,
+			oldVal: sym.redirect.valLisp,
+		})
+		sym.redirect.valLisp = value
+	}
 }
 
 func (ec *execContext) stackPushCatch(tag lispObject) {
@@ -515,6 +556,10 @@ func (ec *execContext) stackPopTo(target int) {
 		case entryLet:
 			let := current.(*stackEntryLet)
 			let.symbol.value = let.oldVal
+		case entryLetForwarded:
+			// TODO: Also support other forward types
+			let := current.(*stackEntryLetForwarded)
+			let.symbol.redirect.valLisp = let.oldVal
 		case entryCatch:
 		case entryFnLispObject:
 			entry := current.(*stackEntryFnLispObject)

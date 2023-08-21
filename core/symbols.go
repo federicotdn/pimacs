@@ -5,14 +5,13 @@ import (
 )
 
 type lispGlobals struct {
-	// 1. Essential runtime objects
-	nil_                   lispObject
-	t                      lispObject
-	internalInterpreterEnv lispObject
-	unbound                lispObject
-	lexicalBinding         lispObject
-	emptySymbol            lispObject
-	// 2. Subroutine symbols
+	// Essential runtime objects
+	nil_        lispObject
+	t           lispObject
+	unbound     lispObject
+	emptySymbol lispObject
+
+	// Subroutine symbols
 	sequencep          lispObject
 	listp              lispObject
 	plistp             lispObject
@@ -32,7 +31,8 @@ type lispGlobals struct {
 	setq               lispObject
 	prin1              lispObject
 	readFromMinibuffer lispObject
-	// 3. Errors
+
+	// Errors
 	error_                 lispObject
 	quit                   lispObject
 	userError              lispObject
@@ -50,7 +50,8 @@ type lispGlobals struct {
 	pimacsUnimplemented    lispObject
 	circularList           lispObject
 	fileMissing            lispObject
-	// 4. Misc. symbols
+
+	// Misc. symbols
 	errorConditions lispObject
 	errorMessage    lispObject
 	lambda          lispObject
@@ -59,11 +60,14 @@ type lispGlobals struct {
 	andRest         lispObject
 	andOptional     lispObject
 	readChar        lispObject
-	// 5. Variables
-	nonInteractive lispObject
-	standardInput  lispObject
-	standardOutput lispObject
-	loadPath       lispObject
+
+	// Variables with static Go values
+	internalInterpreterEnv forwardValue //lisp
+	nonInteractive         forwardValue //bool
+	standardOutput         forwardValue //lisp
+	standardInput          forwardValue //lisp
+	lexicalBinding         forwardValue //lisp
+	loadPath               forwardValue //lisp
 }
 
 func (ec *execContext) initSymbols() {
@@ -87,20 +91,20 @@ func (ec *execContext) initSymbols() {
 	ec.nil_ = g.nil_ // Convenience accessor
 
 	// Create t
-	t := ec.defVar(&g.t, "t", g.unbound)
+	t := ec.defSym(&g.t, "t")
 	t.value = t
 	g.t = t
 	ec.t = ec.g.t // Convenience accessor
 
 	// Set up other essential symbols
-	ec.defVar(&ec.g.emptySymbol, "", ec.g.unbound)
+	ec.defSym(&ec.g.emptySymbol, "")
 }
 
-func (ec *execContext) checkSymbols() {
+func (ec *execContext) checkSymbolValues() {
 	v := reflect.ValueOf(ec.g)
 
 	for i := 0; i < v.NumField(); i++ {
-		if v.Field(i).IsNil() {
+		if v.Field(i).CanInterface() && v.Field(i).IsNil() {
 			ec.terminate("initialization error: lispGlobals field not set: '%+v'", v.Type().Field(i).Name)
 		}
 	}

@@ -268,5 +268,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(let ((a nil) (b 2) c) c)", "nil", nil},
 		{"(progn (let (a)) a)", "", anyError},
 		{"(android-query-battery)", "nil", nil}, // Test calling a stub
+		{"noninteractive", "t", nil},
 	})
 }

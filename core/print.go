@@ -11,7 +11,7 @@ func (ec *execContext) printString(str string, printCharFn lispObject) error {
 		return err
 	}
 
-	if xSymbolValue(ec.g.nonInteractive) == ec.t && printCharFn == ec.t {
+	if xFwdBool(&ec.g.nonInteractive) && printCharFn == ec.t {
 		fmt.Printf("%v", str)
 		return nil
 	}
@@ -109,7 +109,7 @@ func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, erro
 func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, newlines bool) (lispObject, error) {
 	// TAGS: incomplete
 	if printCharFn == ec.nil_ {
-		printCharFn = xSymbolValue(ec.g.standardOutput)
+		printCharFn = xFwdObject(&ec.g.standardOutput)
 	}
 
 	if printCharFn == ec.nil_ {
@@ -162,7 +162,7 @@ func (ec *execContext) princ(obj, printCharFn lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfPrint() {
-	ec.defVar(&ec.g.standardOutput, "standard-output", ec.t)
+	ec.defVarLisp(&ec.g.standardOutput, "standard-output", ec.t)
 
 	ec.defSubr2(&ec.g.prin1, "prin1", ec.prin1, 1)
 	ec.defSubr2(nil, "print", ec.print_, 1)

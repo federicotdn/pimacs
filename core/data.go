@@ -135,7 +135,28 @@ func (ec *execContext) symbolValue(symbol lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
 	}
 
-	return xSymbolValue(symbol), nil
+	sym := xSymbol(symbol)
+	var val lispObject
+	if sym.redirect != nil {
+		switch sym.redirect.fwdType {
+		case symbolFwdTypeLispObj:
+			val = sym.redirect.valLisp
+		case symbolFwdTypeInt:
+			val = ec.makeInteger(sym.redirect.valInt)
+		case symbolFwdTypeBool:
+			val = xEnsure(ec.bool(sym.redirect.valBool))
+		default:
+			ec.terminate("unknown symbol forward value type: '%+v'", sym.redirect.fwdType)
+		}
+	} else {
+		val = sym.value
+	}
+
+	if val == ec.g.unbound {
+		return ec.signalN(ec.g.voidVariable, symbol)
+	}
+
+	return val, nil
 }
 
 func (ec *execContext) symbolFunction(symbol lispObject) (lispObject, error) {
