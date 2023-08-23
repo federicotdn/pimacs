@@ -275,5 +275,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{"noninteractive", "t", nil},
 		{"(cons (let ((noninteractive nil)) noninteractive) noninteractive)", "(nil . t)", nil},
 		{`(progn (setq pimacs-repo "hello") pimacs-repo)`, `"hello"`, nil},
+		{"(plist-get (pimacs--symbol-debug 'pimacs-repo) :special)", "t", nil},
 	})
 }

@@ -197,19 +197,23 @@ func (ec *execContext) makeList(objs ...lispObject) lispObject {
 	return val
 }
 
-func (ec *execContext) makePlist(objs map[string]lispObject) lispObject {
+func (ec *execContext) makePlist(objs map[string]lispObject) (lispObject, error) {
 	if len(objs) == 0 {
-		return ec.nil_
+		return ec.nil_, nil
 	}
 
 	val := ec.nil_
 
 	for key, obj := range objs {
 		val = ec.makeCons(obj, val)
-		val = ec.makeCons(ec.makeString(":"+key), val)
+		sym, err := ec.intern(ec.makeString(":"+key), ec.nil_)
+		if err != nil {
+			return nil, err
+		}
+		val = ec.makeCons(sym, val)
 	}
 
-	return val
+	return val, nil
 }
 
 func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeValue) *lispVectorLike {

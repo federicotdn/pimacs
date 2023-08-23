@@ -564,6 +564,14 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 		ec.internNewSymbol(sym, true)
 	}
 
+	if strings.HasPrefix(name, ":") {
+		_, err := ec.set(sym, sym)
+		if err != nil {
+			return nil, err
+		}
+		sym.special = true
+	}
+
 	return sym, nil
 }
 

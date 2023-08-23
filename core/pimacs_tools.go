@@ -19,7 +19,7 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 		"special":  xEnsure(ec.bool(sym.special)),
 		"plist":    sym.plist,
 		"redirect": redirect,
-	}), nil
+	})
 }
 
 func (ec *execContext) symbolsOfPimacsTools() {
@@ -29,5 +29,5 @@ func (ec *execContext) symbolsOfPimacsTools() {
 		ec.makeString("https://github.com/federicotdn/pimacs"),
 	)
 
-	ec.defSubr1(nil, "pimacs-symbol-debug", ec.pimacsSymbolDebug, 1)
+	ec.defSubr1(nil, "pimacs--symbol-debug", ec.pimacsSymbolDebug, 1)
 }
