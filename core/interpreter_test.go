@@ -274,5 +274,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(android-query-battery)", "nil", nil}, // Test calling a stub
 		{"noninteractive", "t", nil},
 		{"(cons (let ((noninteractive nil)) noninteractive) noninteractive)", "(nil . t)", nil},
+		{`(progn (setq pimacs-repo "hello") pimacs-repo)`, `"hello"`, nil},
 	})
 }

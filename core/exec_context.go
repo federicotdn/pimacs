@@ -197,6 +197,21 @@ func (ec *execContext) makeList(objs ...lispObject) lispObject {
 	return val
 }
 
+func (ec *execContext) makePlist(objs map[string]lispObject) lispObject {
+	if len(objs) == 0 {
+		return ec.nil_
+	}
+
+	val := ec.nil_
+
+	for key, obj := range objs {
+		val = ec.makeCons(obj, val)
+		val = ec.makeCons(ec.makeString(":"+key), val)
+	}
+
+	return val
+}
+
 func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeValue) *lispVectorLike {
 	return &lispVectorLike{
 		vecType: vecType,
@@ -369,6 +384,7 @@ func (ec *execContext) defVarLisp(fwd *forwardLispObj, name string, value lispOb
 		ec.terminate("variable already initialized: '%+v'", fwd)
 	}
 	sym := ec.defSym(nil, name)
+	sym.special = true
 	fwd.sym = sym
 	fwd.val = value
 	sym.redirect = fwd
@@ -379,6 +395,7 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 		ec.terminate("variable already initialized: '%+v'", fwd)
 	}
 	sym := ec.defSym(nil, name)
+	sym.special = true
 	fwd.sym = sym
 	fwd.val = value
 	sym.redirect = fwd
@@ -391,17 +408,18 @@ func newExecContext() *execContext {
 		errorOnVarRedefine: true,
 	}
 
-	ec.initSymbols()         // symbols.go
-	ec.symbolsOfErrors()     // errors.gmo
-	ec.symbolsOfRead()       // read.go
-	ec.symbolsOfEval()       // eval.go
-	ec.symbolsOfPrint()      // print.go
-	ec.symbolsOfData()       // data.go
-	ec.symbolsOfAllocation() // allocation.go
-	ec.symbolsOfFunctions()  // functions.go
-	ec.symbolsOfBuffer()     // buffer.go
-	ec.symbolsOfMinibuffer() // minibuffer.go
-	ec.symbolsOfCallProc()   // callproc.go
+	ec.initSymbols()          // symbols.go
+	ec.symbolsOfErrors()      // errors.gmo
+	ec.symbolsOfRead()        // read.go
+	ec.symbolsOfEval()        // eval.go
+	ec.symbolsOfPrint()       // print.go
+	ec.symbolsOfData()        // data.go
+	ec.symbolsOfAllocation()  // allocation.go
+	ec.symbolsOfFunctions()   // functions.go
+	ec.symbolsOfBuffer()      // buffer.go
+	ec.symbolsOfMinibuffer()  // minibuffer.go
+	ec.symbolsOfCallProc()    // callproc.go
+	ec.symbolsOfPimacsTools() // pimacs_tools.go
 
 	ec.defVarBool(&ec.g.nonInteractive, "noninteractive", true)
 
@@ -558,7 +576,11 @@ func (ec *execContext) stackPopTo(target int) {
 			let.symbol.value = let.oldVal
 		case entryLetForwarded:
 			let := current.(*stackEntryLetForwarded)
-			let.symbol.redirect.setValue(ec, let.oldVal)
+			// Should not fail as we're just setting the old value back
+			err := let.symbol.redirect.setValue(ec, let.oldVal)
+			if err != nil {
+				ec.terminate("could not restore forwarded symbol value: '%+v'", let)
+			}
 		case entryCatch:
 		case entryFnLispObject:
 			entry := current.(*stackEntryFnLispObject)

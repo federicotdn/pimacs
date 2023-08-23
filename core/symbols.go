@@ -68,6 +68,7 @@ type lispGlobals struct {
 	standardInput          forwardLispObj
 	lexicalBinding         forwardLispObj
 	loadPath               forwardLispObj
+	pimacsRepo             forwardLispObj
 }
 
 func (ec *execContext) initSymbols() {
