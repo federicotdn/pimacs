@@ -369,23 +369,23 @@ In Pimacs, these are simply Go functions that can be called for checking the typ
 
 Some of the helper functions' names begin with an `x`. This means that when calling the helper, **all arguments must meet some preconditions or else the helper may `panic`.** This is important because it means the Pimacs programmer must carry out these checks in order to use the helpers correctly. A `panic` is not a situation Pimacs can recover from (for now, at least). Therefore, a `panic` resulting from a helper call implies a wrong assumption that the Pimacs programmer has made.
 
-Some examples. We can look at the predicate `symbolp` helper, and `xSymbol` as well. The following code is not correct, as it may `panic` depending on what type of Lisp object `obj` actually is:
+Some examples. We can look at the predicate `consp` helper, and `xSetCar` as well. The following code is not correct, as it may `panic` depending on what type of Lisp object `obj` actually is:
 ```go
 obj, _ := ec.someFunction()
 
-// Set the symbol's data value to t
-xSymbol(obj).value = ec.t
+// Set the object's `car` to `t`
+xSetCar(obj, t)
 
-// But if obj is not a symbol, the above will panic!
+// But if obj is not a cons, the above will panic!
 ```
 
 This would be the correct, equivalent code:
 ```go
 obj, _ := ec.someFunction()
 
-if symbolp(obj) {
-    // Set the symbol's data value to t
-    xSymbol(obj).value = ec.t
+if consp(obj) {
+	// Set the object's `car` to `t`
+	xSetCar(obj, t)
 }
 ```
 
