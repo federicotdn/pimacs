@@ -11,7 +11,7 @@ func (ec *execContext) printString(str string, printCharFn lispObject) error {
 		return err
 	}
 
-	if xFwdBool(&ec.g.nonInteractive) && printCharFn == ec.t {
+	if ec.g.nonInteractive.val && printCharFn == ec.t {
 		fmt.Printf("%v", str)
 		return nil
 	}
@@ -109,7 +109,7 @@ func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, erro
 func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, newlines bool) (lispObject, error) {
 	// TAGS: incomplete
 	if printCharFn == ec.nil_ {
-		printCharFn = xFwdObject(&ec.g.standardOutput)
+		printCharFn = ec.g.standardOutput.val
 	}
 
 	if printCharFn == ec.nil_ {

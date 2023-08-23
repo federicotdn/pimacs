@@ -27,31 +27,6 @@ func xSymbol(obj lispObject) *lispSymbol {
 	return val
 }
 
-func xSymbolValue(obj lispObject) lispObject {
-	return xSymbol(obj).value
-}
-
-func xFwdCheckType(fwd *forwardValue, typ symbolFwdType) {
-	if fwd.fwdType != typ {
-		terminate("symbol forward value is of type: '%+v' instead of '%+v'", fwd.fwdType, typ)
-	}
-}
-
-func xFwdObject(fwd *forwardValue) lispObject {
-	xFwdCheckType(fwd, symbolFwdTypeLispObj)
-	return fwd.valLisp
-}
-
-func xFwdSetObject(fwd *forwardValue, value lispObject) {
-	xFwdCheckType(fwd, symbolFwdTypeLispObj)
-	fwd.valLisp = value
-}
-
-func xFwdBool(fwd *forwardValue) bool {
-	xFwdCheckType(fwd, symbolFwdTypeBool)
-	return fwd.valBool
-}
-
 func symbolp(obj lispObject) bool {
 	return obj.getType() == lispTypeSymbol
 }

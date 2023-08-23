@@ -62,15 +62,26 @@ type lispSymbol struct {
 	function lispObject
 	plist    lispObject
 	special  bool
-	redirect *forwardValue
+	redirect forward
 }
 
-type forwardValue struct {
-	sym     *lispSymbol
-	valLisp lispObject
-	valBool bool
-	valInt  lispInt
-	fwdType symbolFwdType
+type forward interface {
+	value(*execContext) lispObject
+	setValue(*execContext, lispObject) error
+}
+
+type forwardBase struct {
+	sym *lispSymbol
+}
+
+type forwardBool struct {
+	forwardBase
+	val bool
+}
+
+type forwardLispObj struct {
+	forwardBase
+	val lispObject
 }
 
 type lispCons struct {
@@ -113,6 +124,31 @@ func (ls *lispSymbol) setAttributes(value, function, plist lispObject) {
 	ls.value = value
 	ls.function = function
 	ls.plist = plist
+}
+
+func (fb *forwardBool) value(ec *execContext) lispObject {
+	if fb.val {
+		return ec.t
+	}
+	return ec.nil_
+}
+
+func (fb *forwardBool) setValue(ec *execContext, val lispObject) error {
+	if val == ec.nil_ {
+		fb.val = false
+	} else {
+		fb.val = true
+	}
+	return nil
+}
+
+func (fl *forwardLispObj) value(_ *execContext) lispObject {
+	return fl.val
+}
+
+func (fl *forwardLispObj) setValue(ec *execContext, val lispObject) error {
+	fl.val = val
+	return nil
 }
 
 func (lc *lispCons) getType() lispType {

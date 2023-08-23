@@ -62,12 +62,12 @@ type lispGlobals struct {
 	readChar        lispObject
 
 	// Variables with static Go values
-	internalInterpreterEnv forwardValue //lisp
-	nonInteractive         forwardValue //bool
-	standardOutput         forwardValue //lisp
-	standardInput          forwardValue //lisp
-	lexicalBinding         forwardValue //lisp
-	loadPath               forwardValue //lisp
+	internalInterpreterEnv forwardLispObj
+	nonInteractive         forwardBool
+	standardOutput         forwardLispObj
+	standardInput          forwardLispObj
+	lexicalBinding         forwardLispObj
+	loadPath               forwardLispObj
 }
 
 func (ec *execContext) initSymbols() {

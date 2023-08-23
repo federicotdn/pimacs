@@ -180,6 +180,10 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(if t 42)", "42", nil},
 		{"(if nil 42)", "nil", nil},
 		{"unbound", "", anyError},
+		{"(boundp 'asdf)", "nil", nil},
+		{"(progn (setq aaa 1) (boundp 'aaa))", "t", nil},
+		{"(fboundp 'asdf)", "nil", nil},
+		{"(fboundp 'length)", "t", nil},
 		{"(progn (set 'f '((b . 42))) (eval 'b f))", "42", nil},
 		{"(eval)", "", anyError},
 		{"(eval '(+ 1 1))", "2", nil},
@@ -269,5 +273,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(progn (let (a)) a)", "", anyError},
 		{"(android-query-battery)", "nil", nil}, // Test calling a stub
 		{"noninteractive", "t", nil},
+		{"(cons (let ((noninteractive nil)) noninteractive) noninteractive)", "(nil . t)", nil},
 	})
 }

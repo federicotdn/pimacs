@@ -44,14 +44,19 @@ func (ec *execContext) boundp(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
 		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
 	}
-	return ec.bool(xSymbolValue(symbol) != ec.g.unbound)
+	val, err := ec.findSymbolValue(symbol)
+	if err != nil {
+		return nil, err
+	}
+
+	return ec.bool(val != ec.g.unbound)
 }
 
 func (ec *execContext) fboundp(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
 		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
 	}
-	return ec.bool(xSymbol(symbol).function != ec.g.unbound)
+	return ec.bool(xSymbol(symbol).function != ec.nil_)
 }
 
 func (ec *execContext) makunbound(symbol lispObject) (lispObject, error) {
@@ -131,7 +136,7 @@ func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 	return definition, nil
 }
 
-func (ec *execContext) symbolValue(symbol lispObject) (lispObject, error) {
+func (ec *execContext) findSymbolValue(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
 		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
 	}
@@ -139,20 +144,19 @@ func (ec *execContext) symbolValue(symbol lispObject) (lispObject, error) {
 	sym := xSymbol(symbol)
 	var val lispObject
 	if sym.redirect != nil {
-		switch sym.redirect.fwdType {
-		case symbolFwdTypeLispObj:
-			val = sym.redirect.valLisp
-		case symbolFwdTypeInt:
-			val = ec.makeInteger(sym.redirect.valInt)
-		case symbolFwdTypeBool:
-			val = xEnsure(ec.bool(sym.redirect.valBool))
-		default:
-			ec.terminate("unknown symbol forward value type: '%+v'", sym.redirect.fwdType)
-		}
+		val = sym.redirect.value(ec)
 	} else {
 		val = sym.value
 	}
 
+	return val, nil
+}
+
+func (ec *execContext) symbolValue(symbol lispObject) (lispObject, error) {
+	val, err := ec.findSymbolValue(symbol)
+	if err != nil {
+		return nil, err
+	}
 	if val == ec.g.unbound {
 		return ec.signalN(ec.g.voidVariable, symbol)
 	}

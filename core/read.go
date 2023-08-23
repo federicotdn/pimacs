@@ -652,7 +652,7 @@ func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 func (ec *execContext) readEvalLoop(ctx readContext) error {
 	defer ec.unwind()()
 
-	lex := xFwdObject(&ec.g.lexicalBinding)
+	lex := ec.g.lexicalBinding.val
 	if lex == ec.nil_ || lex == ec.g.unbound {
 		ec.stackPushLet(ec.g.internalInterpreterEnv.sym, ec.nil_)
 	} else {
@@ -698,7 +698,7 @@ func (ec *execContext) readEvalLoop(ctx readContext) error {
 
 func (ec *execContext) read(stream lispObject) (lispObject, error) {
 	if stream == ec.nil_ {
-		stream = xFwdObject(&ec.g.standardInput)
+		stream = ec.g.standardInput.val
 	}
 
 	if stream == ec.t {
@@ -739,7 +739,7 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 		return ec.wrongTypeArgument(ec.g.stringp, file)
 	}
 
-	loadPath := xFwdObject(&ec.g.loadPath)
+	loadPath := ec.g.loadPath.val
 	iter := ec.iterate(loadPath)
 	var f *os.File
 

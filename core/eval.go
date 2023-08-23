@@ -206,7 +206,7 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 		return ec.wrongNumberOfArguments(fn, lispInt(len(args)))
 	}
 
-	if lexEnv != xFwdObject(&ec.g.internalInterpreterEnv) {
+	if lexEnv != ec.g.internalInterpreterEnv.val {
 		ec.stackPushLet(ec.g.internalInterpreterEnv.sym, lexEnv)
 	}
 
@@ -414,7 +414,7 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 
 	value := jmp.data
 	handlerVar := variable
-	env := xFwdObject(&ec.g.internalInterpreterEnv)
+	env := ec.g.internalInterpreterEnv.val
 
 	if env != ec.nil_ {
 		value = ec.makeCons(ec.makeCons(variable, value), env)
@@ -556,7 +556,7 @@ func (ec *execContext) setq(originalArgs lispObject) (lispObject, error) {
 
 		lexBinding := ec.nil_
 		if symbolp(sym) {
-			lexBinding, err = ec.assq(sym, xFwdObject(&ec.g.internalInterpreterEnv))
+			lexBinding, err = ec.assq(sym, ec.g.internalInterpreterEnv.val)
 		}
 
 		if lexBinding != ec.nil_ {
@@ -583,7 +583,7 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 		return ec.wrongNumberOfArguments(ec.g.function, xIntegerValue(length))
 	}
 
-	env := xFwdObject(&ec.g.internalInterpreterEnv)
+	env := ec.g.internalInterpreterEnv.val
 	if env != ec.nil_ &&
 		consp(quoted) &&
 		xCar(quoted) == ec.g.lambda {
@@ -637,7 +637,7 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 		}
 	}
 
-	lexEnv := xFwdObject(&ec.g.internalInterpreterEnv)
+	lexEnv := ec.g.internalInterpreterEnv.val
 
 	for argnum, elt := range varList {
 		var variable lispObject
@@ -652,7 +652,7 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 		}
 
 		tem := temps[argnum]
-		included, err := ec.memq(variable, xFwdObject(&ec.g.internalInterpreterEnv))
+		included, err := ec.memq(variable, ec.g.internalInterpreterEnv.val)
 		if err != nil {
 			return nil, err
 		}
@@ -696,7 +696,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	var err error
 
 	if symbolp(form) {
-		lex, err := ec.assq(form, xFwdObject(&ec.g.internalInterpreterEnv))
+		lex, err := ec.assq(form, ec.g.internalInterpreterEnv.val)
 		if err != nil {
 			return nil, err
 		}
@@ -738,7 +738,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 
 	if fnCar == ec.g.macro {
 		val := ec.t
-		if xFwdObject(&ec.g.internalInterpreterEnv) == ec.nil_ {
+		if ec.g.internalInterpreterEnv.val == ec.nil_ {
 			val = ec.nil_
 		}
 

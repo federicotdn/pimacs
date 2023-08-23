@@ -350,7 +350,7 @@ func (ec *execContext) defSubrU(symbol *lispObject, name string, fn lispFn1, min
 
 func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 	if symbol != nil && *symbol != nil {
-		ec.terminate("variable value already set: '%+v'", *symbol)
+		ec.terminate("symbol already initialized: '%+v'", *symbol)
 	}
 
 	sym := ec.makeSymbol(name)
@@ -364,30 +364,24 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 	return sym
 }
 
-func (ec *execContext) defVarInternal(fwd *forwardValue, name string) *forwardValue {
-	if fwd == nil {
-		ec.terminate("symbol forward value pointer is nil")
-	} else if fwd.sym != nil {
-		ec.terminate("symbol forward value already set: '%+v'", fwd)
+func (ec *execContext) defVarLisp(fwd *forwardLispObj, name string, value lispObject) {
+	if fwd.sym != nil {
+		ec.terminate("variable already initialized: '%+v'", fwd)
 	}
-
-	fwd.sym = ec.defSym(nil, name)
-	fwd.sym.redirect = fwd
-	return fwd
+	sym := ec.defSym(nil, name)
+	fwd.sym = sym
+	fwd.val = value
+	sym.redirect = fwd
 }
 
-func (ec *execContext) defVarLisp(fwd *forwardValue, name string, value lispObject) *forwardValue {
-	ec.defVarInternal(fwd, name)
-	fwd.valLisp = value
-	fwd.fwdType = symbolFwdTypeLispObj
-	return fwd
-}
-
-func (ec *execContext) defVarBool(fwd *forwardValue, name string, value bool) *forwardValue {
-	ec.defVarInternal(fwd, name)
-	fwd.valBool = value
-	fwd.fwdType = symbolFwdTypeBool
-	return fwd
+func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
+	if fwd.sym != nil {
+		ec.terminate("variable already initialized: '%+v'", fwd)
+	}
+	sym := ec.defSym(nil, name)
+	fwd.sym = sym
+	fwd.val = value
+	sym.redirect = fwd
 }
 
 func newExecContext() *execContext {
@@ -426,7 +420,7 @@ func newExecContext() *execContext {
 		// Use relative path from CWD
 		loadPath = "lisp"
 	}
-	xFwdSetObject(&ec.g.loadPath, ec.makeList(ec.makeString(loadPath)))
+	ec.g.loadPath.val = ec.makeList(ec.makeString(loadPath))
 
 	err := ec.loadElisp()
 	if err != nil {
@@ -475,7 +469,7 @@ func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
 	return result, nil
 }
 
-func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) {
+func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) error {
 	sym := xSymbol(symbol)
 
 	if sym.redirect == nil {
@@ -485,13 +479,19 @@ func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) {
 		})
 		sym.value = value
 	} else {
-		// TODO: Also cover other forward types?
-		ec.stack = append(ec.stack, &stackEntryLetForwarded{
+		entry := &stackEntryLetForwarded{
 			symbol: sym,
-			oldVal: sym.redirect.valLisp,
-		})
-		sym.redirect.valLisp = value
+			oldVal: sym.redirect.value(ec),
+		}
+
+		err := sym.redirect.setValue(ec, value)
+		if err != nil {
+			return err
+		}
+		ec.stack = append(ec.stack, entry)
 	}
+
+	return nil
 }
 
 func (ec *execContext) stackPushCatch(tag lispObject) {
@@ -557,9 +557,8 @@ func (ec *execContext) stackPopTo(target int) {
 			let := current.(*stackEntryLet)
 			let.symbol.value = let.oldVal
 		case entryLetForwarded:
-			// TODO: Also support other forward types
 			let := current.(*stackEntryLetForwarded)
-			let.symbol.redirect.valLisp = let.oldVal
+			let.symbol.redirect.setValue(ec, let.oldVal)
 		case entryCatch:
 		case entryFnLispObject:
 			entry := current.(*stackEntryFnLispObject)
