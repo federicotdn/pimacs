@@ -60,10 +60,10 @@ func (ec *execContext) fboundp(symbol lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) makunbound(symbol lispObject) (lispObject, error) {
-	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+	_, err := ec.set(symbol, ec.g.unbound)
+	if err != nil {
+		return nil, err
 	}
-	xSymbol(symbol).value = ec.g.unbound
 	return symbol, nil
 }
 
@@ -113,13 +113,25 @@ func (ec *execContext) setCdr(obj, newCdr lispObject) (lispObject, error) {
 	return newCdr, nil
 }
 
-func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
+func (ec *execContext) setInternal(symbol, newVal lispObject) error {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return xErrOnly(ec.wrongTypeArgument(ec.g.symbolp, symbol))
 	}
 
-	// TODO: Handle symbol value forwarding
-	xSymbol(symbol).value = newVal
+	sym := xSymbol(symbol)
+	if sym.redirect == nil {
+		sym.value = newVal
+		return nil
+	}
+
+	return sym.redirect.setValue(ec, newVal)
+}
+
+func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
+	err := ec.setInternal(symbol, newVal)
+	if err != nil {
+		return nil, err
+	}
 	return newVal, nil
 }
 
