@@ -24,7 +24,7 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 
 func (ec *execContext) symbolsOfPimacsTools() {
 	ec.defVarLisp(
-		&ec.s.pimacsRepo,
+		&ec.v.pimacsRepo,
 		"pimacs-repo",
 		ec.makeString("https://github.com/federicotdn/pimacs"),
 	)

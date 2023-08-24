@@ -60,7 +60,9 @@ type symbols struct {
 	andRest         lispObject
 	andOptional     lispObject
 	readChar        lispObject
+}
 
+type vars struct {
 	// Variables with static Go values
 	internalInterpreterEnv forwardLispObj
 	nonInteractive         forwardBool
@@ -105,9 +107,24 @@ func (ec *execContext) checkSymbolValues() {
 	v := reflect.ValueOf(ec.s)
 
 	for i := 0; i < v.NumField(); i++ {
-		// field := v.Field(i)
-		// if field.IsNil() {
-		// 	ec.terminate("initialization error: lispGlobals field not set: '%+v'", v.Type().Field(i).Name)
-		// }
+		field := v.Field(i)
+		if field.IsNil() {
+			ec.terminate("initialization error: symbol not initialized: 'symbols.%+v'", v.Type().Field(i).Name)
+		}
+	}
+}
+
+func (ec *execContext) checkVarValues() {
+	v := reflect.ValueOf(ec.v)
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+
+		sym := field.FieldByName("sym")
+		if sym == (reflect.Value{}) {
+			ec.terminate("initialization error: invalid forward type: 'vars.%+v'", v.Type().Field(i).Name)
+		} else if sym.IsNil() {
+			ec.terminate("initialization error: forward value not initialized: 'vars.%+v'", v.Type().Field(i).Name)
+		}
 	}
 }

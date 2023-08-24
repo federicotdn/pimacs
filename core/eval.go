@@ -206,8 +206,8 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 		return ec.wrongNumberOfArguments(fn, lispInt(len(args)))
 	}
 
-	if lexEnv != ec.s.internalInterpreterEnv.val {
-		ec.stackPushLet(ec.s.internalInterpreterEnv.sym, lexEnv)
+	if lexEnv != ec.v.internalInterpreterEnv.val {
+		ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexEnv)
 	}
 
 	if !consp(fn) {
@@ -414,11 +414,11 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 
 	value := jmp.data
 	handlerVar := variable
-	env := ec.s.internalInterpreterEnv.val
+	env := ec.v.internalInterpreterEnv.val
 
 	if env != ec.nil_ {
 		value = ec.makeCons(ec.makeCons(variable, value), env)
-		handlerVar = ec.s.internalInterpreterEnv.sym
+		handlerVar = ec.v.internalInterpreterEnv.sym
 	}
 
 	defer ec.unwind()()
@@ -554,7 +554,7 @@ func (ec *execContext) setq(originalArgs lispObject) (lispObject, error) {
 
 		lexBinding := ec.nil_
 		if symbolp(sym) {
-			lexBinding, err = ec.assq(sym, ec.s.internalInterpreterEnv.val)
+			lexBinding, err = ec.assq(sym, ec.v.internalInterpreterEnv.val)
 		}
 
 		if lexBinding != ec.nil_ {
@@ -581,7 +581,7 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 		return ec.wrongNumberOfArguments(ec.s.function, xIntegerValue(length))
 	}
 
-	env := ec.s.internalInterpreterEnv.val
+	env := ec.v.internalInterpreterEnv.val
 	if env != ec.nil_ &&
 		consp(quoted) &&
 		xCar(quoted) == ec.s.lambda {
@@ -635,7 +635,7 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 		}
 	}
 
-	lexEnv := ec.s.internalInterpreterEnv.val
+	lexEnv := ec.v.internalInterpreterEnv.val
 
 	for argnum, elt := range varList {
 		var variable lispObject
@@ -650,7 +650,7 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 		}
 
 		tem := temps[argnum]
-		included, err := ec.memq(variable, ec.s.internalInterpreterEnv.val)
+		included, err := ec.memq(variable, ec.v.internalInterpreterEnv.val)
 		if err != nil {
 			return nil, err
 		}
@@ -666,8 +666,8 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 		}
 	}
 
-	if lexEnv != ec.s.internalInterpreterEnv.sym {
-		ec.stackPushLet(ec.s.internalInterpreterEnv.sym, lexEnv)
+	if lexEnv != ec.v.internalInterpreterEnv.sym {
+		ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexEnv)
 	}
 
 	return ec.progn(xCdr(args))
@@ -680,7 +680,7 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 		lexical = ec.makeList(ec.t)
 	}
 
-	ec.stackPushLet(ec.s.internalInterpreterEnv.sym, lexical)
+	ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexical)
 	val, err := ec.evalSub(form)
 	if err != nil {
 		return nil, err
@@ -693,7 +693,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	var err error
 
 	if symbolp(form) {
-		lex, err := ec.assq(form, ec.s.internalInterpreterEnv.val)
+		lex, err := ec.assq(form, ec.v.internalInterpreterEnv.val)
 		if err != nil {
 			return nil, err
 		}
@@ -735,12 +735,12 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 
 	if fnCar == ec.s.macro {
 		val := ec.t
-		if ec.s.internalInterpreterEnv.val == ec.nil_ {
+		if ec.v.internalInterpreterEnv.val == ec.nil_ {
 			val = ec.nil_
 		}
 
 		defer ec.unwind()()
-		ec.stackPushLet(ec.s.lexicalBinding.sym, val)
+		ec.stackPushLet(ec.v.lexicalBinding.sym, val)
 
 		exp, err := ec.apply([]lispObject{xCdr(fn), originalArgs}...)
 		if err != nil {
@@ -757,7 +757,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 
 func (ec *execContext) symbolsOfEval() {
 	// TODO: Unintern this
-	ec.defVarLisp(&ec.s.internalInterpreterEnv, "internal-interpreter-environment", ec.nil_)
+	ec.defVarLisp(&ec.v.internalInterpreterEnv, "internal-interpreter-environment", ec.nil_)
 	ec.defSym(&ec.s.lambda, "lambda")
 	ec.defSym(&ec.s.closure, "closure")
 	ec.defSym(&ec.s.macro, "macro")

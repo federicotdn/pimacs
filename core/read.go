@@ -655,11 +655,11 @@ func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 func (ec *execContext) readEvalLoop(ctx readContext) error {
 	defer ec.unwind()()
 
-	lex := ec.s.lexicalBinding.val
+	lex := ec.v.lexicalBinding.val
 	if lex == ec.nil_ || lex == ec.s.unbound {
-		ec.stackPushLet(ec.s.internalInterpreterEnv.sym, ec.nil_)
+		ec.stackPushLet(ec.v.internalInterpreterEnv.sym, ec.nil_)
 	} else {
-		ec.stackPushLet(ec.s.internalInterpreterEnv.sym, ec.makeList(ec.t))
+		ec.stackPushLet(ec.v.internalInterpreterEnv.sym, ec.makeList(ec.t))
 	}
 
 	for {
@@ -701,7 +701,7 @@ func (ec *execContext) readEvalLoop(ctx readContext) error {
 
 func (ec *execContext) read(stream lispObject) (lispObject, error) {
 	if stream == ec.nil_ {
-		stream = ec.s.standardInput.val
+		stream = ec.v.standardInput.val
 	}
 
 	if stream == ec.t {
@@ -742,7 +742,7 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 		return ec.wrongTypeArgument(ec.s.stringp, file)
 	}
 
-	loadPath := ec.s.loadPath.val
+	loadPath := ec.v.loadPath.val
 	iter := ec.iterate(loadPath)
 	var f *os.File
 
@@ -779,12 +779,12 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 
 	defer ec.unwind()()
 	// Load is dynamic by default
-	ec.stackPushLet(ec.s.lexicalBinding.sym, ec.nil_)
+	ec.stackPushLet(ec.v.lexicalBinding.sym, ec.nil_)
 
 	ctx := readContextFile{reader: bufio.NewReader(f)}
 
 	if ec.lexicallyBoundp(&ctx) {
-		ec.stackPushLet(ec.s.lexicalBinding.sym, ec.t)
+		ec.stackPushLet(ec.v.lexicalBinding.sym, ec.t)
 	}
 
 	err := ec.readEvalLoop(&ctx)
@@ -796,9 +796,9 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 }
 
 func (ec *execContext) symbolsOfRead() {
-	ec.defVarLisp(&ec.s.standardInput, "standard-input", ec.t)
-	ec.defVarLisp(&ec.s.lexicalBinding, "lexical-binding", ec.nil_)
-	ec.defVarLisp(&ec.s.loadPath, "load-path", ec.nil_)
+	ec.defVarLisp(&ec.v.standardInput, "standard-input", ec.t)
+	ec.defVarLisp(&ec.v.lexicalBinding, "lexical-binding", ec.nil_)
+	ec.defVarLisp(&ec.v.loadPath, "load-path", ec.nil_)
 	ec.defSym(&ec.s.readChar, "read-char")
 
 	ec.defSubr2(nil, "intern", ec.intern, 1)

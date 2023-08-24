@@ -12,7 +12,7 @@ func (ec *execContext) readFromMinibuffer(prompt, initialContents, keymap, read,
 		return ec.wrongTypeArgument(ec.s.stringp, prompt)
 	}
 
-	if !ec.s.nonInteractive.val {
+	if !ec.v.nonInteractive.val {
 		return ec.pimacsUnimplemented(ec.s.read, "only noninteractive read is supported")
 	}
 

@@ -34,6 +34,7 @@ type execContext struct {
 	nil_       lispObject
 	t          lispObject
 	s          symbols
+	v          vars
 	obarray    map[string]*lispSymbol
 	currentBuf *buffer
 	buffers    lispObject
@@ -425,7 +426,7 @@ func newExecContext() *execContext {
 	ec.symbolsOfCallProc()    // callproc.go
 	ec.symbolsOfPimacsTools() // pimacs_tools.go
 
-	ec.defVarBool(&ec.s.nonInteractive, "noninteractive", true)
+	ec.defVarBool(&ec.v.nonInteractive, "noninteractive", true)
 
 	// Load Emacs stubs at the end, without erroring out
 	// on repeated defuns or defvars
@@ -434,6 +435,7 @@ func newExecContext() *execContext {
 	ec.errorOnVarRedefine = true
 
 	ec.checkSymbolValues()
+	ec.checkVarValues()
 
 	ec.initBuffer() // buffer.go
 
@@ -442,7 +444,7 @@ func newExecContext() *execContext {
 		// Use relative path from CWD
 		loadPath = "lisp"
 	}
-	ec.s.loadPath.val = ec.makeList(ec.makeString(loadPath))
+	ec.v.loadPath.val = ec.makeList(ec.makeString(loadPath))
 
 	err := ec.loadElisp()
 	if err != nil {
