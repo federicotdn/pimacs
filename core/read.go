@@ -425,7 +425,6 @@ read_obj:
 				goto read_obj
 			}
 
-			println("next", string([]rune{next}), next)
 			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("."))
 		}
 
@@ -471,9 +470,8 @@ read_obj:
 			stack.pop()
 
 			if top.listHead == nil {
-				// We never got to handle readStackListStart, since we got
-				// (. x) as input. Use obj (set previously) as the return value.
-				break
+				// See Emacs bug #62020
+				return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("."))
 			}
 
 			xSetCdr(top.listTail, obj)

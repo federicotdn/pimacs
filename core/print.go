@@ -2,6 +2,8 @@ package core
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 func (ec *execContext) printString(str string, printCharFn lispObject) error {
@@ -30,6 +32,22 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 	switch lispType {
 	case lispTypeSymbol:
 		s = xSymbol(obj).name
+		if s == "" {
+			s = "##"
+			break
+		}
+
+		confusing := false
+		if _, err := strconv.ParseFloat(s, 64); err == nil {
+			confusing = true
+		}
+		if strings.HasPrefix(s, ".") || strings.HasPrefix(s, "?") || strings.HasPrefix(s, "\\") {
+			confusing = true
+		}
+
+		if confusing && escapeFlag {
+			s = "\\" + s
+		}
 	case lispTypeInteger:
 		s = fmt.Sprint(xIntegerValue(obj))
 	case lispTypeString:
