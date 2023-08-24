@@ -33,7 +33,7 @@ type execContext struct {
 	stack      []stackEntry
 	nil_       lispObject
 	t          lispObject
-	g          lispGlobals
+	g          symbols
 	obarray    map[string]*lispSymbol
 	currentBuf *buffer
 	buffers    lispObject
