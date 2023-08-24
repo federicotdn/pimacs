@@ -145,7 +145,7 @@ func (ec *execContext) skipSpaceAndComments(ctx readContext) error {
 		}
 
 		if c < 0 {
-			return xErrOnly(ec.signalN(ec.g.endOfFile))
+			return xErrOnly(ec.signalN(ec.s.endOfFile))
 		}
 	}
 
@@ -164,13 +164,13 @@ func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 		return ec.makeFloat(lispFp(nFloat)), nil
 	}
 
-	return ec.pimacsUnimplemented(ec.g.read, "unknown number format: '%v'", s)
+	return ec.pimacsUnimplemented(ec.s.read, "unknown number format: '%v'", s)
 }
 
 func (ec *execContext) readEscape(ctx readContext, stringp bool) (rune, error) {
 	c := ctx.read()
 	if c == eofRune {
-		return 0, xErrOnly(ec.signalN(ec.g.endOfFile))
+		return 0, xErrOnly(ec.signalN(ec.s.endOfFile))
 	}
 
 	switch c {
@@ -234,7 +234,7 @@ func (ec *execContext) readEscape(ctx readContext, stringp bool) (rune, error) {
 		return c, nil
 	}
 
-	return 0, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown escape code: '\\%v'", c))
+	return 0, xErrOnly(ec.pimacsUnimplemented(ec.s.read, "unknown escape code: '\\%v'", c))
 }
 
 func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
@@ -263,7 +263,7 @@ func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 	}
 
 	if c == eofRune {
-		return ec.signalN(ec.g.endOfFile)
+		return ec.signalN(ec.s.endOfFile)
 	}
 
 	return ec.makeString(builder.String()), nil
@@ -272,7 +272,7 @@ func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
 	c := ctx.read()
 	if c == eofRune {
-		return ec.signalN(ec.g.endOfFile)
+		return ec.signalN(ec.s.endOfFile)
 	}
 
 	if c == ' ' || c == '\t' {
@@ -310,7 +310,7 @@ func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
 		if c == '\\' {
 			c = ctx.read()
 			if c == eofRune {
-				return ec.signalN(ec.g.endOfFile)
+				return ec.signalN(ec.s.endOfFile)
 			}
 
 			quoted = true
@@ -347,7 +347,7 @@ func (ec *execContext) read0(ctx readContext) (lispObject, error) {
 read_obj:
 	c = ctx.read()
 	if c == eofRune {
-		return ec.signalN(ec.g.endOfFile)
+		return ec.signalN(ec.s.endOfFile)
 	}
 
 	switch {
@@ -355,10 +355,10 @@ read_obj:
 		stack.push(readStackElem{elementType: readStackListStart})
 		goto read_obj
 	case c == '[':
-		return ec.pimacsUnimplemented(ec.g.read, "unknown token: '['")
+		return ec.pimacsUnimplemented(ec.s.read, "unknown token: '['")
 	case c == ')':
 		if stack.isEmpty() {
-			return ec.signalN(ec.g.invalidReadSyntax, ec.makeString(")"))
+			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString(")"))
 		}
 
 		switch stack.peek().elementType {
@@ -368,24 +368,24 @@ read_obj:
 		case readStackList:
 			obj = stack.pop().listHead
 		default:
-			return ec.signalN(ec.g.invalidReadSyntax, ec.makeString(")"))
+			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString(")"))
 		}
 	case c == ']':
-		return ec.pimacsUnimplemented(ec.g.read, "unknown token: ']'")
+		return ec.pimacsUnimplemented(ec.s.read, "unknown token: ']'")
 	case c == '#':
 		c = ctx.read()
 
 		switch {
 		case c == '#':
-			obj = ec.g.emptySymbol
+			obj = ec.s.emptySymbol
 		case c == '\'':
 			stack.push(readStackElem{
 				elementType: readStackSpecial,
-				special:     ec.g.function,
+				special:     ec.s.function,
 			})
 			goto read_obj
 		default:
-			return ec.pimacsUnimplemented(ec.g.read, "unknown token: '#%c'", c)
+			return ec.pimacsUnimplemented(ec.s.read, "unknown token: '#%c'", c)
 		}
 	case c == ';':
 		for {
@@ -396,13 +396,13 @@ read_obj:
 		}
 		goto read_obj
 	case c == '\'':
-		stack.push(readStackElem{elementType: readStackSpecial, special: ec.g.quote})
+		stack.push(readStackElem{elementType: readStackSpecial, special: ec.s.quote})
 		goto read_obj
 	case c == '`':
-		stack.push(readStackElem{elementType: readStackSpecial, special: ec.g.backquote})
+		stack.push(readStackElem{elementType: readStackSpecial, special: ec.s.backquote})
 		goto read_obj
 	case c == ',':
-		return ec.pimacsUnimplemented(ec.g.read, "unknown token: ','")
+		return ec.pimacsUnimplemented(ec.s.read, "unknown token: ','")
 	case c == '?':
 		obj, err = ec.readCharLiteral(ctx)
 		if err != nil {
@@ -426,7 +426,7 @@ read_obj:
 			}
 
 			println("next", string([]rune{next}), next)
-			return ec.signalN(ec.g.invalidReadSyntax, ec.makeString("."))
+			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("."))
 		}
 
 		obj, err = ec.readSymbol(c, ctx)
@@ -465,7 +465,7 @@ read_obj:
 			}
 			ch := ctx.read()
 			if ch != ')' {
-				return ec.signalN(ec.g.invalidReadSyntax, ec.makeString("expected )"))
+				return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("expected )"))
 			}
 
 			stack.pop()
@@ -483,7 +483,7 @@ read_obj:
 			stack.pop()
 			obj = ec.makeList(top.special, obj)
 		default:
-			return ec.signalN(ec.g.read, ec.makeString("unknown read stack entry type"))
+			return ec.signalN(ec.s.read, ec.makeString("unknown read stack entry type"))
 		}
 	}
 
@@ -516,7 +516,7 @@ func (ec *execContext) streamReadContext(stream, start, end lispObject) (readCon
 				startInt += lengthInt
 			}
 		} else if start != ec.nil_ {
-			return nil, xErrOnly(ec.wrongTypeArgument(ec.g.integerp, start))
+			return nil, xErrOnly(ec.wrongTypeArgument(ec.s.integerp, start))
 		}
 
 		if integerp(end) {
@@ -527,11 +527,11 @@ func (ec *execContext) streamReadContext(stream, start, end lispObject) (readCon
 			}
 
 		} else if end != ec.nil_ {
-			return nil, xErrOnly(ec.wrongTypeArgument(ec.g.integerp, end))
+			return nil, xErrOnly(ec.wrongTypeArgument(ec.s.integerp, end))
 		}
 
 		if !(0 <= startInt && startInt <= endInt && endInt <= lengthInt) {
-			return nil, xErrOnly(ec.signalN(ec.g.argsOutOfRange, stream, start, end))
+			return nil, xErrOnly(ec.signalN(ec.s.argsOutOfRange, stream, start, end))
 		}
 
 		str := xStringValue(stream)
@@ -542,7 +542,7 @@ func (ec *execContext) streamReadContext(stream, start, end lispObject) (readCon
 			end:   endInt,
 		}
 	default:
-		return nil, xErrOnly(ec.pimacsUnimplemented(ec.g.read, "unknown source type"))
+		return nil, xErrOnly(ec.pimacsUnimplemented(ec.s.read, "unknown source type"))
 	}
 
 	return ctx, nil
@@ -550,7 +550,7 @@ func (ec *execContext) streamReadContext(stream, start, end lispObject) (readCon
 
 func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	if !stringp(str) {
-		return ec.wrongTypeArgument(ec.g.stringp, str)
+		return ec.wrongTypeArgument(ec.s.stringp, str)
 	}
 
 	name := xStringValue(str)
@@ -657,11 +657,11 @@ func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 func (ec *execContext) readEvalLoop(ctx readContext) error {
 	defer ec.unwind()()
 
-	lex := ec.g.lexicalBinding.val
-	if lex == ec.nil_ || lex == ec.g.unbound {
-		ec.stackPushLet(ec.g.internalInterpreterEnv.sym, ec.nil_)
+	lex := ec.s.lexicalBinding.val
+	if lex == ec.nil_ || lex == ec.s.unbound {
+		ec.stackPushLet(ec.s.internalInterpreterEnv.sym, ec.nil_)
 	} else {
-		ec.stackPushLet(ec.g.internalInterpreterEnv.sym, ec.makeList(ec.t))
+		ec.stackPushLet(ec.s.internalInterpreterEnv.sym, ec.makeList(ec.t))
 	}
 
 	for {
@@ -703,15 +703,15 @@ func (ec *execContext) readEvalLoop(ctx readContext) error {
 
 func (ec *execContext) read(stream lispObject) (lispObject, error) {
 	if stream == ec.nil_ {
-		stream = ec.g.standardInput.val
+		stream = ec.s.standardInput.val
 	}
 
 	if stream == ec.t {
-		stream = ec.g.readChar
+		stream = ec.s.readChar
 	}
 
-	if stream == ec.g.readChar {
-		return ec.funcall(ec.g.readFromMinibuffer, ec.makeString("Lisp expression: "))
+	if stream == ec.s.readChar {
+		return ec.funcall(ec.s.readFromMinibuffer, ec.makeString("Lisp expression: "))
 	}
 
 	ctx, err := ec.streamReadContext(stream, ec.nil_, ec.nil_)
@@ -723,7 +723,7 @@ func (ec *execContext) read(stream lispObject) (lispObject, error) {
 
 func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, error) {
 	if !stringp(str) {
-		return ec.wrongTypeArgument(ec.g.stringp, str)
+		return ec.wrongTypeArgument(ec.s.stringp, str)
 	}
 
 	ctx, err := ec.streamReadContext(str, ec.nil_, ec.nil_)
@@ -741,10 +741,10 @@ func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, e
 
 func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispObject) (lispObject, error) {
 	if !stringp(file) {
-		return ec.wrongTypeArgument(ec.g.stringp, file)
+		return ec.wrongTypeArgument(ec.s.stringp, file)
 	}
 
-	loadPath := ec.g.loadPath.val
+	loadPath := ec.s.loadPath.val
 	iter := ec.iterate(loadPath)
 	var f *os.File
 
@@ -752,7 +752,7 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 		loadPath = xCar(loadPath)
 
 		if !stringp(loadPath) {
-			return ec.wrongTypeArgument(ec.g.stringp, loadPath)
+			return ec.wrongTypeArgument(ec.s.stringp, loadPath)
 		}
 
 		base := xStringValue(loadPath)
@@ -774,19 +774,19 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 
 	if f == nil {
 		if noError == ec.nil_ {
-			return ec.signalN(ec.g.fileMissing, file)
+			return ec.signalN(ec.s.fileMissing, file)
 		}
 		return ec.nil_, nil
 	}
 
 	defer ec.unwind()()
 	// Load is dynamic by default
-	ec.stackPushLet(ec.g.lexicalBinding.sym, ec.nil_)
+	ec.stackPushLet(ec.s.lexicalBinding.sym, ec.nil_)
 
 	ctx := readContextFile{reader: bufio.NewReader(f)}
 
 	if ec.lexicallyBoundp(&ctx) {
-		ec.stackPushLet(ec.g.lexicalBinding.sym, ec.t)
+		ec.stackPushLet(ec.s.lexicalBinding.sym, ec.t)
 	}
 
 	err := ec.readEvalLoop(&ctx)
@@ -798,13 +798,13 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 }
 
 func (ec *execContext) symbolsOfRead() {
-	ec.defVarLisp(&ec.g.standardInput, "standard-input", ec.t)
-	ec.defVarLisp(&ec.g.lexicalBinding, "lexical-binding", ec.nil_)
-	ec.defVarLisp(&ec.g.loadPath, "load-path", ec.nil_)
-	ec.defSym(&ec.g.readChar, "read-char")
+	ec.defVarLisp(&ec.s.standardInput, "standard-input", ec.t)
+	ec.defVarLisp(&ec.s.lexicalBinding, "lexical-binding", ec.nil_)
+	ec.defVarLisp(&ec.s.loadPath, "load-path", ec.nil_)
+	ec.defSym(&ec.s.readChar, "read-char")
 
 	ec.defSubr2(nil, "intern", ec.intern, 1)
 	ec.defSubr3(nil, "read-from-string", ec.readFromString, 1)
-	ec.defSubr1(&ec.g.read, "read", ec.read, 0)
+	ec.defSubr1(&ec.s.read, "read", ec.read, 0)
 	ec.defSubr5(nil, "load", ec.load, 1)
 }

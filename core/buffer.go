@@ -7,7 +7,7 @@ func (ec *execContext) insert(args ...lispObject) (lispObject, error) {
 		} else if stringp(arg) {
 			ec.currentBuf.contents += xStringValue(arg)
 		} else {
-			return ec.wrongTypeArgument(ec.g.charOrStringp, arg)
+			return ec.wrongTypeArgument(ec.s.charOrStringp, arg)
 		}
 	}
 
@@ -62,7 +62,7 @@ func (ec *execContext) getBuffer(bufferOrName lispObject) (lispObject, error) {
 	}
 
 	if !stringp(bufferOrName) {
-		return ec.wrongTypeArgument(ec.g.stringp, bufferOrName)
+		return ec.wrongTypeArgument(ec.s.stringp, bufferOrName)
 	}
 
 	elem, err := ec.assoc(bufferOrName, ec.buffers, ec.nil_)
@@ -109,7 +109,7 @@ func (ec *execContext) bufferName(obj lispObject) (lispObject, error) {
 	if obj == ec.nil_ {
 		obj = ec.currentBufferInternal()
 	} else if !bufferp(obj) {
-		return ec.wrongTypeArgument(ec.g.bufferp, obj)
+		return ec.wrongTypeArgument(ec.s.bufferp, obj)
 	}
 
 	buf := xBuffer(obj)

@@ -6,7 +6,7 @@ import (
 
 func (ec *execContext) getenvInternal(variable, env lispObject) (lispObject, error) {
 	if !stringp(variable) {
-		return ec.wrongTypeArgument(ec.g.stringp, variable)
+		return ec.wrongTypeArgument(ec.s.stringp, variable)
 	}
 
 	val, ok := os.LookupEnv(xStringValue(variable))

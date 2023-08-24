@@ -33,7 +33,7 @@ type execContext struct {
 	stack      []stackEntry
 	nil_       lispObject
 	t          lispObject
-	g          symbols
+	s          symbols
 	obarray    map[string]*lispSymbol
 	currentBuf *buffer
 	buffers    lispObject
@@ -146,7 +146,7 @@ func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
 
 func (ec *execContext) makeSymbol(name string) *lispSymbol {
 	base := ec.makeSymbolBase(name)
-	base.value = ec.g.unbound
+	base.value = ec.s.unbound
 	base.function = ec.nil_
 	base.plist = ec.nil_
 	return base
@@ -241,7 +241,7 @@ func (ec *execContext) iterate(tail lispObject) *listIter {
 		tail:      tail,
 		listHead:  tail,
 		ec:        ec,
-		predicate: ec.g.listp,
+		predicate: ec.s.listp,
 	}
 
 	// We may have been given already an object that is not a list
@@ -263,7 +263,7 @@ func (li *listIter) checkTailType() {
 	if !consp(li.tail) && li.tail != li.ec.nil_ {
 		// List does not end with nil.
 		// Signal using list start, not tail!
-		li.err = xErrOnly(li.ec.wrongTypeArgument(li.ec.g.listp, li.head()))
+		li.err = xErrOnly(li.ec.wrongTypeArgument(li.ec.s.listp, li.head()))
 	}
 }
 
@@ -373,7 +373,7 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 	}
 
 	sym := ec.makeSymbol(name)
-	sym.value = ec.g.unbound
+	sym.value = ec.s.unbound
 
 	if symbol != nil {
 		*symbol = sym
@@ -425,7 +425,7 @@ func newExecContext() *execContext {
 	ec.symbolsOfCallProc()    // callproc.go
 	ec.symbolsOfPimacsTools() // pimacs_tools.go
 
-	ec.defVarBool(&ec.g.nonInteractive, "noninteractive", true)
+	ec.defVarBool(&ec.s.nonInteractive, "noninteractive", true)
 
 	// Load Emacs stubs at the end, without erroring out
 	// on repeated defuns or defvars
@@ -442,7 +442,7 @@ func newExecContext() *execContext {
 		// Use relative path from CWD
 		loadPath = "lisp"
 	}
-	ec.g.loadPath.val = ec.makeList(ec.makeString(loadPath))
+	ec.s.loadPath.val = ec.makeList(ec.makeString(loadPath))
 
 	err := ec.loadElisp()
 	if err != nil {

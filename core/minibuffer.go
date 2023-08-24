@@ -9,11 +9,11 @@ import (
 
 func (ec *execContext) readFromMinibuffer(prompt, initialContents, keymap, read, hist, defaultValue, inheritInputMethod lispObject) (lispObject, error) {
 	if !stringp(prompt) {
-		return ec.wrongTypeArgument(ec.g.stringp, prompt)
+		return ec.wrongTypeArgument(ec.s.stringp, prompt)
 	}
 
-	if !ec.g.nonInteractive.val {
-		return ec.pimacsUnimplemented(ec.g.read, "only noninteractive read is supported")
+	if !ec.s.nonInteractive.val {
+		return ec.pimacsUnimplemented(ec.s.read, "only noninteractive read is supported")
 	}
 
 	fmt.Print(xStringValue(prompt))
@@ -31,5 +31,5 @@ func (ec *execContext) readFromMinibuffer(prompt, initialContents, keymap, read,
 }
 
 func (ec *execContext) symbolsOfMinibuffer() {
-	ec.defSubr7(&ec.g.readFromMinibuffer, "read-from-minibuffer", ec.readFromMinibuffer, 1)
+	ec.defSubr7(&ec.s.readFromMinibuffer, "read-from-minibuffer", ec.readFromMinibuffer, 1)
 }

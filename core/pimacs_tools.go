@@ -2,7 +2,7 @@ package core
 
 func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
 	sym := xSymbol(symbol)
@@ -24,7 +24,7 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 
 func (ec *execContext) symbolsOfPimacsTools() {
 	ec.defVarLisp(
-		&ec.g.pimacsRepo,
+		&ec.s.pimacsRepo,
 		"pimacs-repo",
 		ec.makeString("https://github.com/federicotdn/pimacs"),
 	)

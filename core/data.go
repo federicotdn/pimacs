@@ -42,25 +42,25 @@ func (ec *execContext) bufferp(object lispObject) (lispObject, error) {
 
 func (ec *execContext) boundp(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 	val, err := ec.findSymbolValue(symbol)
 	if err != nil {
 		return nil, err
 	}
 
-	return ec.bool(val != ec.g.unbound)
+	return ec.bool(val != ec.s.unbound)
 }
 
 func (ec *execContext) fboundp(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 	return ec.bool(xSymbol(symbol).function != ec.nil_)
 }
 
 func (ec *execContext) makunbound(symbol lispObject) (lispObject, error) {
-	_, err := ec.set(symbol, ec.g.unbound)
+	_, err := ec.set(symbol, ec.s.unbound)
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +69,9 @@ func (ec *execContext) makunbound(symbol lispObject) (lispObject, error) {
 
 func (ec *execContext) fmakunbound(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
-	xSymbol(symbol).function = ec.g.unbound
+	xSymbol(symbol).function = ec.s.unbound
 	return symbol, nil
 }
 
@@ -81,7 +81,7 @@ func (ec *execContext) car(obj lispObject) (lispObject, error) {
 	}
 
 	if !consp(obj) {
-		return ec.wrongTypeArgument(ec.g.listp, obj)
+		return ec.wrongTypeArgument(ec.s.listp, obj)
 	}
 	return xCar(obj), nil
 }
@@ -92,14 +92,14 @@ func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
 	}
 
 	if !consp(obj) {
-		return ec.wrongTypeArgument(ec.g.listp, obj)
+		return ec.wrongTypeArgument(ec.s.listp, obj)
 	}
 	return xCdr(obj), nil
 }
 
 func (ec *execContext) setCar(obj, newCar lispObject) (lispObject, error) {
 	if !consp(obj) {
-		return ec.wrongTypeArgument(ec.g.consp, obj)
+		return ec.wrongTypeArgument(ec.s.consp, obj)
 	}
 	xSetCar(obj, newCar)
 	return newCar, nil
@@ -107,7 +107,7 @@ func (ec *execContext) setCar(obj, newCar lispObject) (lispObject, error) {
 
 func (ec *execContext) setCdr(obj, newCdr lispObject) (lispObject, error) {
 	if !consp(obj) {
-		return ec.wrongTypeArgument(ec.g.consp, obj)
+		return ec.wrongTypeArgument(ec.s.consp, obj)
 	}
 	xSetCdr(obj, newCdr)
 	return newCdr, nil
@@ -115,7 +115,7 @@ func (ec *execContext) setCdr(obj, newCdr lispObject) (lispObject, error) {
 
 func (ec *execContext) setInternal(symbol, newVal lispObject) error {
 	if !symbolp(symbol) {
-		return xErrOnly(ec.wrongTypeArgument(ec.g.symbolp, symbol))
+		return xErrOnly(ec.wrongTypeArgument(ec.s.symbolp, symbol))
 	}
 
 	sym := xSymbol(symbol)
@@ -137,11 +137,11 @@ func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
 
 func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 	if symbol == ec.nil_ && definition != ec.nil_ {
-		return ec.signalN(ec.g.settingConstant, symbol)
+		return ec.signalN(ec.s.settingConstant, symbol)
 	}
 
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
 	xSymbol(symbol).function = definition
@@ -150,7 +150,7 @@ func (ec *execContext) fset(symbol, definition lispObject) (lispObject, error) {
 
 func (ec *execContext) findSymbolValue(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
 	sym := xSymbol(symbol)
@@ -169,8 +169,8 @@ func (ec *execContext) symbolValue(symbol lispObject) (lispObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	if val == ec.g.unbound {
-		return ec.signalN(ec.g.voidVariable, symbol)
+	if val == ec.s.unbound {
+		return ec.signalN(ec.s.voidVariable, symbol)
 	}
 
 	return val, nil
@@ -178,7 +178,7 @@ func (ec *execContext) symbolValue(symbol lispObject) (lispObject, error) {
 
 func (ec *execContext) symbolFunction(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
 	return xSymbol(symbol).function, nil
@@ -194,7 +194,7 @@ func (ec *execContext) defalias(symbol, definition, docstring lispObject) (lispO
 
 func (ec *execContext) symbolPlist(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
 	return xSymbol(symbol).plist, nil
@@ -202,7 +202,7 @@ func (ec *execContext) symbolPlist(symbol lispObject) (lispObject, error) {
 
 func (ec *execContext) symbolName(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
-		return ec.wrongTypeArgument(ec.g.symbolp, symbol)
+		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
 	return ec.makeString(xSymbol(symbol).name), nil
@@ -212,7 +212,7 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 	var total lispInt = 0
 	for _, obj := range objs {
 		if !numberp(obj) {
-			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, obj)
+			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, obj)
 		}
 		total += xIntegerValue(obj)
 	}
@@ -223,9 +223,9 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
 	for i := 1; i < len(objs); i++ {
 		if !numberp(objs[i-1]) {
-			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, objs[i-1])
+			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, objs[i-1])
 		} else if !numberp(objs[i]) {
-			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, objs[i])
+			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, objs[i])
 		}
 
 		if xIntegerValue(objs[i-1]) >= xIntegerValue(objs[i]) {
@@ -238,15 +238,15 @@ func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
 
 func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(nil, "null", ec.null, 1)
-	ec.defSubr1(&ec.g.sequencep, "sequencep", ec.sequencep, 1)
-	ec.defSubr1(&ec.g.consp, "consp", ec.consp, 1)
-	ec.defSubr1(&ec.g.listp, "listp", ec.listp, 1)
-	ec.defSubr1(&ec.g.symbolp, "symbolp", ec.symbolp, 1)
-	ec.defSubr1(&ec.g.stringp, "stringp", ec.stringp, 1)
-	ec.defSubr1(&ec.g.numberOrMarkerp, "number-or-marker-p", ec.numberOrMarkerp, 1)
-	ec.defSubr1(&ec.g.charOrStringp, "char-or-string-p", ec.charOrStringp, 1)
-	ec.defSubr1(&ec.g.integerp, "integerp", ec.numberOrMarkerp, 1)
-	ec.defSubr1(&ec.g.bufferp, "bufferp", ec.bufferp, 1)
+	ec.defSubr1(&ec.s.sequencep, "sequencep", ec.sequencep, 1)
+	ec.defSubr1(&ec.s.consp, "consp", ec.consp, 1)
+	ec.defSubr1(&ec.s.listp, "listp", ec.listp, 1)
+	ec.defSubr1(&ec.s.symbolp, "symbolp", ec.symbolp, 1)
+	ec.defSubr1(&ec.s.stringp, "stringp", ec.stringp, 1)
+	ec.defSubr1(&ec.s.numberOrMarkerp, "number-or-marker-p", ec.numberOrMarkerp, 1)
+	ec.defSubr1(&ec.s.charOrStringp, "char-or-string-p", ec.charOrStringp, 1)
+	ec.defSubr1(&ec.s.integerp, "integerp", ec.numberOrMarkerp, 1)
+	ec.defSubr1(&ec.s.bufferp, "bufferp", ec.bufferp, 1)
 	ec.defSubr1(nil, "boundp", ec.boundp, 1)
 	ec.defSubr1(nil, "fboundp", ec.fboundp, 1)
 	ec.defSubr1(nil, "makunbound", ec.makunbound, 1)

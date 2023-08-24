@@ -10,13 +10,13 @@ func (ec *execContext) printString(str string, printCharFn lispObject) error {
 		return err
 	}
 
-	if ec.g.nonInteractive.val && printCharFn == ec.t {
+	if ec.s.nonInteractive.val && printCharFn == ec.t {
 		fmt.Printf("%v", str)
 		return nil
 	}
 
 	if printCharFn == ec.t {
-		return xErrOnly(ec.pimacsUnimplemented(ec.g.prin1, "unknown print char function"))
+		return xErrOnly(ec.pimacsUnimplemented(ec.s.prin1, "unknown print char function"))
 	}
 
 	_, err := ec.funcall(printCharFn, ec.makeString(str))
@@ -104,7 +104,7 @@ func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, erro
 
 func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, newlines bool) (lispObject, error) {
 	if printCharFn == ec.nil_ {
-		printCharFn = ec.g.standardOutput.val
+		printCharFn = ec.s.standardOutput.val
 	}
 
 	if printCharFn == ec.nil_ {
@@ -157,9 +157,9 @@ func (ec *execContext) princ(obj, printCharFn lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfPrint() {
-	ec.defVarLisp(&ec.g.standardOutput, "standard-output", ec.t)
+	ec.defVarLisp(&ec.s.standardOutput, "standard-output", ec.t)
 
-	ec.defSubr2(&ec.g.prin1, "prin1", ec.prin1, 1)
+	ec.defSubr2(&ec.s.prin1, "prin1", ec.prin1, 1)
 	ec.defSubr2(nil, "print", ec.print_, 1)
 	ec.defSubr2(nil, "princ", ec.princ, 1)
 	ec.defSubr2(nil, "prin1-to-string", ec.prin1ToString, 1)

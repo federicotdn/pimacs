@@ -33,7 +33,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 		}
 	default:
 		if obj != ec.nil_ {
-			return ec.wrongTypeArgument(ec.g.sequencep, obj)
+			return ec.wrongTypeArgument(ec.s.sequencep, obj)
 		}
 	}
 
@@ -149,7 +149,7 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 			return ec.false_()
 		}
 
-		return ec.pimacsUnimplemented(ec.g.equal, "unknown vector-like type: '%v'", vec1.vecType)
+		return ec.pimacsUnimplemented(ec.s.equal, "unknown vector-like type: '%v'", vec1.vecType)
 	}
 
 	return ec.false_()
@@ -162,7 +162,7 @@ func (ec *execContext) plistp(object lispObject) (lispObject, error) {
 func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error) {
 	prev := ec.nil_
 	tail := plist
-	iter := ec.iterate(tail).withPredicate(ec.g.plistp)
+	iter := ec.iterate(tail).withPredicate(ec.s.plistp)
 
 	for ; iter.hasNext(); tail = iter.next() {
 		if !consp(xCdr(tail)) {
@@ -257,7 +257,7 @@ func (ec *execContext) nconc(args ...lispObject) (lispObject, error) {
 		}
 
 		if !consp(tem) {
-			return ec.wrongTypeArgument(ec.g.consp, tem)
+			return ec.wrongTypeArgument(ec.s.consp, tem)
 		}
 
 		var tail lispObject
@@ -281,13 +281,13 @@ func (ec *execContext) nconc(args ...lispObject) (lispObject, error) {
 
 func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr1(nil, "length", ec.length, 1)
-	ec.defSubr2(&ec.g.equal, "equal", ec.equal, 2)
+	ec.defSubr2(&ec.s.equal, "equal", ec.equal, 2)
 	ec.defSubr2(nil, "assq", ec.assq, 2)
 	ec.defSubr3(nil, "assoc", ec.assoc, 2)
 	ec.defSubr2(nil, "memq", ec.memq, 2)
 	ec.defSubr2(nil, "get", ec.get, 2)
 	ec.defSubr3(nil, "put", ec.put, 3)
-	ec.defSubr1(&ec.g.plistp, "plistp", ec.plistp, 1)
+	ec.defSubr1(&ec.s.plistp, "plistp", ec.plistp, 1)
 	ec.defSubr2(nil, "plist-get", ec.plistGet, 2)
 	ec.defSubr3(nil, "plist-put", ec.plistPut, 3)
 	ec.defSubrM(nil, "nconc", ec.nconc, 0)

@@ -72,7 +72,7 @@ type symbols struct {
 }
 
 func (ec *execContext) initSymbols() {
-	g := &ec.g
+	g := &ec.s
 
 	// Set up nil and unbound first so that we can use
 	// ec.makeSymbol()
@@ -95,14 +95,14 @@ func (ec *execContext) initSymbols() {
 	t := ec.defSym(&g.t, "t")
 	t.value = t
 	g.t = t
-	ec.t = ec.g.t // Convenience accessor
+	ec.t = ec.s.t // Convenience accessor
 
 	// Set up other essential symbols
-	ec.defSym(&ec.g.emptySymbol, "")
+	ec.defSym(&ec.s.emptySymbol, "")
 }
 
 func (ec *execContext) checkSymbolValues() {
-	v := reflect.ValueOf(ec.g)
+	v := reflect.ValueOf(ec.s)
 
 	for i := 0; i < v.NumField(); i++ {
 		// field := v.Field(i)
