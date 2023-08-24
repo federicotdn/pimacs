@@ -622,6 +622,5 @@ func (ec *execContext) stub(name string) (lispObject, error) {
 }
 
 func (ec *execContext) terminate(format string, v ...interface{}) {
-	// TAGS: incomplete
 	terminate(format, v...)
 }

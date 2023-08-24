@@ -174,7 +174,6 @@ func characterp(obj lispObject) bool {
 }
 
 func arrayp(obj lispObject) bool {
-	// TAGS: incomplete
 	return vectorLikep(obj, vectorLikeTypeNormal) || stringp(obj)
 }
 

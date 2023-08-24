@@ -5,7 +5,6 @@ import (
 )
 
 func (ec *execContext) printString(str string, printCharFn lispObject) error {
-	// TAGS: incomplete,revise
 	if printCharFn == ec.nil_ {
 		_, err := ec.insert(ec.makeString(str))
 		return err
@@ -25,7 +24,6 @@ func (ec *execContext) printString(str string, printCharFn lispObject) error {
 }
 
 func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag bool) error {
-	// TAGS: incomplete
 	lispType := obj.getType()
 	var s string
 
@@ -91,8 +89,6 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 }
 
 func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
-	// TAGS: revise
-
 	// Should this buffer be created via get-buffer-create?
 	// Needs to be hidden from buffer list though
 	buf := ec.createBuffer(" prin1")
@@ -107,7 +103,6 @@ func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, erro
 }
 
 func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, newlines bool) (lispObject, error) {
-	// TAGS: incomplete
 	if printCharFn == ec.nil_ {
 		printCharFn = ec.g.standardOutput.val
 	}

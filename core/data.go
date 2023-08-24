@@ -189,7 +189,6 @@ func (ec *execContext) eq(obj1, obj2 lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) defalias(symbol, definition, docstring lispObject) (lispObject, error) {
-	// TAGS: incomplete
 	return ec.fset(symbol, definition)
 }
 
@@ -210,7 +209,6 @@ func (ec *execContext) symbolName(symbol lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
-	// TAGS: incomplete
 	var total lispInt = 0
 	for _, obj := range objs {
 		if !numberp(obj) {
@@ -223,7 +221,6 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
-	// TAGS: incomplete
 	for i := 1; i < len(objs); i++ {
 		if !numberp(objs[i-1]) {
 			return ec.wrongTypeArgument(ec.g.numberOrMarkerp, objs[i-1])

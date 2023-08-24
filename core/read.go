@@ -168,7 +168,6 @@ func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 }
 
 func (ec *execContext) readEscape(ctx readContext, stringp bool) (rune, error) {
-	// TAGS: incomplete
 	c := ctx.read()
 	if c == eofRune {
 		return 0, xErrOnly(ec.signalN(ec.g.endOfFile))
@@ -304,7 +303,6 @@ func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
 }
 
 func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
-	// TAGS: incomplete
 	quoted := false
 	builder := strings.Builder{}
 
@@ -341,7 +339,6 @@ func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
 }
 
 func (ec *execContext) read0(ctx readContext) (lispObject, error) {
-	// TAGS: incomplete
 	stack := readStack{}
 	var obj lispObject
 	var err error

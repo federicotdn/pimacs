@@ -434,7 +434,6 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) {
-	// TAGS: incomplete
 	buf := make([]byte, 4096)
 	n := runtime.Stack(buf, false)
 
@@ -463,7 +462,6 @@ func (ec *execContext) quote(args lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) backquote(args lispObject) (lispObject, error) {
-	// TAGS: stub
 	return ec.nil_, nil
 }
 
@@ -692,7 +690,6 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
-	// TAGS: incomplete
 	var err error
 
 	if symbolp(form) {

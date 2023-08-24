@@ -1,7 +1,6 @@
 package core
 
 func (ec *execContext) insert(args ...lispObject) (lispObject, error) {
-	// TAGS: revise
 	for _, arg := range args {
 		if characterp(arg) {
 			ec.currentBuf.contents += string(xIntegerRune(arg))
@@ -35,7 +34,6 @@ func (ec *execContext) setBufferIfLive(obj lispObject) {
 }
 
 func (ec *execContext) setBufferInternal(buf *buffer) {
-	// TAGS: incomplete
 	ec.currentBuf = buf
 }
 

@@ -102,11 +102,16 @@ func (ec *execContext) initSymbols() {
 }
 
 func (ec *execContext) checkSymbolValues() {
+	// TODO fix
 	v := reflect.ValueOf(ec.g)
 
 	for i := 0; i < v.NumField(); i++ {
-		if v.Field(i).CanInterface() && v.Field(i).IsNil() {
-			ec.terminate("initialization error: lispGlobals field not set: '%+v'", v.Type().Field(i).Name)
+		if v.Field(i).CanInterface() {
+			if v.Field(i).IsNil() {
+				ec.terminate("initialization error: lispGlobals field not set: '%+v'", v.Type().Field(i).Name)
+			}
+		} else {
+			
 		}
 	}
 }

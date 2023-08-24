@@ -20,7 +20,6 @@ func (ec *execContext) listLength(obj lispObject) (int, error) {
 }
 
 func (ec *execContext) length(obj lispObject) (lispObject, error) {
-	// TAGS: incomplete
 	num := 0
 
 	switch obj.getType() {
@@ -59,7 +58,6 @@ func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) assoc(key, alist, testFn lispObject) (lispObject, error) {
-	// TAGS: incomplete
 	iter := ec.iterate(alist)
 	for ; iter.hasNext(); alist = iter.next() {
 		element := xCar(alist)
@@ -99,7 +97,6 @@ func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
-	// TAGS: incomplete
 	if o1 == o2 {
 		return ec.true_()
 	}
@@ -159,7 +156,6 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) plistp(object lispObject) (lispObject, error) {
-	// TAGS: stub
 	return ec.nil_, nil
 }
 
