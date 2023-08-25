@@ -31,6 +31,7 @@ type symbols struct {
 	setq               lispObject
 	prin1              lispObject
 	readFromMinibuffer lispObject
+	recursiveEdit      lispObject
 
 	// Errors
 	error_                 lispObject

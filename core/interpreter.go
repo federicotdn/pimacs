@@ -2,14 +2,10 @@ package core
 
 import (
 	"fmt"
+	"github.com/federicotdn/pimacs/proto"
 )
 
-type Interpreter interface {
-	ReadPrin1(source string) (string, error)
-	ReadEvalPrin1(source string) (string, error)
-}
-
-type interpreter struct {
+type Interpreter struct {
 	ec *execContext
 }
 
@@ -17,13 +13,30 @@ func terminate(format string, v ...interface{}) {
 	panic(fmt.Sprintf(format, v...))
 }
 
-func NewInterpreter() Interpreter {
-	return &interpreter{
+func NewInterpreter() *Interpreter {
+	return &Interpreter{
 		ec: newExecContext(),
 	}
 }
 
-func (inp *interpreter) ReadPrin1(source string) (string, error) {
+func (inp *Interpreter) InputEventsChan() chan<- proto.InputEvent {
+	return inp.ec.events
+}
+
+func (inp *Interpreter) DrawOpsChan() <-chan proto.DrawOp {
+	return inp.ec.ops
+}
+
+func (inp *Interpreter) Done() <-chan bool {
+	return inp.ec.done
+}
+
+func (inp *Interpreter) RecursiveEdit() {
+	xEnsure(inp.ec.recursiveEdit())
+	inp.ec.done <- true
+}
+
+func (inp *Interpreter) ReadPrin1(source string) (string, error) {
 	str := inp.ec.makeString(source)
 	result, err := inp.ec.readFromString(str, inp.ec.nil_, inp.ec.nil_)
 	if err != nil {
@@ -38,7 +51,7 @@ func (inp *interpreter) ReadPrin1(source string) (string, error) {
 	return xString(printed).value, nil
 }
 
-func (inp *interpreter) ReadEvalPrin1(source string) (string, error) {
+func (inp *Interpreter) ReadEvalPrin1(source string) (string, error) {
 	str := inp.ec.makeString(source)
 	obj, err := inp.ec.readFromString(str, inp.ec.nil_, inp.ec.nil_)
 	if err != nil {

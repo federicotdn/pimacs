@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"github.com/federicotdn/pimacs/proto"
 	"os"
 )
 
@@ -39,6 +40,10 @@ type execContext struct {
 	currentBuf *buffer
 	buffers    lispObject
 	stubs      *emacsStubs
+
+	events chan proto.InputEvent
+	ops    chan proto.DrawOp
+	done   chan bool
 
 	errorOnVarRedefine bool
 }
@@ -411,6 +416,9 @@ func newExecContext() *execContext {
 		obarray:            make(map[string]*lispSymbol),
 		stack:              []stackEntry{},
 		errorOnVarRedefine: true,
+		events:             make(chan proto.InputEvent),
+		ops:                make(chan proto.DrawOp),
+		done:               make(chan bool),
 	}
 
 	ec.initSymbols()          // symbols.go
@@ -424,6 +432,7 @@ func newExecContext() *execContext {
 	ec.symbolsOfBuffer()      // buffer.go
 	ec.symbolsOfMinibuffer()  // minibuffer.go
 	ec.symbolsOfCallProc()    // callproc.go
+	ec.symbolsOfKeyboard()    // keyboard.go
 	ec.symbolsOfPimacsTools() // pimacs_tools.go
 
 	ec.defVarBool(&ec.v.nonInteractive, "noninteractive", true)

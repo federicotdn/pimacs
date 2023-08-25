@@ -12,6 +12,9 @@ clean:
 fmt:
 	gofmt -s -w -l .
 
+checkfmt:
+	test -z "$$(gofmt -l .)"
+
 run: build
 	./pimacs
 

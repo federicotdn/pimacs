@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/federicotdn/pimacs/core"
+	"github.com/federicotdn/pimacs/ui/tui"
 	"os"
 	"strings"
 )
@@ -69,11 +70,15 @@ func main() {
 	const usage = "load Emacs Lisp FILE using the load function"
 
 	var filename string
+	var useTui bool
 	flag.StringVar(&filename, "load", "", usage)
 	flag.StringVar(&filename, "l", "", usage+" (shorthand)")
+	flag.BoolVar(&useTui, "tui", false, "start Pimacs in TUI mode")
 	flag.Parse()
 
-	if filename != "" {
+	if useTui {
+		tui.Run()
+	} else if filename != "" {
 		load(filename)
 	} else {
 		repl()

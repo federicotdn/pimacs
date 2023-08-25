@@ -24,7 +24,7 @@
     (princ msg t)
     nil))
 
-(if (null pimacs-testing)
-    (pimacs-greet))
+;; (if (null pimacs-testing)
+;;     (pimacs-greet))
 
 ;;; pimacs.el ends here
