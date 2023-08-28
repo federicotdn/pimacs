@@ -1,15 +1,16 @@
 package proto
 
-type inputEventType int
-type drawOpType int
-
 type InputEvent interface{}
 
 type InputEventKey struct {
 	// TODO: This is too tightly coupled with tcell
 	Rune rune
-	Key  int16
-	Mod  int16
+	Key  Key
+	Mod  ModMask
+}
+
+func (ev *InputEventKey) HasMod(m ModMask) bool {
+	return (ev.Mod & m) != 0
 }
 
 type DrawOp interface{}

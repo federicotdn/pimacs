@@ -11,12 +11,12 @@ loop:
 		rawEv := <-ec.events
 		switch ev := rawEv.(type) {
 		case *proto.InputEventKey:
-			if ev.Key == 3 || ev.Key == 27 { // ctrl-c or ESC
+			if ev.Key == proto.KeyCtrlC || ev.Key == proto.KeyEscape {
 				ec.ops <- &proto.DrawOpSpecial{Terminate: true}
 				break loop
 			}
 
-			if ev.Key == 13 { // enter
+			if ev.Key == proto.KeyEnter {
 				str := ec.makeString(source)
 				source = ""
 				obj, err := ec.readFromString(str, ec.nil_, ec.nil_)

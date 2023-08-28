@@ -33,7 +33,11 @@ loop:
 			switch ev := event.(type) {
 			case *tcell.EventKey:
 				mod, key, ch := ev.Modifiers(), ev.Key(), ev.Rune()
-				inputEventsChan <- &proto.InputEventKey{Rune: ch, Key: int16(key), Mod: int16(mod)}
+				inputEventsChan <- &proto.InputEventKey{
+					Rune: ch,
+					Key:  proto.Key(key),
+					Mod:  proto.ModMask(mod),
+				}
 			}
 		case rawOp := <-drawOpsChan:
 			switch op := rawOp.(type) {
