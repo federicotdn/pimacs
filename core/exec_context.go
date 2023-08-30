@@ -417,9 +417,9 @@ func newExecContext() *execContext {
 		stack:              []stackEntry{},
 		errorOnVarRedefine: true,
 		// TODO: Move '10' to config value
-		events:             make(chan proto.InputEvent, 10),
-		ops:                make(chan proto.DrawOp, 10),
-		done:               make(chan bool),
+		events: make(chan proto.InputEvent, 10),
+		ops:    make(chan proto.DrawOp, 10),
+		done:   make(chan bool),
 	}
 
 	ec.initSymbols()          // symbols.go
