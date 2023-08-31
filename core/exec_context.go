@@ -258,11 +258,11 @@ func (li *listIter) checkTailType() {
 	if !consp(li.tail) && li.tail != li.ec.nil_ {
 		// List does not end with nil.
 		// Signal using list start, not tail!
-		li.err = xErrOnly(li.ec.wrongTypeArgument(li.ec.s.listp, li.head()))
+		li.err = xErrOnly(li.ec.wrongTypeArgument(li.predicate, li.listHead))
 	}
 }
 
-func (li *listIter) next() lispObject {
+func (li *listIter) nextCons() lispObject {
 	// TODO: incomplete
 	// Need cycle detection still.
 	li.tail = xCdr(li.tail)
@@ -270,10 +270,6 @@ func (li *listIter) next() lispObject {
 	li.checkTailType()
 
 	return li.tail
-}
-
-func (li *listIter) head() lispObject {
-	return li.listHead
 }
 
 func (li *listIter) hasError() bool {
@@ -481,7 +477,7 @@ func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
 	result := []lispObject{}
 
 	iter := ec.iterate(list)
-	for ; iter.hasNext(); list = iter.next() {
+	for ; iter.hasNext(); list = iter.nextCons() {
 		result = append(result, xCar(list))
 	}
 

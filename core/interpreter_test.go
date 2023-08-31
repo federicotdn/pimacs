@@ -227,6 +227,7 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(plist-put '(a 1 b 2) 'a 3)", "(a 3 b 2)", nil},
 		{"(plist-put '(a 1 b 2) 'c 3)", "(a 1 b 2 c 3)", nil},
 		{"(plist-put nil 'c 3)", "(c 3)", nil},
+		//{"(plist-put (cons 1 2) :a 1)", "", anyError},
 		{"(condition-case nil 42)", "42", nil},
 		{"(condition-case foo 42)", "42", nil},
 		{"(condition-case nil (signal 'user-error nil))", "", anyError},

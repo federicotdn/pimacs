@@ -759,7 +759,7 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 	iter := ec.iterate(loadPath)
 	var f *os.File
 
-	for ; iter.hasNext(); loadPath = iter.next() {
+	for ; iter.hasNext(); loadPath = iter.nextCons() {
 		loadPath = xCar(loadPath)
 
 		if !stringp(loadPath) {

@@ -156,7 +156,7 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 	i := 0
 
 	iter := ec.iterate(symsLeft)
-	for ; iter.hasNext(); symsLeft = iter.next() {
+	for ; iter.hasNext(); symsLeft = iter.nextCons() {
 		next := xCar(symsLeft)
 
 		if !symbolp(next) {
@@ -322,7 +322,7 @@ func (ec *execContext) clauseHandlesConditions(clause, errConditions lispObject)
 	}
 
 	iter := ec.iterate(clauseConditions)
-	for ; iter.hasNext(); clauseConditions = iter.next() {
+	for ; iter.hasNext(); clauseConditions = iter.nextCons() {
 		condName := xCar(clauseConditions)
 		found, err := ec.memq(condName, errConditions)
 		if err != nil {
@@ -353,7 +353,7 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	}
 
 	iter := ec.iterate(handlers)
-	for ; iter.hasNext(); handlers = iter.next() {
+	for ; iter.hasNext(); handlers = iter.nextCons() {
 		tem := xCar(handlers)
 		clauses = append(clauses, tem)
 
@@ -512,7 +512,7 @@ func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	val := ec.nil_
 
 	iter := ec.iterate(body)
-	for ; iter.hasNext(); body = iter.next() {
+	for ; iter.hasNext(); body = iter.nextCons() {
 		var err error
 
 		form := xCar(body)

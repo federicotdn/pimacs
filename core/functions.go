@@ -8,7 +8,7 @@ func (ec *execContext) listLength(obj lispObject) (int, error) {
 	num := 0
 
 	iter := ec.iterate(obj)
-	for ; iter.hasNext(); obj = iter.next() {
+	for ; iter.hasNext(); obj = iter.nextCons() {
 		num += 1
 	}
 
@@ -42,7 +42,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 	iter := ec.iterate(alist)
-	for ; iter.hasNext(); alist = iter.next() {
+	for ; iter.hasNext(); alist = iter.nextCons() {
 		element := xCar(alist)
 
 		if consp(element) && xCar(element) == key {
@@ -59,7 +59,7 @@ func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {
 
 func (ec *execContext) assoc(key, alist, testFn lispObject) (lispObject, error) {
 	iter := ec.iterate(alist)
-	for ; iter.hasNext(); alist = iter.next() {
+	for ; iter.hasNext(); alist = iter.nextCons() {
 		element := xCar(alist)
 
 		if consp(element) {
@@ -83,7 +83,7 @@ func (ec *execContext) assoc(key, alist, testFn lispObject) (lispObject, error) 
 
 func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
 	iter := ec.iterate(list)
-	for ; iter.hasNext(); list = iter.next() {
+	for ; iter.hasNext(); list = iter.nextCons() {
 		if xCar(list) == elt {
 			return list, nil
 		}
@@ -109,7 +109,7 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 	switch t1 {
 	case lispTypeCons:
 		iter := ec.iterate(o1)
-		for ; iter.hasNext(); o1 = iter.next() {
+		for ; iter.hasNext(); o1 = iter.nextCons() {
 			if !consp(o2) {
 				return ec.false_()
 			}
@@ -157,7 +157,7 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 	tail := plist
 	iter := ec.iterate(tail).withPredicate(ec.s.plistp)
 
-	for ; iter.hasNext(); tail = iter.next() {
+	for ; iter.hasNext(); tail = iter.nextCons() {
 		if !consp(xCdr(tail)) {
 			break
 		}
@@ -194,7 +194,7 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 func (ec *execContext) plistGet(plist, prop lispObject) (lispObject, error) {
 	iter := ec.iterate(plist)
 
-	for ; iter.hasNext(); plist = iter.next() {
+	for ; iter.hasNext(); plist = iter.nextCons() {
 		if !consp(xCdr(plist)) {
 			break
 		}
@@ -203,7 +203,7 @@ func (ec *execContext) plistGet(plist, prop lispObject) (lispObject, error) {
 			return xCar(xCdr(plist)), nil
 		}
 
-		plist = iter.next()
+		plist = iter.nextCons()
 	}
 
 	return ec.nil_, nil
