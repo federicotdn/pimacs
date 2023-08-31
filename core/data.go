@@ -44,6 +44,10 @@ func (ec *execContext) vectorp(object lispObject) (lispObject, error) {
 	return ec.bool(vectorp(object))
 }
 
+func (ec *execContext) charTablep(object lispObject) (lispObject, error) {
+	return ec.bool(chartablep(object))
+}
+
 func (ec *execContext) boundp(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
 		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
@@ -241,6 +245,8 @@ func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfData() {
+	ec.defSym(&ec.s.wholeNump, "wholenump")
+
 	ec.defSubr1(nil, "null", ec.null, 1)
 	ec.defSubr1(&ec.s.sequencep, "sequencep", ec.sequencep, 1)
 	ec.defSubr1(&ec.s.consp, "consp", ec.consp, 1)
@@ -251,6 +257,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.s.charOrStringp, "char-or-string-p", ec.charOrStringp, 1)
 	ec.defSubr1(&ec.s.integerp, "integerp", ec.numberOrMarkerp, 1)
 	ec.defSubr1(&ec.s.bufferp, "bufferp", ec.bufferp, 1)
+	ec.defSubr1(&ec.s.charTablep, "char-table-p", ec.charTablep, 1)
 	ec.defSubr1(nil, "vectorp", ec.vectorp, 1)
 	ec.defSubr1(nil, "boundp", ec.boundp, 1)
 	ec.defSubr1(nil, "fboundp", ec.fboundp, 1)

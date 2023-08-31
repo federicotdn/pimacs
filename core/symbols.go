@@ -32,6 +32,7 @@ type symbols struct {
 	prin1              lispObject
 	readFromMinibuffer lispObject
 	recursiveEdit      lispObject
+	charTablep         lispObject
 
 	// Errors
 	error_                 lispObject
@@ -53,14 +54,16 @@ type symbols struct {
 	fileMissing            lispObject
 
 	// Misc. symbols
-	errorConditions lispObject
-	errorMessage    lispObject
-	lambda          lispObject
-	closure         lispObject
-	macro           lispObject
-	andRest         lispObject
-	andOptional     lispObject
-	readChar        lispObject
+	errorConditions     lispObject
+	errorMessage        lispObject
+	lambda              lispObject
+	closure             lispObject
+	macro               lispObject
+	andRest             lispObject
+	andOptional         lispObject
+	readChar            lispObject
+	charTableExtraSlots lispObject
+	wholeNump           lispObject
 }
 
 type vars struct {

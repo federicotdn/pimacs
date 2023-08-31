@@ -13,6 +13,7 @@ A partial, experimental implementation of an Elisp (Emacs Lisp) interpreter, wri
 - Learn about Lisp interpreter design in general.
 - Practice reading C code.
 - Learn about lower level functions such as `setjmp`, `longjmp`, etc.
+- Learn about the general challenges found when creating a text editor.
 
 ## Usage
 Assuming you have the Go compiler installed, simply use `make build` to compile Pimacs, and then `./pimacs` to start the REPL.
@@ -54,6 +55,14 @@ Try out a non-local exit:
 ```elisp
 > (catch 'test (throw 'test 123))
 123
+```
+
+Create a vector of integers:
+```elisp
+> (set 'vec [1 2 3 4])
+[1 2 3 4]
+> (vectorp vec)
+t
 ```
 
 ## Design and general notes

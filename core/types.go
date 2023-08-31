@@ -16,6 +16,7 @@ const (
 	lispTypeVector
 	lispTypeSubroutine
 	lispTypeBuffer
+	lispTypeCharTable
 	argsMany      = -1
 	argsUnevalled = -2
 )
@@ -105,6 +106,20 @@ type lispBuffer struct {
 	name     string
 }
 
+type lispCharTableEntry struct {
+	start lispInt
+	end   lispInt
+	val   lispObject
+}
+
+type lispCharTable struct {
+	val        []lispCharTableEntry
+	subtype    *lispSymbol
+	parent     *lispCharTable
+	defaultVal lispObject
+	extraSlots lispInt
+}
+
 func (s *lispSubroutine) setAttrs(noReturn bool) {
 	s.noReturn = noReturn
 }
@@ -170,4 +185,8 @@ func (ls *lispSubroutine) getType() lispType {
 
 func (ls *lispBuffer) getType() lispType {
 	return lispTypeBuffer
+}
+
+func (ct *lispCharTable) getType() lispType {
+	return lispTypeCharTable
 }

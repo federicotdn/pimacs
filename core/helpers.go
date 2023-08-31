@@ -101,6 +101,16 @@ func xBuffer(obj lispObject) *lispBuffer {
 	return xCast[*lispBuffer](obj, "buffer")
 }
 
+// Char Table helpers //
+
+func chartablep(obj lispObject) bool {
+	return obj.getType() == lispTypeCharTable
+}
+
+func xCharTable(obj lispObject) *lispCharTable {
+	return xCast[*lispCharTable](obj, "character table")
+}
+
 // String helpers //
 
 func stringp(obj lispObject) bool {
@@ -164,6 +174,10 @@ func characterp(obj lispObject) bool {
 func arrayp(obj lispObject) bool {
 	// TODO: Add more types
 	return vectorp(obj) || stringp(obj)
+}
+
+func naturalp(obj lispObject) bool {
+	return integerp(obj) && xIntegerValue(obj) >= 0
 }
 
 // Debug utilities //

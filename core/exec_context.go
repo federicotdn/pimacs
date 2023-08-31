@@ -410,19 +410,20 @@ func newExecContext() *execContext {
 		done:   make(chan bool),
 	}
 
-	ec.initSymbols()          // symbols.go
-	ec.symbolsOfErrors()      // errors.gmo
-	ec.symbolsOfRead()        // read.go
-	ec.symbolsOfEval()        // eval.go
-	ec.symbolsOfPrint()       // print.go
-	ec.symbolsOfData()        // data.go
-	ec.symbolsOfAllocation()  // allocation.go
-	ec.symbolsOfFunctions()   // functions.go
-	ec.symbolsOfBuffer()      // buffer.go
-	ec.symbolsOfMinibuffer()  // minibuffer.go
-	ec.symbolsOfCallProc()    // callproc.go
-	ec.symbolsOfKeyboard()    // keyboard.go
-	ec.symbolsOfPimacsTools() // pimacs_tools.go
+	ec.initSymbols()             // symbols.go
+	ec.symbolsOfErrors()         // errors.gmo
+	ec.symbolsOfRead()           // read.go
+	ec.symbolsOfEval()           // eval.go
+	ec.symbolsOfPrint()          // print.go
+	ec.symbolsOfData()           // data.go
+	ec.symbolsOfAllocation()     // allocation.go
+	ec.symbolsOfFunctions()      // functions.go
+	ec.symbolsOfBuffer()         // buffer.go
+	ec.symbolsOfMinibuffer()     // minibuffer.go
+	ec.symbolsOfCallProc()       // callproc.go
+	ec.symbolsOfKeyboard()       // keyboard.go
+	ec.symbolsOfCharacterTable() // character_table.go
+	ec.symbolsOfPimacsTools()    // pimacs_tools.go
 
 	ec.defVarBool(&ec.v.nonInteractive, "noninteractive", true)
 
