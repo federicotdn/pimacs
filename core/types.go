@@ -88,6 +88,7 @@ type lispString struct {
 }
 
 type lispVector struct {
+	val []lispObject
 }
 
 type lispSubroutine struct {

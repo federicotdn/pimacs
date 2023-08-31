@@ -16,6 +16,7 @@ const (
 	readStackList
 	readStackListDot
 	readStackSpecial
+	readStackVector
 )
 
 type readContext interface {
@@ -41,6 +42,7 @@ type readStackElem struct {
 	special     lispObject
 	listHead    lispObject
 	listTail    lispObject
+	elems       []lispObject
 }
 
 type readStack struct {
@@ -355,7 +357,8 @@ read_obj:
 		stack.push(readStackElem{elementType: readStackListStart})
 		goto read_obj
 	case c == '[':
-		return ec.pimacsUnimplemented(ec.s.read, "unknown token: '['")
+		stack.push(readStackElem{elementType: readStackVector})
+		goto read_obj
 	case c == ')':
 		if stack.isEmpty() {
 			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString(")"))
@@ -371,7 +374,15 @@ read_obj:
 			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString(")"))
 		}
 	case c == ']':
-		return ec.pimacsUnimplemented(ec.s.read, "unknown token: ']'")
+		if stack.isEmpty() {
+			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("]"))
+		}
+		switch stack.peek().elementType {
+		case readStackVector:
+			obj = newVector(stack.pop().elems)
+		default:
+			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("]"))
+		}
 	case c == '#':
 		c = ctx.read()
 
@@ -476,7 +487,9 @@ read_obj:
 
 			xSetCdr(top.listTail, obj)
 			obj = top.listHead
-
+		case readStackVector:
+			top.elems = append(top.elems, obj)
+			goto read_obj
 		case readStackSpecial:
 			stack.pop()
 			obj = ec.makeList(top.special, obj)

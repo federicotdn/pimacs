@@ -91,6 +91,27 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		return ec.printString(")", printCharFn)
 	case lispTypeFloat:
 		s = fmt.Sprint(xFloat(obj).val)
+	case lispTypeVector:
+		err := ec.printString("[", printCharFn)
+		if err != nil {
+			return err
+		}
+
+		vec := xVector(obj)
+		for i, obj := range vec.val {
+			err = ec.printInternal(obj, printCharFn, escapeFlag)
+			if err != nil {
+				return err
+			}
+
+			if i < len(vec.val)-1 {
+				err := ec.printString(" ", printCharFn)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		ec.printString("]", printCharFn)
 	default:
 		s = fmt.Sprintf("#<INVALID DATATYPE '%+v'>", obj)
 	}
@@ -104,7 +125,7 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 }
 
 func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
-	// Should this buffer be created via get-buffer-create?
+	// TODO: Should this buffer be created via get-buffer-create?
 	// Needs to be hidden from buffer list though
 	bufObj := ec.makeBuffer(" prin1")
 

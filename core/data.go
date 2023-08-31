@@ -40,6 +40,10 @@ func (ec *execContext) bufferp(object lispObject) (lispObject, error) {
 	return ec.bool(bufferp(object))
 }
 
+func (ec *execContext) vectorp(object lispObject) (lispObject, error) {
+	return ec.bool(vectorp(object))
+}
+
 func (ec *execContext) boundp(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
 		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
@@ -247,6 +251,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.s.charOrStringp, "char-or-string-p", ec.charOrStringp, 1)
 	ec.defSubr1(&ec.s.integerp, "integerp", ec.numberOrMarkerp, 1)
 	ec.defSubr1(&ec.s.bufferp, "bufferp", ec.bufferp, 1)
+	ec.defSubr1(nil, "vectorp", ec.vectorp, 1)
 	ec.defSubr1(nil, "boundp", ec.boundp, 1)
 	ec.defSubr1(nil, "fboundp", ec.fboundp, 1)
 	ec.defSubr1(nil, "makunbound", ec.makunbound, 1)

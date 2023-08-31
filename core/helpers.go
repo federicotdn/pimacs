@@ -2,6 +2,8 @@ package core
 
 import "fmt"
 
+// General helpers //
+
 func xEnsure(obj lispObject, err error) lispObject {
 	if err != nil {
 		terminate("cannot return value due to error: '%+v'", err)
@@ -27,12 +29,20 @@ func xCast[T any](obj lispObject, typeName string) T {
 	return val
 }
 
+// Symbol helpers //
+
+func symbolp(obj lispObject) bool {
+	return obj.getType() == lispTypeSymbol
+}
+
 func xSymbol(obj lispObject) *lispSymbol {
 	return xCast[*lispSymbol](obj, "symbol")
 }
 
-func symbolp(obj lispObject) bool {
-	return obj.getType() == lispTypeSymbol
+// Cons helpers //
+
+func consp(obj lispObject) bool {
+	return obj.getType() == lispTypeCons
 }
 
 func xCons(obj lispObject) *lispCons {
@@ -57,32 +67,44 @@ func xSetCdr(cell, newCdr lispObject) lispObject {
 	return newCdr
 }
 
-func consp(obj lispObject) bool {
-	return obj.getType() == lispTypeCons
-}
+// Subroutine helpers //
 
 func subroutinep(obj lispObject) bool {
 	return obj.getType() == lispTypeSubroutine
-}
-
-func vectorp(obj lispObject) bool {
-	return obj.getType() == lispTypeVector
-}
-
-func bufferp(obj lispObject) bool {
-	return obj.getType() == lispTypeBuffer
 }
 
 func xSubroutine(obj lispObject) *lispSubroutine {
 	return xCast[*lispSubroutine](obj, "subroutine")
 }
 
+// Vector helpers //
+
+func vectorp(obj lispObject) bool {
+	return obj.getType() == lispTypeVector
+}
+
 func xVector(obj lispObject) *lispVector {
 	return xCast[*lispVector](obj, "vector")
 }
 
+func newVector(val []lispObject) *lispVector {
+	return &lispVector{val: val}
+}
+
+// Buffer helpers //
+
+func bufferp(obj lispObject) bool {
+	return obj.getType() == lispTypeBuffer
+}
+
 func xBuffer(obj lispObject) *lispBuffer {
 	return xCast[*lispBuffer](obj, "buffer")
+}
+
+// String helpers //
+
+func stringp(obj lispObject) bool {
+	return obj.getType() == lispTypeString
 }
 
 func xString(obj lispObject) *lispString {
@@ -97,8 +119,10 @@ func xStringChars(obj lispObject) int {
 	return len(xStringValue(obj))
 }
 
-func stringp(obj lispObject) bool {
-	return obj.getType() == lispTypeString
+// Integer helpers //
+
+func integerp(obj lispObject) bool {
+	return obj.getType() == lispTypeInteger
 }
 
 func xInteger(obj lispObject) *lispInteger {
@@ -113,8 +137,10 @@ func xIntegerRune(obj lispObject) rune {
 	return rune(xIntegerValue(obj))
 }
 
-func integerp(obj lispObject) bool {
-	return obj.getType() == lispTypeInteger
+// Float helpers //
+
+func floatp(obj lispObject) bool {
+	return obj.getType() == lispTypeFloat
 }
 
 func xFloat(obj lispObject) *lispFloat {
@@ -125,9 +151,7 @@ func xFloatValue(obj lispObject) lispFp {
 	return xFloat(obj).val
 }
 
-func floatp(obj lispObject) bool {
-	return obj.getType() == lispTypeFloat
-}
+// Cross-type helpers //
 
 func numberp(obj lispObject) bool {
 	return integerp(obj) || floatp(obj)
@@ -141,6 +165,8 @@ func arrayp(obj lispObject) bool {
 	// TODO: Add more types
 	return vectorp(obj) || stringp(obj)
 }
+
+// Debug utilities //
 
 func debugRepr(obj lispObject) string {
 	switch obj.getType() {

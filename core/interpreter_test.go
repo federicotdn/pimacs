@@ -146,6 +146,14 @@ func TestReadPrint(t *testing.T) {
 		{`"hello`, "", anyError},
 		{`"`, "", anyError},
 		{"\"hello \\\n", "", anyError},
+		{"[]", "[]", nil},
+		{"[1]", "[1]", nil},
+		{"[1 2]", "[1 2]", nil},
+		{"[1 2 ]", "[1 2]", nil},
+		{"[     1 2 ]", "[1 2]", nil},
+		{"[1 2 (+ 1 1)]", "[1 2 (+ 1 1)]", nil},
+		{"[", "", anyError},
+		{"]", "", anyError},
 	})
 }
 
@@ -286,5 +294,9 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(cons (let ((noninteractive nil)) noninteractive) noninteractive)", "(nil . t)", nil},
 		{`(progn (setq pimacs-repo "hello") pimacs-repo)`, `"hello"`, nil},
 		{"(plist-get (pimacs--symbol-debug 'pimacs-repo) :special)", "t", nil},
+		{"[1 2 3]", "[1 2 3]", nil},
+		{"[[[]]]", "[[[]]]", nil},
+		{"[1 2 (+ 1 1)]", "[1 2 (+ 1 1)]", nil},
+		{"(vectorp [])", "t", nil},
 	})
 }
