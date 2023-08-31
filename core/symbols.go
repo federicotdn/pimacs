@@ -96,7 +96,7 @@ func (ec *execContext) initSymbols() {
 
 	// Create t
 	t := ec.defSym(&g.t, "t")
-	t.value = t
+	t.val = t
 	g.t = t
 	ec.t = ec.s.t // Convenience accessor
 

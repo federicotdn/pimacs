@@ -11,7 +11,7 @@ const (
 )
 
 func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject, error) {
-	sub := xVectorLike(fn).value.(*subroutine)
+	sub := xSubroutine(fn)
 
 	args, err := ec.listToSlice(originalArgs)
 	if err != nil {
@@ -50,7 +50,7 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 }
 
 func (ec *execContext) funcallSubroutine(fn lispObject, args ...lispObject) (lispObject, error) {
-	sub := xVectorLike(fn).value.(*subroutine)
+	sub := xSubroutine(fn)
 
 	if sub.maxArgs == argsUnevalled {
 		return ec.signalN(ec.s.invalidFunction, fn)

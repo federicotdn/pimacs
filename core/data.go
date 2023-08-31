@@ -120,7 +120,7 @@ func (ec *execContext) setInternal(symbol, newVal lispObject) error {
 
 	sym := xSymbol(symbol)
 	if sym.redirect == nil {
-		sym.value = newVal
+		sym.val = newVal
 		return nil
 	}
 
@@ -158,7 +158,7 @@ func (ec *execContext) findSymbolValue(symbol lispObject) (lispObject, error) {
 	if sym.redirect != nil {
 		val = sym.redirect.value(ec)
 	} else {
-		val = sym.value
+		val = sym.val
 	}
 
 	return val, nil

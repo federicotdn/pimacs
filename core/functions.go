@@ -24,7 +24,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 	switch obj.getType() {
 	case lispTypeString:
-		num = utf8.RuneCountInString(xString(obj).value)
+		num = utf8.RuneCountInString(xString(obj).val)
 	case lispTypeCons:
 		var err error
 		num, err = ec.listLength(obj)
@@ -143,16 +143,9 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 	case lispTypeSymbol:
 		// Symbols must match exactly (eq).
 		return ec.false_()
-	case lispTypeVectorLike:
-		vec1, vec2 := xVectorLike(o1), xVectorLike(o2)
-		if vec1.vecType != vec2.vecType {
-			return ec.false_()
-		}
-
-		return ec.pimacsUnimplemented(ec.s.equal, "unknown vector-like type: '%v'", vec1.vecType)
+	default:
+		return ec.pimacsUnimplemented(ec.s.equal, "implementation missing for object type '%v'", t1)
 	}
-
-	return ec.false_()
 }
 
 func (ec *execContext) plistp(object lispObject) (lispObject, error) {

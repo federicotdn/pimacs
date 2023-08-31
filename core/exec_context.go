@@ -37,7 +37,7 @@ type execContext struct {
 	s          symbols
 	v          vars
 	obarray    map[string]*lispSymbol
-	currentBuf *buffer
+	currentBuf *lispBuffer
 	buffers    lispObject
 	stubs      *emacsStubs
 
@@ -152,7 +152,7 @@ func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
 
 func (ec *execContext) makeSymbol(name string) *lispSymbol {
 	base := ec.makeSymbolBase(name)
-	base.value = ec.s.unbound
+	base.val = ec.s.unbound
 	base.function = ec.nil_
 	base.plist = ec.nil_
 	return base
@@ -160,7 +160,7 @@ func (ec *execContext) makeSymbol(name string) *lispSymbol {
 
 func (ec *execContext) makeInteger(value lispInt) *lispInteger {
 	return &lispInteger{
-		value: value,
+		val: value,
 	}
 }
 
@@ -173,13 +173,13 @@ func (ec *execContext) makeCons(car, cdr lispObject) *lispCons {
 
 func (ec *execContext) makeFloat(value lispFp) *lispFloat {
 	return &lispFloat{
-		value: value,
+		val: value,
 	}
 }
 
 func (ec *execContext) makeString(value string) *lispString {
 	return &lispString{
-		value: value,
+		val: value,
 	}
 }
 
@@ -220,17 +220,6 @@ func (ec *execContext) makePlist(objs map[string]lispObject) (lispObject, error)
 	}
 
 	return val, nil
-}
-
-func (ec *execContext) makeVectorLike(vecType vectorLikeType, value vectorLikeValue) *lispVectorLike {
-	return &lispVectorLike{
-		vecType: vecType,
-		value:   value,
-	}
-}
-
-func (ec *execContext) makeBuffer(buf *buffer) *lispVectorLike {
-	return ec.makeVectorLike(vectorLikeTypeBuffer, buf)
 }
 
 type listIter struct {
@@ -299,8 +288,8 @@ func (li *listIter) error() (lispObject, error) {
 	return nil, li.err
 }
 
-func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name string, minArgs, maxArgs int) *subroutine {
-	sub := &subroutine{
+func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name string, minArgs, maxArgs int) *lispSubroutine {
+	sub := &lispSubroutine{
 		callabe: fn,
 		name:    name,
 		minArgs: minArgs,
@@ -319,8 +308,7 @@ func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name strin
 	}
 
 	sym := ec.defSym(symbol, sub.name) // Create a variable with value = unbound
-	vec := ec.makeVectorLike(vectorLikeTypeSubroutine, sub)
-	sym.function = vec
+	sym.function = sub
 
 	if symbol != nil {
 		*symbol = sym
@@ -329,47 +317,47 @@ func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name strin
 	return sub
 }
 
-func (ec *execContext) defSubr0(symbol *lispObject, name string, fn lispFn0) *subroutine {
+func (ec *execContext) defSubr0(symbol *lispObject, name string, fn lispFn0) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, 0, 0)
 }
 
-func (ec *execContext) defSubr1(symbol *lispObject, name string, fn lispFn1, minArgs int) *subroutine {
+func (ec *execContext) defSubr1(symbol *lispObject, name string, fn lispFn1, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, 1)
 }
 
-func (ec *execContext) defSubr2(symbol *lispObject, name string, fn lispFn2, minArgs int) *subroutine {
+func (ec *execContext) defSubr2(symbol *lispObject, name string, fn lispFn2, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, 2)
 }
 
-func (ec *execContext) defSubr3(symbol *lispObject, name string, fn lispFn3, minArgs int) *subroutine {
+func (ec *execContext) defSubr3(symbol *lispObject, name string, fn lispFn3, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, 3)
 }
 
-func (ec *execContext) defSubr4(symbol *lispObject, name string, fn lispFn4, minArgs int) *subroutine {
+func (ec *execContext) defSubr4(symbol *lispObject, name string, fn lispFn4, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, 4)
 }
 
-func (ec *execContext) defSubr5(symbol *lispObject, name string, fn lispFn5, minArgs int) *subroutine {
+func (ec *execContext) defSubr5(symbol *lispObject, name string, fn lispFn5, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, 5)
 }
 
-func (ec *execContext) defSubr6(symbol *lispObject, name string, fn lispFn6, minArgs int) *subroutine {
+func (ec *execContext) defSubr6(symbol *lispObject, name string, fn lispFn6, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, 6)
 }
 
-func (ec *execContext) defSubr7(symbol *lispObject, name string, fn lispFn7, minArgs int) *subroutine {
+func (ec *execContext) defSubr7(symbol *lispObject, name string, fn lispFn7, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, 7)
 }
 
-func (ec *execContext) defSubr8(symbol *lispObject, name string, fn lispFn8, minArgs int) *subroutine {
+func (ec *execContext) defSubr8(symbol *lispObject, name string, fn lispFn8, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, 8)
 }
 
-func (ec *execContext) defSubrM(symbol *lispObject, name string, fn lispFnM, minArgs int) *subroutine {
+func (ec *execContext) defSubrM(symbol *lispObject, name string, fn lispFnM, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, argsMany)
 }
 
-func (ec *execContext) defSubrU(symbol *lispObject, name string, fn lispFn1, minArgs int) *subroutine {
+func (ec *execContext) defSubrU(symbol *lispObject, name string, fn lispFn1, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, argsUnevalled)
 }
 
@@ -379,7 +367,7 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 	}
 
 	sym := ec.makeSymbol(name)
-	sym.value = ec.s.unbound
+	sym.val = ec.s.unbound
 
 	if symbol != nil {
 		*symbol = sym
@@ -509,9 +497,9 @@ func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) error {
 	if sym.redirect == nil {
 		ec.stack = append(ec.stack, &stackEntryLet{
 			symbol: sym,
-			oldVal: sym.value,
+			oldVal: sym.val,
 		})
-		sym.value = value
+		sym.val = value
 	} else {
 		entry := &stackEntryLetForwarded{
 			symbol: sym,
@@ -589,7 +577,7 @@ func (ec *execContext) stackPopTo(target int) {
 		switch current.tag() {
 		case entryLet:
 			let := current.(*stackEntryLet)
-			let.symbol.value = let.oldVal
+			let.symbol.val = let.oldVal
 		case entryLetForwarded:
 			let := current.(*stackEntryLetForwarded)
 			// Should not fail as we're just setting the old value back

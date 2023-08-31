@@ -18,13 +18,17 @@ func xErrOnly(obj lispObject, err error) error {
 	return err
 }
 
-func xSymbol(obj lispObject) *lispSymbol {
-	val, ok := obj.(*lispSymbol)
+func xCast[T any](obj lispObject, typeName string) T {
+	val, ok := obj.(T)
 	if !ok {
-		terminate("object is not a symbol: '%+v'", obj)
+		terminate("object is not a %v: '%+v'", typeName, obj)
 	}
 
 	return val
+}
+
+func xSymbol(obj lispObject) *lispSymbol {
+	return xCast[*lispSymbol](obj, "symbol")
 }
 
 func symbolp(obj lispObject) bool {
@@ -32,12 +36,7 @@ func symbolp(obj lispObject) bool {
 }
 
 func xCons(obj lispObject) *lispCons {
-	val, ok := obj.(*lispCons)
-	if !ok {
-		terminate("object is not a cons: '%+v'", obj)
-	}
-
-	return val
+	return xCast[*lispCons](obj, "cons")
 }
 
 func xCar(obj lispObject) lispObject {
@@ -62,61 +61,36 @@ func consp(obj lispObject) bool {
 	return obj.getType() == lispTypeCons
 }
 
-func xVectorLike(obj lispObject) *lispVectorLike {
-	val, ok := obj.(*lispVectorLike)
-	if !ok {
-		terminate("object is not vector-like: '%+v'", obj)
-	}
-
-	return val
-}
-
-func vectorLikep(obj lispObject, vecType vectorLikeType) bool {
-	vec, ok := obj.(*lispVectorLike)
-	if !ok {
-		return false
-	}
-
-	return vec.vecType == vecType
-}
-
-func xSubroutine(obj lispObject) *subroutine {
-	vec := xVectorLike(obj)
-	if vec.vecType != vectorLikeTypeSubroutine {
-		terminate("object is not a subroutine: '%+v'", obj)
-	}
-
-	return vec.value.(*subroutine)
-}
-
 func subroutinep(obj lispObject) bool {
-	return vectorLikep(obj, vectorLikeTypeSubroutine)
+	return obj.getType() == lispTypeSubroutine
 }
 
-func xBuffer(obj lispObject) *buffer {
-	vec := xVectorLike(obj)
-	if vec.vecType != vectorLikeTypeBuffer {
-		terminate("object is not a buffer: '%+v'", obj)
-	}
-
-	return vec.value.(*buffer)
+func vectorp(obj lispObject) bool {
+	return obj.getType() == lispTypeVector
 }
 
 func bufferp(obj lispObject) bool {
-	return vectorLikep(obj, vectorLikeTypeBuffer)
+	return obj.getType() == lispTypeBuffer
+}
+
+func xSubroutine(obj lispObject) *lispSubroutine {
+	return xCast[*lispSubroutine](obj, "subroutine")
+}
+
+func xVector(obj lispObject) *lispVector {
+	return xCast[*lispVector](obj, "vector")
+}
+
+func xBuffer(obj lispObject) *lispBuffer {
+	return xCast[*lispBuffer](obj, "buffer")
 }
 
 func xString(obj lispObject) *lispString {
-	val, ok := obj.(*lispString)
-	if !ok {
-		terminate("object is not a string: '%+v'", obj)
-	}
-
-	return val
+	return xCast[*lispString](obj, "string")
 }
 
 func xStringValue(obj lispObject) string {
-	return xString(obj).value
+	return xString(obj).val
 }
 
 func xStringChars(obj lispObject) int {
@@ -128,16 +102,11 @@ func stringp(obj lispObject) bool {
 }
 
 func xInteger(obj lispObject) *lispInteger {
-	val, ok := obj.(*lispInteger)
-	if !ok {
-		terminate("object is not an integer: '%+v'", obj)
-	}
-
-	return val
+	return xCast[*lispInteger](obj, "integer")
 }
 
 func xIntegerValue(obj lispObject) lispInt {
-	return xInteger(obj).value
+	return xInteger(obj).val
 }
 
 func xIntegerRune(obj lispObject) rune {
@@ -149,16 +118,11 @@ func integerp(obj lispObject) bool {
 }
 
 func xFloat(obj lispObject) *lispFloat {
-	val, ok := obj.(*lispFloat)
-	if !ok {
-		terminate("object is not a float: '%+v'", obj)
-	}
-
-	return val
+	return xCast[*lispFloat](obj, "float")
 }
 
 func xFloatValue(obj lispObject) lispFp {
-	return xFloat(obj).value
+	return xFloat(obj).val
 }
 
 func floatp(obj lispObject) bool {
@@ -174,7 +138,8 @@ func characterp(obj lispObject) bool {
 }
 
 func arrayp(obj lispObject) bool {
-	return vectorLikep(obj, vectorLikeTypeNormal) || stringp(obj)
+	// TODO: Add more types
+	return vectorp(obj) || stringp(obj)
 }
 
 func debugRepr(obj lispObject) string {
@@ -189,21 +154,14 @@ func debugRepr(obj lispObject) string {
 		return fmt.Sprintf("INTEGER(%v)", xIntegerValue(obj))
 	case lispTypeSymbol:
 		return fmt.Sprintf("SYMBOL(%v)", xSymbol(obj).name)
-	case lispTypeVectorLike:
-		val := xVectorLike(obj)
-
-		switch val.vecType {
-		case vectorLikeTypeNormal:
-			return "VECTOR()"
-		case vectorLikeTypeBuffer:
-			buf := xBuffer(obj)
-			return fmt.Sprintf("BUFFER(name=%v, live=%v)", buf.name, buf.live)
-		case vectorLikeTypeSubroutine:
-			subr := xSubroutine(obj)
-			return fmt.Sprintf("SUBROUTINE(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
-		default:
-			panic("unknown vector-like type")
-		}
+	case lispTypeVector:
+		return "VECTOR()"
+	case lispTypeBuffer:
+		buf := xBuffer(obj)
+		return fmt.Sprintf("BUFFER(name=%v, live=%v)", buf.name, buf.live)
+	case lispTypeSubroutine:
+		subr := xSubroutine(obj)
+		return fmt.Sprintf("SUBROUTINE(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
 	default:
 		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
 	}

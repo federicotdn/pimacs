@@ -11,17 +11,13 @@ const (
 	lispTypeSymbol lispType = iota + 1
 	lispTypeInteger
 	lispTypeString
-	lispTypeVectorLike
 	lispTypeCons
 	lispTypeFloat
+	lispTypeVector
+	lispTypeSubroutine
+	lispTypeBuffer
 	argsMany      = -1
 	argsUnevalled = -2
-)
-
-const (
-	vectorLikeTypeNormal vectorLikeType = iota + 1
-	vectorLikeTypeSubroutine
-	vectorLikeTypeBuffer
 )
 
 const (
@@ -42,23 +38,13 @@ type lispFn8 func(lispObject, lispObject, lispObject, lispObject, lispObject, li
 type lispFnM func(...lispObject) (lispObject, error)
 type lispFn interface{}
 
-type subroutine struct {
-	callabe  lispFn
-	minArgs  int
-	maxArgs  int
-	noReturn bool
-	name     string
-}
-
-type buffer struct {
-	contents string
-	live     bool
-	name     string
+type lispObject interface {
+	getType() lispType
 }
 
 type lispSymbol struct {
 	name     string
-	value    lispObject
+	val      lispObject
 	function lispObject
 	plist    lispObject
 	special  bool
@@ -90,29 +76,35 @@ type lispCons struct {
 }
 
 type lispInteger struct {
-	value lispInt
+	val lispInt
 }
 
 type lispFloat struct {
-	value lispFp
+	val lispFp
 }
 
 type lispString struct {
-	value string
+	val string
 }
 
-type vectorLikeValue interface{}
-
-type lispVectorLike struct {
-	vecType vectorLikeType
-	value   vectorLikeValue
+type lispVector struct {
 }
 
-type lispObject interface {
-	getType() lispType
+type lispSubroutine struct {
+	callabe  lispFn
+	minArgs  int
+	maxArgs  int
+	noReturn bool
+	name     string
 }
 
-func (s *subroutine) setAttrs(noReturn bool) {
+type lispBuffer struct {
+	contents string
+	live     bool
+	name     string
+}
+
+func (s *lispSubroutine) setAttrs(noReturn bool) {
 	s.noReturn = noReturn
 }
 
@@ -121,7 +113,7 @@ func (ls *lispSymbol) getType() lispType {
 }
 
 func (ls *lispSymbol) setAttributes(value, function, plist lispObject) {
-	ls.value = value
+	ls.val = value
 	ls.function = function
 	ls.plist = plist
 }
@@ -167,6 +159,14 @@ func (ls *lispString) getType() lispType {
 	return lispTypeString
 }
 
-func (lv *lispVectorLike) getType() lispType {
-	return lispTypeVectorLike
+func (lv *lispVector) getType() lispType {
+	return lispTypeVector
+}
+
+func (ls *lispSubroutine) getType() lispType {
+	return lispTypeSubroutine
+}
+
+func (ls *lispBuffer) getType() lispType {
+	return lispTypeBuffer
 }

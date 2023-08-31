@@ -19,7 +19,7 @@ func (ec *execContext) bufferString() (lispObject, error) {
 }
 
 func (ec *execContext) currentBuffer() (lispObject, error) {
-	return ec.makeBuffer(ec.currentBuf), nil
+	return ec.currentBuf, nil
 }
 
 func (ec *execContext) currentBufferInternal() lispObject {
@@ -33,7 +33,7 @@ func (ec *execContext) setBufferIfLive(obj lispObject) {
 	}
 }
 
-func (ec *execContext) setBufferInternal(buf *buffer) {
+func (ec *execContext) setBufferInternal(buf *lispBuffer) {
 	ec.currentBuf = buf
 }
 
@@ -77,8 +77,8 @@ func (ec *execContext) getBuffer(bufferOrName lispObject) (lispObject, error) {
 	return xCdr(elem), nil
 }
 
-func (ec *execContext) createBuffer(name string) *buffer {
-	return &buffer{
+func (ec *execContext) makeBuffer(name string) *lispBuffer {
+	return &lispBuffer{
 		name: name,
 		live: true,
 	}
@@ -98,7 +98,7 @@ func (ec *execContext) getBufferCreate(bufferOrName, inhibitBufferHooks lispObje
 		return ec.signalError("Empty string for buffer name is not allowed")
 	}
 
-	buf := ec.makeBuffer(ec.createBuffer(xStringValue(bufferOrName)))
+	buf := ec.makeBuffer(xStringValue(bufferOrName))
 	newList, err := ec.nconc(ec.buffers, ec.makeList(ec.makeCons(bufferOrName, buf)))
 	ec.buffers = newList
 

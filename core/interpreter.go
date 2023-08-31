@@ -48,7 +48,7 @@ func (inp *Interpreter) ReadPrin1(source string) (string, error) {
 		return "", err
 	}
 
-	return xString(printed).value, nil
+	return xString(printed).val, nil
 }
 
 func (inp *Interpreter) ReadEvalPrin1(source string) (string, error) {
@@ -68,5 +68,5 @@ func (inp *Interpreter) ReadEvalPrin1(source string) (string, error) {
 		return "", err
 	}
 
-	return xString(printed).value, nil
+	return xString(printed).val, nil
 }

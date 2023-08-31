@@ -52,9 +52,9 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		s = fmt.Sprint(xIntegerValue(obj))
 	case lispTypeString:
 		if escapeFlag {
-			s = "\"" + xString(obj).value + "\""
+			s = "\"" + xString(obj).val + "\""
 		} else {
-			s = xString(obj).value
+			s = xString(obj).val
 		}
 	case lispTypeCons:
 		err := ec.printString("(", printCharFn)
@@ -90,10 +90,7 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 
 		return ec.printString(")", printCharFn)
 	case lispTypeFloat:
-		s = fmt.Sprint(xFloat(obj).value)
-	case lispTypeVectorLike:
-		vec := xVectorLike(obj)
-		s = fmt.Sprintf("#<vector-like type '%v' value '%+v'>", vec.vecType, vec.value)
+		s = fmt.Sprint(xFloat(obj).val)
 	default:
 		s = fmt.Sprintf("#<INVALID DATATYPE '%+v'>", obj)
 	}
@@ -109,15 +106,14 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
 	// Should this buffer be created via get-buffer-create?
 	// Needs to be hidden from buffer list though
-	buf := ec.createBuffer(" prin1")
-	bufObj := ec.makeBuffer(buf)
+	bufObj := ec.makeBuffer(" prin1")
 
 	_, err := ec.prin1(obj, bufObj)
 	if err != nil {
 		return nil, err
 	}
 
-	return ec.makeString(buf.contents), nil
+	return ec.makeString(bufObj.contents), nil
 }
 
 func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, newlines bool) (lispObject, error) {

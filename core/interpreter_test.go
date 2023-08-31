@@ -51,6 +51,7 @@ func readEvalPrin1(input string) (string, error) {
 }
 
 func TestReadPrint(t *testing.T) {
+	t.Parallel()
 	testStringToString(t, readPrin1, []stringToStringTC{
 		{"1", "1", nil},
 		{"-1", "-1", nil},
@@ -149,6 +150,7 @@ func TestReadPrint(t *testing.T) {
 }
 
 func TestReadEvalPrint(t *testing.T) {
+	t.Parallel()
 	testStringToString(t, readEvalPrin1, []stringToStringTC{
 		{"1", "1", nil},
 		{"\"hello\"", "\"hello\"", nil},
