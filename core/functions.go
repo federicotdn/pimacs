@@ -158,8 +158,13 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 	iter := ec.iterate(tail).withPredicate(ec.s.plistp)
 
 	for ; iter.hasNext(); tail = iter.nextCons() {
-		if !consp(xCdr(tail)) {
-			break
+		next := xCdr(tail)
+		if !consp(next) {
+			if next == ec.nil_ {
+				break
+			} else {
+				return ec.wrongTypeArgument(ec.s.plistp, plist)
+			}
 		}
 
 		if prop == xCar(tail) {
