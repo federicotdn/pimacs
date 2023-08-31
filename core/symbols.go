@@ -22,6 +22,7 @@ type symbols struct {
 	charOrStringp      lispObject
 	integerp           lispObject
 	bufferp            lispObject
+	characterp         lispObject
 	quote              lispObject
 	backquote          lispObject
 	function           lispObject

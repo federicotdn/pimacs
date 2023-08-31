@@ -27,10 +27,16 @@ func (ec *execContext) makeCharTable(purpose, init lispObject) (lispObject, erro
 }
 
 func (ec *execContext) charTableRange(char_table, range_ lispObject) (lispObject, error) {
+	if !chartablep(char_table) {
+		return ec.wrongTypeArgument(ec.s.charTablep, char_table)
+	}
 	return nil, nil
 }
 
 func (ec *execContext) setCharTableRange(char_table, range_, value lispObject) (lispObject, error) {
+	if !chartablep(char_table) {
+		return ec.wrongTypeArgument(ec.s.charTablep, char_table)
+	}
 	return value, nil
 }
 

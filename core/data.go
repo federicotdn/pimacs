@@ -36,6 +36,10 @@ func (ec *execContext) integerp(object lispObject) (lispObject, error) {
 	return ec.bool(integerp(object))
 }
 
+func (ec *execContext) characterp(object, ignore lispObject) (lispObject, error) {
+	return ec.bool(characterp(object))
+}
+
 func (ec *execContext) bufferp(object lispObject) (lispObject, error) {
 	return ec.bool(bufferp(object))
 }
@@ -257,6 +261,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.s.charOrStringp, "char-or-string-p", ec.charOrStringp, 1)
 	ec.defSubr1(&ec.s.integerp, "integerp", ec.numberOrMarkerp, 1)
 	ec.defSubr1(&ec.s.bufferp, "bufferp", ec.bufferp, 1)
+	ec.defSubr2(&ec.s.characterp, "characterp", ec.characterp, 1)
 	ec.defSubr1(&ec.s.charTablep, "char-table-p", ec.charTablep, 1)
 	ec.defSubr1(nil, "vectorp", ec.vectorp, 1)
 	ec.defSubr1(nil, "boundp", ec.boundp, 1)

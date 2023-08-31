@@ -20,7 +20,7 @@ func xErrOnly(obj lispObject, err error) error {
 	return err
 }
 
-func xCast[T any](obj lispObject, typeName string) T {
+func xCast[T lispObject](obj lispObject, typeName string) T {
 	val, ok := obj.(T)
 	if !ok {
 		terminate("object is not a %v: '%+v'", typeName, obj)
@@ -168,7 +168,10 @@ func numberp(obj lispObject) bool {
 }
 
 func characterp(obj lispObject) bool {
-	return integerp(obj) && xIntegerValue(obj) <= maxChar
+	if !integerp(obj) {
+		return false
+	}
+	return charValidp(rune(xIntegerValue(obj)))
 }
 
 func arrayp(obj lispObject) bool {

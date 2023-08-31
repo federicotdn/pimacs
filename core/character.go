@@ -6,6 +6,10 @@ const (
 	maxChar                 = 0x3fffff
 )
 
+func charValidp(c rune) bool {
+	return 0 <= c && c <= maxChar
+}
+
 func byte8toChar(c rune) rune {
 	return c + eightBitCodeOffset
 }
