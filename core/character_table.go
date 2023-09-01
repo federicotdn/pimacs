@@ -49,53 +49,54 @@ func (ec *execContext) charTableLookup(table *lispCharTable, c lispInt) (int, bo
 }
 
 func (ec *execContext) charTableSet(table *lispCharTable, from, to lispInt, value lispObject) {
-	index, _ := ec.charTableLookup(table, from)
-	rep := []lispCharTableEntry{{start: from, end: to, val: value}}
-
-	i := index
-	for ; i < len(table.val); i++ {
-		elem := table.val[i]
-
-		if elem.contains(from) {
-			// Handle found=true from charTableLookup
-			if elem.start < from {
-				rep = append([]lispCharTableEntry{{
-					start: elem.start,
-					end:   from - 1,
-					val:   elem.val,
-				}}, rep...)
-			}
-
-			if to < elem.end {
-				rep = append(rep, lispCharTableEntry{
-					start: to + 1,
-					end:   elem.end,
-					val:   elem.val,
-				})
-			}
-
-			continue
-		}
-
-		if to >= elem.end {
-			// We are completely overwriting this entry
-			continue
-		}
-
-		if elem.contains(to) {
-			// We are partially overwriting this entry
-			rep = append(rep, lispCharTableEntry{
-				start: to + 1,
-				end:   elem.end,
-				val:   elem.val,
-			})
-		}
-
-		// `to` does not cover anything else to our right
-		break
+	if to < from {
+		to = from
 	}
 
-	table.val = slices.Replace(table.val, index, i, rep...)
+	rep := []lispCharTableEntry{{start: from, end: to, val: value}}
+	if len(table.val) == 0 {
+		table.val = rep
+		return
+	}
+
+	index, found := ec.charTableLookup(table, from)
+
+	var elem lispCharTableEntry
+
+	if !found && index > 0 {
+		elem = table.val[index-1]
+	} else {
+		elem = table.val[index]
+	}
+
+	if elem.contains(from) && elem.start < from {
+		rep = append([]lispCharTableEntry{{
+			start: elem.start,
+			end:   from - 1,
+			val:   elem.val,
+		}}, rep...)
+	}
+
+	index2, found := ec.charTableLookup(table, to)
+
+	if !found && index2 > 0 {
+		elem = table.val[index2-1]
+	} else {
+		elem = table.val[index2]
+	}
+
+	if elem.contains(to) && to < elem.end {
+		rep = append(rep, lispCharTableEntry{
+			start: to + 1,
+			end:   elem.end,
+			val:   elem.val,
+		})
+	}
+
+	if index2 < len(table.val) {
+		index2++
+	}
+	table.val = slices.Replace(table.val, index, index2, rep...)
 }
 
 func (ec *execContext) charTableRange(table, range_ lispObject) (lispObject, error) {

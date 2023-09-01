@@ -126,6 +126,16 @@ func TestCharTableSet(t *testing.T) {
 		{
 			insertions: []insertion{
 				{0, maxChar, "foo"},
+				{maxChar, maxChar, "x"},
+			},
+			expected: []lispCharTableEntry{
+				{0, maxChar - 1, ec.makeString("foo")},
+				{maxChar, maxChar, ec.makeString("x")},
+			},
+		},
+		{
+			insertions: []insertion{
+				{0, maxChar, "foo"},
 				{10, 10, "bar"},
 			},
 			expected: []lispCharTableEntry{
@@ -144,7 +154,8 @@ func TestCharTableSet(t *testing.T) {
 
 		if len(ct.val) != len(case_.expected) {
 			t.Logf("entries length mismatch: case index %v", i)
-			t.Fail()
+			t.Logf("entries length mismatch: table dump: %+v", ct.val)
+			t.FailNow()
 		}
 
 		for j := 0; j < len(ct.val); j++ {
@@ -157,7 +168,8 @@ func TestCharTableSet(t *testing.T) {
 
 				t.Logf("entry mismatch: have '%+v', want '%+v'", have, want)
 				t.Logf("entry mismatch: case index %v, entry %v", i, j)
-				t.Fail()
+				t.Logf("entry mismatch: table dump: %+v", ct.val)
+				t.FailNow()
 			}
 		}
 	}
