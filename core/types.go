@@ -4,8 +4,8 @@ type lispType int
 type vectorLikeType int
 type symbolFwdType int
 
-type lispInt int64
-type lispFp float64
+type lispInt int32
+type lispFp float32
 
 const (
 	lispTypeSymbol lispType = iota + 1
@@ -189,4 +189,8 @@ func (ls *lispBuffer) getType() lispType {
 
 func (ct *lispCharTable) getType() lispType {
 	return lispTypeCharTable
+}
+
+func (e *lispCharTableEntry) contains(c lispInt) bool {
+	return e.start <= c && c <= e.end
 }

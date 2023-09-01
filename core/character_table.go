@@ -1,5 +1,9 @@
 package core
 
+import (
+	"slices"
+)
+
 func (ec *execContext) makeCharTable(purpose, init lispObject) (lispObject, error) {
 	if !symbolp(purpose) {
 		return ec.wrongTypeArgument(ec.s.symbolp, purpose)
@@ -26,17 +30,107 @@ func (ec *execContext) makeCharTable(purpose, init lispObject) (lispObject, erro
 	}, nil
 }
 
-func (ec *execContext) charTableRange(char_table, range_ lispObject) (lispObject, error) {
-	if !chartablep(char_table) {
-		return ec.wrongTypeArgument(ec.s.charTablep, char_table)
+func (ec *execContext) charTableLookup(table *lispCharTable, c lispInt) (int, bool) {
+	cmp := func(e lispCharTableEntry, v lispInt) int {
+		return int(e.start - v)
+	}
+	index, found := slices.BinarySearchFunc(table.val, c, cmp)
+	if found {
+		// Found an entry with .start == c
+		return index, true
+	}
+
+	if index > 0 && table.val[index-1].contains(c) {
+		// Went one element back and it contains c
+		return index - 1, true
+	}
+
+	return index, false
+}
+
+func (ec *execContext) charTableSet(table *lispCharTable, from, to lispInt, value lispObject) {
+	index, _ := ec.charTableLookup(table, from)
+	rep := []lispCharTableEntry{{start: from, end: to, val: value}}
+
+	i := index
+	for ; i < len(table.val); i++ {
+		elem := table.val[i]
+
+		if elem.contains(from) {
+			// Handle found=true from charTableLookup
+			if elem.start < from {
+				rep = append([]lispCharTableEntry{{
+					start: elem.start,
+					end:   from - 1,
+					val:   elem.val,
+				}}, rep...)
+			}
+
+			if to < elem.end {
+				rep = append(rep, lispCharTableEntry{
+					start: to + 1,
+					end:   elem.end,
+					val:   elem.val,
+				})
+			}
+
+			continue
+		}
+
+		if to >= elem.end {
+			// We are completely overwriting this entry
+			continue
+		}
+
+		if elem.contains(to) {
+			// We are partially overwriting this entry
+			rep = append(rep, lispCharTableEntry{
+				start: to + 1,
+				end:   elem.end,
+				val:   elem.val,
+			})
+		}
+
+		// `to` does not cover anything else to our right
+		break
+	}
+
+	table.val = slices.Replace(table.val, index, i, rep...)
+}
+
+func (ec *execContext) charTableRange(table, range_ lispObject) (lispObject, error) {
+	if !chartablep(table) {
+		return ec.wrongTypeArgument(ec.s.charTablep, table)
 	}
 	return nil, nil
 }
 
-func (ec *execContext) setCharTableRange(char_table, range_, value lispObject) (lispObject, error) {
-	if !chartablep(char_table) {
-		return ec.wrongTypeArgument(ec.s.charTablep, char_table)
+func (ec *execContext) setCharTableRange(table, range_, value lispObject) (lispObject, error) {
+	if !chartablep(table) {
+		return ec.wrongTypeArgument(ec.s.charTablep, table)
 	}
+
+	ct := xCharTable(table)
+
+	if range_ == ec.t {
+		ec.charTableSet(ct, 0, maxChar, value)
+	} else if range_ == ec.nil_ {
+		ct.defaultVal = value
+	} else if characterp(range_) {
+		c := xInteger(range_)
+		ec.charTableSet(ct, c.val, c.val, value)
+	} else if consp(range_) {
+		if !characterp(xCar(range_)) {
+			return ec.wrongTypeArgument(ec.s.characterp, xCar(range_))
+		} else if !characterp(xCdr(range_)) {
+			return ec.wrongTypeArgument(ec.s.characterp, xCdr(range_))
+		}
+
+		ec.charTableSet(ct, xIntegerValue(xCar(range_)), xIntegerValue(xCdr(range_)), value)
+	} else {
+		return ec.signalError("Invalid RANGE argument to `set-char-table-range'")
+	}
+
 	return value, nil
 }
 
