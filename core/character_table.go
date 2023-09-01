@@ -52,20 +52,13 @@ func (ec *execContext) charTableSet(table *lispCharTable, from, to lispInt, valu
 	if to < from {
 		to = from
 	}
-
 	rep := []lispCharTableEntry{{start: from, end: to, val: value}}
-	if len(table.val) == 0 {
-		table.val = rep
-		return
-	}
-
 	index, found := ec.charTableLookup(table, from)
-
-	var elem lispCharTableEntry
+	elem := lispCharTableEntry{start: -1, end: -1}
 
 	if !found && index > 0 {
 		elem = table.val[index-1]
-	} else {
+	} else if len(table.val) > 0 {
 		elem = table.val[index]
 	}
 
@@ -81,7 +74,7 @@ func (ec *execContext) charTableSet(table *lispCharTable, from, to lispInt, valu
 
 	if !found && index2 > 0 {
 		elem = table.val[index2-1]
-	} else {
+	} else if len(table.val) > 0 {
 		elem = table.val[index2]
 	}
 
