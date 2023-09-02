@@ -308,8 +308,8 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(android-query-battery)", "nil", nil, nil}, // Test calling a stub
 		{"noninteractive", "t", nil, nil},
 		{"(cons (let ((noninteractive nil)) noninteractive) noninteractive)", "(nil . t)", nil, nil},
-		{`(progn (setq pimacs-repo "hello") pimacs-repo)`, `"hello"`, nil, nil},
-		{"(plist-get (pimacs--symbol-debug 'pimacs-repo) :special)", "t", nil, nil},
+		{`(progn (setq pimacs--repo "hello") pimacs--repo)`, `"hello"`, nil, nil},
+		{"(plist-get (pimacs--symbol-debug 'pimacs--repo) :special)", "t", nil, nil},
 		{"[1 2 3]", "[1 2 3]", nil, nil},
 		{"[[[]]]", "[[[]]]", nil, nil},
 		{"[1 2 (+ 1 1)]", "[1 2 (+ 1 1)]", nil, nil},

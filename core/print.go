@@ -8,7 +8,7 @@ import (
 
 func (ec *execContext) printString(str string, printCharFn lispObject) error {
 	if printCharFn == ec.nil_ {
-		_, err := ec.insert(ec.makeString(str))
+		_, err := ec.insert(newString(str))
 		return err
 	}
 
@@ -21,7 +21,7 @@ func (ec *execContext) printString(str string, printCharFn lispObject) error {
 		return xErrOnly(ec.pimacsUnimplemented(ec.s.prin1, "unknown print char function"))
 	}
 
-	_, err := ec.funcall(printCharFn, ec.makeString(str))
+	_, err := ec.funcall(printCharFn, newString(str))
 	return err
 }
 
@@ -134,7 +134,7 @@ func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, erro
 		return nil, err
 	}
 
-	return ec.makeString(bufObj.contents), nil
+	return newString(bufObj.contents), nil
 }
 
 func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, newlines bool) (lispObject, error) {

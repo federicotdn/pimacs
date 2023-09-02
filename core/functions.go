@@ -37,7 +37,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 		}
 	}
 
-	return ec.makeInteger(lispInt(num)), nil
+	return newInteger(lispInt(num)), nil
 }
 
 func (ec *execContext) assq(key, alist lispObject) (lispObject, error) {

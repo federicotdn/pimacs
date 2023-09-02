@@ -180,41 +180,15 @@ func (se *stackEntryFnLispObject) tag() stackEntryTag {
 	return entryFnLispObject
 }
 
-func (ec *execContext) makeSymbolBase(name string) *lispSymbol {
-	return &lispSymbol{
-		name:    name,
-		special: false,
+func (ec *execContext) makeSymbol(name string, init bool) *lispSymbol {
+	sym := &lispSymbol{name: name}
+	if init {
+		sym.val = ec.s.unbound
+		sym.function = ec.nil_
+		sym.plist = ec.nil_
 	}
-}
 
-func (ec *execContext) makeSymbol(name string) *lispSymbol {
-	base := ec.makeSymbolBase(name)
-	base.val = ec.s.unbound
-	base.function = ec.nil_
-	base.plist = ec.nil_
-	return base
-}
-
-func (ec *execContext) makeInteger(value lispInt) *lispInteger {
-	return &lispInteger{
-		val: value,
-	}
-}
-
-func (ec *execContext) makeFloat(value lispFp) *lispFloat {
-	return &lispFloat{
-		val: value,
-	}
-}
-
-func (ec *execContext) makeString(value string) *lispString {
-	return &lispString{
-		val: value,
-	}
-}
-
-func (ec *execContext) emptyString() *lispString {
-	return ec.makeString("")
+	return sym
 }
 
 func (ec *execContext) makeList(objs ...lispObject) lispObject {
@@ -242,7 +216,7 @@ func (ec *execContext) makePlist(objs map[string]lispObject) (lispObject, error)
 
 	for key, obj := range objs {
 		val = newCons(obj, val)
-		sym, err := ec.intern(ec.makeString(":"+key), ec.nil_)
+		sym, err := ec.intern(newString(":"+key), ec.nil_)
 		if err != nil {
 			return nil, err
 		}
@@ -392,9 +366,7 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 		ec.terminate("symbol already initialized: '%+v'", *symbol)
 	}
 
-	sym := ec.makeSymbol(name)
-	sym.val = ec.s.unbound
-
+	sym := ec.makeSymbol(name, true)
 	if symbol != nil {
 		*symbol = sym
 	}
@@ -469,7 +441,7 @@ func newExecContext() *execContext {
 		// Use relative path from CWD
 		loadPath = "lisp"
 	}
-	ec.v.loadPath.val = ec.makeList(ec.makeString(loadPath))
+	ec.v.loadPath.val = ec.makeList(newString(loadPath))
 
 	err := ec.loadElisp()
 	if err != nil {
@@ -483,7 +455,7 @@ func (ec *execContext) loadElisp() error {
 	files := []string{"pimacs.el"}
 
 	for _, path := range files {
-		_, err := ec.load(ec.makeString(path), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
+		_, err := ec.load(newString(path), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
 		if err != nil {
 			return err
 		}

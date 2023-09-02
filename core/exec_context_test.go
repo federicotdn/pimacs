@@ -10,8 +10,8 @@ func TestIteration(t *testing.T) {
 
 	cases := [][]lispObject{
 		{},
-		{ec.makeInteger(1)},
-		{ec.makeInteger(123), ec.makeInteger(2), ec.makeInteger(10)},
+		{newInteger(1)},
+		{newInteger(123), newInteger(2), newInteger(10)},
 	}
 
 	for _, c := range cases {
@@ -44,9 +44,9 @@ func TestIterationFail(t *testing.T) {
 	ec := newExecContext()
 
 	heads := []lispObject{
-		newCons(ec.makeInteger(1), ec.makeInteger(10)),
-		newCons(ec.makeInteger(1), newCons(ec.makeInteger(1), ec.makeInteger(10))),
-		ec.makeInteger(100),
+		newCons(newInteger(1), newInteger(10)),
+		newCons(newInteger(1), newCons(newInteger(1), newInteger(10))),
+		newInteger(100),
 	}
 
 	for _, head := range heads {

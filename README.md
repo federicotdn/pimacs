@@ -26,7 +26,7 @@ unwind-protect condition-case throw signal
 prin1 prin1-to-string print princ
 intern read-from-string read
 length equal assq memq get put plist-get plist-put nconc
-null symbol-plist symbol-name set fset eq defalias
+null symbol-plist symbol-name set fset eq defalias setq
 setcar setcdr car cdr cons list + <
 current-buffer get-buffer set-buffer buffer-string insert
 ```
@@ -37,7 +37,7 @@ Note that some of these may be only partially implemented.
 ### Examples
 Set a variable and read it:
 ```elisp
-> (set 'greeting "hello")
+> (setq greeting "hello")
 "hello"
 > greeting
 "hello"
@@ -59,7 +59,7 @@ Try out a non-local exit:
 
 Create a vector of integers:
 ```elisp
-> (set 'vec [1 2 3 4])
+> (setq vec [1 2 3 4])
 [1 2 3 4]
 > (vectorp vec)
 t

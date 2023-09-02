@@ -158,12 +158,12 @@ func (ec *execContext) skipSpaceAndComments(ctx readContext) error {
 func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 	nInt, err := strconv.ParseInt(s, 10, 64)
 	if err == nil {
-		return ec.makeInteger(lispInt(nInt)), nil
+		return newInteger(lispInt(nInt)), nil
 	}
 
 	nFloat, err := strconv.ParseFloat(s, 64)
 	if err == nil {
-		return ec.makeFloat(lispFp(nFloat)), nil
+		return newFloat(lispFp(nFloat)), nil
 	}
 
 	return ec.pimacsUnimplemented(ec.s.read, "unknown number format: '%v'", s)
@@ -268,7 +268,7 @@ func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 		return ec.signalN(ec.s.endOfFile)
 	}
 
-	return ec.makeString(builder.String()), nil
+	return newString(builder.String()), nil
 }
 
 func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
@@ -278,7 +278,7 @@ func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
 	}
 
 	if c == ' ' || c == '\t' {
-		return ec.makeInteger(lispInt(c)), nil
+		return newInteger(lispInt(c)), nil
 	}
 
 	if c == '\\' {
@@ -298,7 +298,7 @@ func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
 
 	special := strings.Contains("\"';()[]#?`,.", string(next))
 	if next <= 040 || special {
-		return ec.makeInteger(lispInt(c)), nil
+		return newInteger(lispInt(c)), nil
 	}
 
 	return ec.invalidReadSyntax("invalid syntax for '?'")
@@ -337,7 +337,7 @@ func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
 		}
 	}
 
-	return ec.intern(ec.makeString(s), ec.nil_)
+	return ec.intern(newString(s), ec.nil_)
 }
 
 func (ec *execContext) read0(ctx readContext) (lispObject, error) {
@@ -361,7 +361,7 @@ read_obj:
 		goto read_obj
 	case c == ')':
 		if stack.isEmpty() {
-			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString(")"))
+			return ec.signalN(ec.s.invalidReadSyntax, newString(")"))
 		}
 
 		switch stack.peek().elementType {
@@ -371,17 +371,17 @@ read_obj:
 		case readStackList:
 			obj = stack.pop().listHead
 		default:
-			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString(")"))
+			return ec.signalN(ec.s.invalidReadSyntax, newString(")"))
 		}
 	case c == ']':
 		if stack.isEmpty() {
-			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("]"))
+			return ec.signalN(ec.s.invalidReadSyntax, newString("]"))
 		}
 		switch stack.peek().elementType {
 		case readStackVector:
 			obj = newVector(stack.pop().elems)
 		default:
-			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("]"))
+			return ec.signalN(ec.s.invalidReadSyntax, newString("]"))
 		}
 	case c == '#':
 		c = ctx.read()
@@ -436,7 +436,7 @@ read_obj:
 				goto read_obj
 			}
 
-			return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("."))
+			return ec.signalN(ec.s.invalidReadSyntax, newString("."))
 		}
 
 		obj, err = ec.readSymbol(c, ctx)
@@ -475,14 +475,14 @@ read_obj:
 			}
 			ch := ctx.read()
 			if ch != ')' {
-				return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("expected )"))
+				return ec.signalN(ec.s.invalidReadSyntax, newString("expected )"))
 			}
 
 			stack.pop()
 
 			if top.listHead == nil {
 				// See Emacs bug #62020
-				return ec.signalN(ec.s.invalidReadSyntax, ec.makeString("."))
+				return ec.signalN(ec.s.invalidReadSyntax, newString("."))
 			}
 
 			xSetCdr(top.listTail, obj)
@@ -494,7 +494,7 @@ read_obj:
 			stack.pop()
 			obj = ec.makeList(top.special, obj)
 		default:
-			return ec.signalN(ec.s.read, ec.makeString("unknown read stack entry type"))
+			return ec.signalN(ec.s.read, newString("unknown read stack entry type"))
 		}
 	}
 
@@ -568,7 +568,7 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 
 	sym, ok := ec.obarray[name]
 	if !ok {
-		sym = ec.makeSymbol(name)
+		sym = ec.makeSymbol(name, true)
 		ec.internNewSymbol(sym, true)
 	}
 
@@ -722,7 +722,7 @@ func (ec *execContext) read(stream lispObject) (lispObject, error) {
 	}
 
 	if stream == ec.s.readChar {
-		return ec.funcall(ec.s.readFromMinibuffer, ec.makeString("Lisp expression: "))
+		return ec.funcall(ec.s.readFromMinibuffer, newString("Lisp expression: "))
 	}
 
 	ctx, err := ec.streamReadContext(stream, ec.nil_, ec.nil_)
@@ -746,7 +746,7 @@ func (ec *execContext) readFromString(str, start, end lispObject) (lispObject, e
 		return nil, err
 	}
 
-	pos := ec.makeInteger(lispInt(ctx.position()))
+	pos := newInteger(lispInt(ctx.position()))
 	return ec.cons(result, pos)
 }
 

@@ -15,7 +15,7 @@ func (ec *execContext) insert(args ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) bufferString() (lispObject, error) {
-	return ec.makeString(ec.currentBuf.contents), nil
+	return newString(ec.currentBuf.contents), nil
 }
 
 func (ec *execContext) currentBuffer() (lispObject, error) {
@@ -117,7 +117,7 @@ func (ec *execContext) bufferName(obj lispObject) (lispObject, error) {
 		return ec.nil_, nil
 	}
 
-	return ec.makeString(buf.name), nil
+	return newString(buf.name), nil
 }
 
 func (ec *execContext) bufferList(frame lispObject) (lispObject, error) {
@@ -144,6 +144,6 @@ func (ec *execContext) symbolsOfBuffer() {
 
 func (ec *execContext) initBuffer() {
 	ec.buffers = ec.makeList()
-	buf := xEnsure(ec.getBufferCreate(ec.makeString("*scratch*"), ec.nil_))
+	buf := xEnsure(ec.getBufferCreate(newString("*scratch*"), ec.nil_))
 	ec.currentBuf = xBuffer(buf)
 }

@@ -28,7 +28,7 @@ func TestCharTableSet(t *testing.T) {
 				{0, 1, "foo"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 1, ec.makeString("foo")},
+				{0, 1, newString("foo")},
 			},
 		},
 		{
@@ -38,9 +38,9 @@ func TestCharTableSet(t *testing.T) {
 				{4, 4, "y"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 0, ec.makeString("foo")},
-				{1, 1, ec.makeString("x")},
-				{4, 4, ec.makeString("y")},
+				{0, 0, newString("foo")},
+				{1, 1, newString("x")},
+				{4, 4, newString("y")},
 			},
 		},
 		{
@@ -51,7 +51,7 @@ func TestCharTableSet(t *testing.T) {
 				{0, 10, "--"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 10, ec.makeString("--")},
+				{0, 10, newString("--")},
 			},
 		},
 		{
@@ -60,8 +60,8 @@ func TestCharTableSet(t *testing.T) {
 				{15, 25, "foo"},
 			},
 			expected: []lispCharTableEntry{
-				{10, 14, ec.makeString("foo")},
-				{15, 25, ec.makeString("foo")},
+				{10, 14, newString("foo")},
+				{15, 25, newString("foo")},
 			},
 		},
 		{
@@ -70,8 +70,8 @@ func TestCharTableSet(t *testing.T) {
 				{2, 10, "bar"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 1, ec.makeString("foo")},
-				{2, 10, ec.makeString("bar")},
+				{0, 1, newString("foo")},
+				{2, 10, newString("bar")},
 			},
 		},
 		{
@@ -80,8 +80,8 @@ func TestCharTableSet(t *testing.T) {
 				{1, 10, "bar"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 0, ec.makeString("foo")},
-				{1, 10, ec.makeString("bar")},
+				{0, 0, newString("foo")},
+				{1, 10, newString("bar")},
 			},
 		},
 		{
@@ -90,8 +90,8 @@ func TestCharTableSet(t *testing.T) {
 				{5, 15, "bar"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 4, ec.makeString("foo")},
-				{5, 15, ec.makeString("bar")},
+				{0, 4, newString("foo")},
+				{5, 15, newString("bar")},
 			},
 		},
 		{
@@ -101,7 +101,7 @@ func TestCharTableSet(t *testing.T) {
 				{0, 15, "x"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 15, ec.makeString("x")},
+				{0, 15, newString("x")},
 			},
 		},
 		{
@@ -110,9 +110,9 @@ func TestCharTableSet(t *testing.T) {
 				{5, 15, "bar"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 4, ec.makeString("foo")},
-				{5, 15, ec.makeString("bar")},
-				{16, 20, ec.makeString("foo")},
+				{0, 4, newString("foo")},
+				{5, 15, newString("bar")},
+				{16, 20, newString("foo")},
 			},
 		},
 		{
@@ -120,7 +120,7 @@ func TestCharTableSet(t *testing.T) {
 				{0, maxChar, "foo"},
 			},
 			expected: []lispCharTableEntry{
-				{0, maxChar, ec.makeString("foo")},
+				{0, maxChar, newString("foo")},
 			},
 		},
 		{
@@ -129,8 +129,8 @@ func TestCharTableSet(t *testing.T) {
 				{maxChar, maxChar, "x"},
 			},
 			expected: []lispCharTableEntry{
-				{0, maxChar - 1, ec.makeString("foo")},
-				{maxChar, maxChar, ec.makeString("x")},
+				{0, maxChar - 1, newString("foo")},
+				{maxChar, maxChar, newString("x")},
 			},
 		},
 		{
@@ -139,9 +139,9 @@ func TestCharTableSet(t *testing.T) {
 				{10, 10, "bar"},
 			},
 			expected: []lispCharTableEntry{
-				{0, 9, ec.makeString("foo")},
-				{10, 10, ec.makeString("bar")},
-				{11, maxChar, ec.makeString("foo")},
+				{0, 9, newString("foo")},
+				{10, 10, newString("bar")},
+				{11, maxChar, newString("foo")},
 			},
 		},
 	}
@@ -149,7 +149,7 @@ func TestCharTableSet(t *testing.T) {
 	for i, case_ := range cases {
 		ct := xCharTable(xEnsure(ec.makeCharTable(ec.nil_, ec.nil_)))
 		for _, ins := range case_.insertions {
-			ec.charTableSet(ct, ins.from, ins.to, ec.makeString(ins.text))
+			ec.charTableSet(ct, ins.from, ins.to, newString(ins.text))
 		}
 
 		if len(ct.val) != len(case_.expected) {

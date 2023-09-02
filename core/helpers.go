@@ -43,12 +43,6 @@ func xSymbolName(obj lispObject) string {
 	return xSymbol(obj).name
 }
 
-func newString(s string) *lispString {
-	return &lispString{
-		val: s,
-	}
-}
-
 // Cons helpers //
 
 func consp(obj lispObject) bool {
@@ -146,6 +140,12 @@ func xStringChars(obj lispObject) int {
 	return len(xStringValue(obj))
 }
 
+func newString(val string) *lispString {
+	return &lispString{
+		val: val,
+	}
+}
+
 // Integer helpers //
 
 func integerp(obj lispObject) bool {
@@ -164,6 +164,12 @@ func xIntegerRune(obj lispObject) rune {
 	return rune(xIntegerValue(obj))
 }
 
+func newInteger(val lispInt) *lispInteger {
+	return &lispInteger{
+		val: val,
+	}
+}
+
 // Float helpers //
 
 func floatp(obj lispObject) bool {
@@ -176,6 +182,12 @@ func xFloat(obj lispObject) *lispFloat {
 
 func xFloatValue(obj lispObject) lispFp {
 	return xFloat(obj).val
+}
+
+func newFloat(val lispFp) *lispFloat {
+	return &lispFloat{
+		val: val,
+	}
 }
 
 // Cross-type helpers //

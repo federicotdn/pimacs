@@ -14,7 +14,7 @@ func (ec *execContext) getenvInternal(variable, env lispObject) (lispObject, err
 		return ec.nil_, nil
 	}
 
-	return ec.makeString(val), nil
+	return newString(val), nil
 }
 
 func (ec *execContext) symbolsOfCallProc() {

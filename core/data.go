@@ -217,7 +217,7 @@ func (ec *execContext) symbolName(symbol lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
-	return ec.makeString(xSymbolName(symbol)), nil
+	return newString(xSymbolName(symbol)), nil
 }
 
 func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
@@ -229,7 +229,7 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 		total += xIntegerValue(obj)
 	}
 
-	return ec.makeInteger(total), nil
+	return newInteger(total), nil
 }
 
 func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {

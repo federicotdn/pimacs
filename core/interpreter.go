@@ -37,7 +37,7 @@ func (inp *Interpreter) RecursiveEdit() {
 }
 
 func (inp *Interpreter) ReadPrin1(source string) (string, error) {
-	str := inp.ec.makeString(source)
+	str := newString(source)
 	result, err := inp.ec.readFromString(str, inp.ec.nil_, inp.ec.nil_)
 	if err != nil {
 		return "", err
@@ -52,7 +52,7 @@ func (inp *Interpreter) ReadPrin1(source string) (string, error) {
 }
 
 func (inp *Interpreter) ReadEvalPrin1(source string) (string, error) {
-	str := inp.ec.makeString(source)
+	str := newString(source)
 	obj, err := inp.ec.readFromString(str, inp.ec.nil_, inp.ec.nil_)
 	if err != nil {
 		return "", err
