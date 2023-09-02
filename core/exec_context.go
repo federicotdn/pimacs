@@ -28,6 +28,7 @@ type stackJumpSignal struct {
 	errorSymbol lispObject
 	data        lispObject
 	goStack     string
+	ec          *execContext
 }
 
 type execContext struct {
@@ -74,57 +75,70 @@ type stackEntryFnLispObject struct {
 func (jmp *stackJumpTag) Error() string {
 	format := "stack jump: tag: '%+v'"
 	if symbolp(jmp.tag) {
-		return fmt.Sprintf(format, xSymbol(jmp.tag).name)
+		return fmt.Sprintf(format, xSymbolName(jmp.tag))
 	}
 
 	return fmt.Sprintf(format, jmp.tag)
 }
 
+func (jmp *stackJumpSignal) Is(target error) bool {
+	other, ok := target.(*stackJumpSignal)
+	if !ok {
+		return false
+	}
+	return xSymbol(jmp.errorSymbol) == xSymbol(other.errorSymbol)
+}
+
 func (jmp *stackJumpSignal) Error() string {
 	message := "stack jump: signal: "
+	ending := "\nat " + jmp.goStack
 
 	if !symbolp(jmp.errorSymbol) {
 		message += fmt.Sprintf("'%+v' '<unknown>'", jmp.errorSymbol)
 		return message
 	}
 
-	name := xSymbol(jmp.errorSymbol).name
-	message += "'" + name + "' "
+	name := xSymbolName(jmp.errorSymbol)
+	message += fmt.Sprintf("'%+v'", name)
 
 	data := xCdr(jmp.data)
+	if !consp(data) {
+		// data is probably nil, no more info to add
+		return message + ending
+	}
 
-	switch name {
-	case "error":
-		message += fmt.Sprintf("'%+v' ", xStringValue(xCar(data)))
-	case "void-variable":
-		message += fmt.Sprintf("'%+v' ", xSymbol(xCar(data)).name)
-	case "void-function":
-		message += fmt.Sprintf("'%+v' ", xCar(data))
-	case "wrong-type-argument":
+	ec := jmp.ec
+
+	switch jmp.errorSymbol {
+	case ec.s.error_:
+		message += fmt.Sprintf(" '%+v'", xStringValue(xCar(data)))
+	case ec.s.voidVariable:
+		message += fmt.Sprintf(" '%+v'", xSymbolName(xCar(data)))
+	case ec.s.voidFunction:
+		message += fmt.Sprintf(" '%+v'", xCar(data))
+	case ec.s.wrongTypeArgument:
 		pred := xCar(data)
 		val := xCar(xCdr(data))
-		message += fmt.Sprintf("'%+v' '%+v'", xSymbol(pred).name, val)
-	case "wrong-number-of-arguments":
+		message += fmt.Sprintf(" '%+v' '%+v'", xSymbolName(pred), val)
+	case ec.s.wrongNumberofArguments:
 		fn := xCar(data)
 
 		for ; consp(fn); fn = xCar(fn) {
 		}
 
 		if symbolp(fn) {
-			message += fmt.Sprintf("'%+v' ", xSymbol(fn).name)
+			message += fmt.Sprintf(" '%+v' ", xSymbolName(fn))
 		} else if subroutinep(fn) {
-			message += fmt.Sprintf("'%+v' ", xSubroutine(fn).name)
+			message += fmt.Sprintf(" '%+v' ", xSubroutine(fn).name)
 		} else {
-			message += "'<function>' "
+			message += " '<function>' "
 		}
 
 		count := xCar(xCdr(data))
 		message += fmt.Sprintf("'%+v'", xIntegerValue(count))
 	}
 
-	message += "\nGo stack for jump:\n" + jmp.goStack
-
-	return message
+	return message + ending
 }
 
 func (se *stackEntryLet) tag() stackEntryTag {
@@ -164,13 +178,6 @@ func (ec *execContext) makeInteger(value lispInt) *lispInteger {
 	}
 }
 
-func (ec *execContext) makeCons(car, cdr lispObject) *lispCons {
-	return &lispCons{
-		car: car,
-		cdr: cdr,
-	}
-}
-
 func (ec *execContext) makeFloat(value lispFp) *lispFloat {
 	return &lispFloat{
 		val: value,
@@ -192,11 +199,11 @@ func (ec *execContext) makeList(objs ...lispObject) lispObject {
 		return ec.nil_
 	}
 
-	tmp := ec.makeCons(objs[0], ec.nil_)
+	tmp := newCons(objs[0], ec.nil_)
 	val := tmp
 
 	for _, obj := range objs[1:] {
-		tmp.cdr = ec.makeCons(obj, ec.nil_)
+		tmp.cdr = newCons(obj, ec.nil_)
 		tmp = xCons(tmp.cdr)
 	}
 
@@ -211,12 +218,12 @@ func (ec *execContext) makePlist(objs map[string]lispObject) (lispObject, error)
 	val := ec.nil_
 
 	for key, obj := range objs {
-		val = ec.makeCons(obj, val)
+		val = newCons(obj, val)
 		sym, err := ec.intern(ec.makeString(":"+key), ec.nil_)
 		if err != nil {
 			return nil, err
 		}
-		val = ec.makeCons(sym, val)
+		val = newCons(sym, val)
 	}
 
 	return val, nil

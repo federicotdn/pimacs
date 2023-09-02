@@ -1,7 +1,7 @@
 package core
 
 func (ec *execContext) cons(car lispObject, cdr lispObject) (lispObject, error) {
-	return ec.makeCons(car, cdr), nil
+	return newCons(car, cdr), nil
 }
 
 func (ec *execContext) list(args ...lispObject) (lispObject, error) {

@@ -184,9 +184,9 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 	}
 
 	if prev == ec.nil_ {
-		return ec.makeCons(prop, ec.makeCons(val, plist)), nil
+		return newCons(prop, newCons(val, plist)), nil
 	} else {
-		newCell := ec.makeCons(prop, ec.makeCons(val, xCdr(xCdr(prev))))
+		newCell := newCons(prop, newCons(val, xCdr(xCdr(prev))))
 		_, err := ec.setCdr(xCdr(prev), newCell)
 		if err != nil {
 			return nil, err

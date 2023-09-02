@@ -31,7 +31,7 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 
 	switch lispType {
 	case lispTypeSymbol:
-		s = xSymbol(obj).name
+		s = xSymbolName(obj)
 		if s == "" {
 			s = "##"
 			break

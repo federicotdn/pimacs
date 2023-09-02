@@ -39,6 +39,10 @@ func xSymbol(obj lispObject) *lispSymbol {
 	return xCast[*lispSymbol](obj, "symbol")
 }
 
+func xSymbolName(obj lispObject) string {
+	return xSymbol(obj).name
+}
+
 // Cons helpers //
 
 func consp(obj lispObject) bool {
@@ -65,6 +69,13 @@ func xSetCar(cell, newCar lispObject) lispObject {
 func xSetCdr(cell, newCdr lispObject) lispObject {
 	xCons(cell).cdr = newCdr
 	return newCdr
+}
+
+func newCons(car lispObject, cdr lispObject) *lispCons {
+	return &lispCons{
+		car: car,
+		cdr: cdr,
+	}
 }
 
 // Subroutine helpers //
@@ -196,7 +207,7 @@ func debugRepr(obj lispObject) string {
 	case lispTypeInteger:
 		return fmt.Sprintf("INTEGER(%v)", xIntegerValue(obj))
 	case lispTypeSymbol:
-		return fmt.Sprintf("SYMBOL(%v)", xSymbol(obj).name)
+		return fmt.Sprintf("SYMBOL(%v)", xSymbolName(obj))
 	case lispTypeVector:
 		return "VECTOR()"
 	case lispTypeBuffer:

@@ -458,12 +458,12 @@ read_obj:
 		switch top.elementType {
 		case readStackListStart:
 			top.elementType = readStackList
-			top.listHead = ec.makeCons(obj, ec.nil_)
+			top.listHead = newCons(obj, ec.nil_)
 			top.listTail = top.listHead
 			goto read_obj
 
 		case readStackList:
-			tail := ec.makeCons(obj, ec.nil_)
+			tail := newCons(obj, ec.nil_)
 			xSetCdr(top.listTail, tail)
 			top.listTail = tail
 			goto read_obj
@@ -635,7 +635,7 @@ func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 
 	for {
 		variable, err := ec.read0(&strCtx)
-		if err != nil || !symbolp(variable) || !strings.HasSuffix(xSymbol(variable).name, ":") {
+		if err != nil || !symbolp(variable) || !strings.HasSuffix(xSymbolName(variable), ":") {
 			return false
 		}
 
@@ -645,7 +645,7 @@ func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 		}
 
 		// The reader will include the ":" in the symbol name, so use it here too
-		if xSymbol(variable).name == "lexical-binding:" {
+		if xSymbolName(variable) == "lexical-binding:" {
 			return (value != ec.nil_)
 		}
 

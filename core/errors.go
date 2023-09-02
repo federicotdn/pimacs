@@ -33,7 +33,7 @@ func (ec *execContext) invalidReadSyntax(format string, v ...interface{}) (lispO
 }
 
 func (ec *execContext) putError(sym, tail lispObject, msg string) {
-	xEnsure(ec.put(sym, ec.s.errorConditions, ec.makeCons(sym, tail)))
+	xEnsure(ec.put(sym, ec.s.errorConditions, newCons(sym, tail)))
 	xEnsure(ec.put(sym, ec.s.errorMessage, ec.makeString(msg)))
 }
 

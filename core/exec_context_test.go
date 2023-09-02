@@ -44,8 +44,8 @@ func TestIterationFail(t *testing.T) {
 	ec := newExecContext()
 
 	heads := []lispObject{
-		ec.makeCons(ec.makeInteger(1), ec.makeInteger(10)),
-		ec.makeCons(ec.makeInteger(1), ec.makeCons(ec.makeInteger(1), ec.makeInteger(10))),
+		newCons(ec.makeInteger(1), ec.makeInteger(10)),
+		newCons(ec.makeInteger(1), newCons(ec.makeInteger(1), ec.makeInteger(10))),
 		ec.makeInteger(100),
 	}
 

@@ -189,7 +189,7 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 			}
 
 			if lexEnv != ec.nil_ {
-				lexEnv = ec.makeCons(ec.makeCons(next, arg), lexEnv)
+				lexEnv = newCons(newCons(next, arg), lexEnv)
 			} else {
 				ec.stackPushLet(next, arg)
 			}
@@ -417,7 +417,7 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	env := ec.v.internalInterpreterEnv.val
 
 	if env != ec.nil_ {
-		value = ec.makeCons(ec.makeCons(variable, value), env)
+		value = newCons(newCons(variable, value), env)
 		handlerVar = ec.v.internalInterpreterEnv.sym
 	}
 
@@ -443,8 +443,9 @@ func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) 
 
 	return nil, &stackJumpSignal{
 		errorSymbol: errorSymbol,
-		data:        ec.makeCons(errorSymbol, data),
+		data:        newCons(errorSymbol, data),
 		goStack:     string(buf[:n]),
+		ec:          ec,
 	}
 }
 
@@ -587,7 +588,7 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 		xCar(quoted) == ec.s.lambda {
 		cdr := xCdr(quoted)
 
-		return ec.makeCons(ec.s.closure, ec.makeCons(env, cdr)), nil
+		return newCons(ec.s.closure, newCons(env, cdr)), nil
 	}
 
 	return quoted, nil
@@ -659,7 +660,7 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 			!xSymbol(variable).special &&
 			included == ec.nil_ {
 			// Bind variable lexically
-			lexEnv = ec.makeCons(ec.makeCons(variable, tem), lexEnv)
+			lexEnv = newCons(newCons(variable, tem), lexEnv)
 		} else {
 			// Bind variable dynamically
 			ec.stackPushLet(variable, tem)
