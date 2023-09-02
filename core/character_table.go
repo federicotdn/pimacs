@@ -96,7 +96,37 @@ func (ec *execContext) charTableRange(table, range_ lispObject) (lispObject, err
 	if !chartablep(table) {
 		return ec.wrongTypeArgument(ec.s.charTablep, table)
 	}
-	return nil, nil
+
+	ct := xCharTable(table)
+
+	if range_ == ec.nil_ {
+		return ct.defaultVal, nil
+	} else if characterp(range_) {
+		c := xIntegerValue(range_)
+		index, found := ec.charTableLookup(ct, c)
+		if found {
+			return ct.val[index].val, nil
+		}
+		return ct.defaultVal, nil
+	} else if consp(range_) {
+		if !characterp(xCar(range_)) {
+			return ec.wrongTypeArgument(ec.s.characterp, xCar(range_))
+		} else if !characterp(xCdr(range_)) {
+			return ec.wrongTypeArgument(ec.s.characterp, xCdr(range_))
+		}
+
+		// Even though we have received a cons of (FROM . TO), we only use
+		// the FROM part - Emacs does the same-ish.
+		// See: https://lists.gnu.org/archive/html/emacs-devel/2023-09/msg00014.html
+		from := xIntegerValue(xCar(range_))
+		index, found := ec.charTableLookup(ct, from)
+		if found {
+			return ct.val[index].val, nil
+		}
+		return ct.defaultVal, nil
+	} else {
+		return ec.signalError("Invalid RANGE argument to `char-table-range'")
+	}
 }
 
 func (ec *execContext) setCharTableRange(table, range_, value lispObject) (lispObject, error) {

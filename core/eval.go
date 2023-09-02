@@ -709,6 +709,9 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 
 	originalFn := xCar(form)
 	originalArgs := xCdr(form)
+	if !consp(originalArgs) && originalArgs != ec.nil_ {
+		return ec.wrongTypeArgument(ec.s.listp, originalArgs)
+	}
 	fn := originalFn
 
 	if !symbolp(fn) {
