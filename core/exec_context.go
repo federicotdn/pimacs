@@ -86,7 +86,30 @@ func (jmp *stackJumpSignal) Is(target error) bool {
 	if !ok {
 		return false
 	}
-	return xSymbol(jmp.errorSymbol) == xSymbol(other.errorSymbol)
+
+	if jmp.errorSymbol != other.errorSymbol {
+		return false
+	}
+
+	ec := jmp.ec
+
+	switch jmp.errorSymbol {
+	case ec.s.wrongTypeArgument:
+		ourData := xCdr(jmp.data)
+		otherData := xCdr(other.data)
+		if !consp(ourData) || !consp(otherData) {
+			return false
+		}
+
+		ourPred := xCar(ourData)
+		otherPred := xCar(otherData)
+		return ourPred == otherPred
+	default:
+		// By default, two stack jumps with the same error
+		// symbol are considered equal, unless a specific
+		// handler for that error symbol is implemented
+		return true
+	}
 }
 
 func (jmp *stackJumpSignal) Error() string {

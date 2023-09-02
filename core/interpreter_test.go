@@ -321,13 +321,15 @@ func TestReadEvalPrintSpecificErr(t *testing.T) {
 	t.Parallel()
 	inp := NewInterpreter()
 	ec := inp.ec
+	sentinel := newString("sentinel")
 
 	// Note: all these will be run with the same interpreter
 	cases := []stringToStringTC{
-		{"(1 . 2)", "", xErrOnly(ec.signalN(ec.s.wrongTypeArgument)), inp},
+		{"(1 . 2)", "", xErrOnly(ec.wrongTypeArgument(ec.s.listp, sentinel)), inp},
 		{"(foo 1 2 3)", "", xErrOnly(ec.signalN(ec.s.voidFunction)), inp},
 		{")", "", xErrOnly(ec.signalN(ec.s.invalidReadSyntax)), inp},
-		{"(char-table-range 123 123)", "", xErrOnly(ec.signalN(ec.s.wrongTypeArgument)), inp},
+		{"(char-table-range 123 123)", "", xErrOnly(ec.wrongTypeArgument(ec.s.charTablep, sentinel)), inp},
+		{"(signal 1 2)", "", xErrOnly(ec.wrongTypeArgument(ec.s.symbolp, sentinel)), inp},
 	}
 
 	testStringToString(t, readEvalPrin1, cases)

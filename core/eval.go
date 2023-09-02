@@ -434,6 +434,10 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) {
+	if !symbolp(errorSymbol) {
+		return ec.wrongTypeArgument(ec.s.symbolp, errorSymbol)
+	}
+
 	buf := make([]byte, 4096)
 	n := runtime.Stack(buf, false)
 

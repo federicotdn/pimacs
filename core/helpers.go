@@ -43,6 +43,12 @@ func xSymbolName(obj lispObject) string {
 	return xSymbol(obj).name
 }
 
+func newString(s string) *lispString {
+	return &lispString{
+		val: s,
+	}
+}
+
 // Cons helpers //
 
 func consp(obj lispObject) bool {
