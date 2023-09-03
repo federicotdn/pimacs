@@ -16,5 +16,9 @@ jobs:
         go-version: '1.21'
     - name: Check formatting
       run: make checkfmt
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v3.7.0
+      with:
+        version: latest
     - name: Test
       run: make test
