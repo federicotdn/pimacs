@@ -1,7 +1,7 @@
 ;;; pimacs.el --- Base file for Pimacs  -*- lexical-binding: t; -*-
 
 ;; A very simplified version of defmacro
-(defalias 'pimacs-defmacro
+(defalias 'defmacro
   (cons
    'macro
    #'(lambda (name arglist &rest body)
@@ -11,20 +11,13 @@
 	     (list 'cons ''macro (list 'function (cons 'lambda (cons arglist body))))))))
 
 ;; A very simplified version of defun
-(pimacs-defmacro pimacs-defun (name arglist &rest body)
+(defmacro defun (name arglist &rest body)
   (list 'defalias
 	(list 'quote name)
 	(list 'function (cons 'lambda (cons arglist body)))))
 
-;; Set up some Pimacs-related variables/functions
-(setq pimacs-testing (getenv-internal "PIMACS_TESTING"))
-
-(pimacs-defun pimacs-greet ()
-  (let ((msg "Welcome to Pimacs!\n"))
-    (princ msg t)
-    nil))
-
-;; (if (null pimacs-testing)
-;;     (pimacs-greet))
+;; A very simplified version of defconst
+(defmacro defconst (name value &optional _docs)
+  (list 'setq name value))
 
 ;;; pimacs.el ends here

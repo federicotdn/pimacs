@@ -31,7 +31,7 @@ func newTestingInterpreter() *Interpreter {
 	return &Interpreter{
 		// When running tests, Go sets the CWD to the package's
 		// directory
-		ec: newExecContext([]string{"../core", "../lisp"}),
+		ec: newExecContext([]string{"../core", "../lisp", "../lisp/emacs"}),
 	}
 }
 

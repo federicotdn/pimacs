@@ -3,7 +3,7 @@ import json
 import subprocess
 from pathlib import Path
 
-import stubs
+import stubs, copy_files
 
 PIMACS_REPO_PATH = (Path(__file__) / "../../..").resolve()
 CONFIG_FILE = "config.json"
@@ -46,7 +46,9 @@ def main() -> None:
                 PIMACS_REPO_PATH, Path(args.emacs_repo_path), emacs_commit, emacs_branch
             )
         case "copy":
-            ...
+            copy_files.copy_files(
+                config, PIMACS_REPO_PATH, Path(args.emacs_repo_path), emacs_commit, emacs_branch
+            )
         case _:
             raise Exception("Unknown command")
 

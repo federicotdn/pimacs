@@ -454,7 +454,7 @@ func newExecContext(loadPathPrepend []string) *execContext {
 	for _, elem := range loadPathPrepend {
 		loadPath = append(loadPath, newString(elem))
 	}
-	loadPath = append(loadPath, newString("lisp"))
+	loadPath = append(loadPath, newString("lisp"), newString("lisp/emacs"))
 
 	ec.v.loadPath.val = ec.makeList(loadPath...)
 
@@ -467,7 +467,7 @@ func newExecContext(loadPathPrepend []string) *execContext {
 }
 
 func (ec *execContext) loadElisp() error {
-	files := []string{"pimacs.el"}
+	files := []string{"pimacs.el", "emacs-lisp/backquote.el"}
 
 	for _, path := range files {
 		_, err := ec.load(newString(path), ec.nil_, ec.nil_, ec.nil_, ec.nil_)

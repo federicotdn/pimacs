@@ -1,4 +1,7 @@
 {
     "emacs_commit": "76938e1789ecf447507199b6f1b7c0d4f7924ea3",
-    "emacs_branch": "master"
+    "emacs_branch": "master",
+    "copy_lisp_files": [
+	"emacs-lisp/backquote.el"
+    ]
 }

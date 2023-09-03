@@ -305,4 +305,4 @@ def gen_stubs(pimacs_base: Path, emacs_base: Path, emacs_commit: str, emacs_bran
     with open(target, "w") as f:
         f.write(contents)
 
-    print("Wrote", target)
+    print("wrote", target)
