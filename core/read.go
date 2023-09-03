@@ -818,6 +818,9 @@ func (ec *execContext) symbolsOfRead() {
 	ec.defVarLisp(&ec.v.lexicalBinding, "lexical-binding", ec.nil_)
 	ec.defVarLisp(&ec.v.loadPath, "load-path", ec.nil_)
 	ec.defSym(&ec.s.readChar, "read-char")
+	ec.defSym(&ec.s.backquote, "`")
+	ec.defSym(&ec.s.comma, ",")
+	ec.defSym(&ec.s.commaAt, "@,")
 
 	ec.defSubr2(nil, "intern", ec.intern, 1)
 	ec.defSubr3(nil, "read-from-string", ec.readFromString, 1)

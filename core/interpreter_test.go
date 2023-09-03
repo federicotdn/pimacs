@@ -180,6 +180,8 @@ func TestReadEvalPrint(t *testing.T) {
 		{"t", "t", nil, nil},
 		{"'t", "t", nil, nil},
 		{"'-", "-", nil, nil},
+		{"'(1 . 2)", "(1 . 2)", nil, nil},
+		// {"`(1 . 2)", "(1 . 2)", nil, nil},
 		{"+", "", anyError, nil},
 		{"(+)", "0", nil, nil},
 		{"(+ 1)", "1", nil, nil},

@@ -25,6 +25,8 @@ type symbols struct {
 	characterp         lispObject
 	quote              lispObject
 	backquote          lispObject
+	comma              lispObject
+	commaAt            lispObject
 	function           lispObject
 	read               lispObject
 	equal              lispObject
@@ -34,6 +36,7 @@ type symbols struct {
 	readFromMinibuffer lispObject
 	recursiveEdit      lispObject
 	charTablep         lispObject
+	provide            lispObject
 
 	// Errors
 	error_                 lispObject

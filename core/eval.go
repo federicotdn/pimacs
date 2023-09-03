@@ -471,10 +471,6 @@ func (ec *execContext) quote(args lispObject) (lispObject, error) {
 	return xCar(args), nil
 }
 
-func (ec *execContext) backquote(args lispObject) (lispObject, error) {
-	return ec.nil_, nil
-}
-
 func (ec *execContext) if_(args lispObject) (lispObject, error) {
 	car_ := xCar(args)
 	cdr_ := xCdr(args)
@@ -796,7 +792,6 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubrU(nil, "if", ec.if_, 2)
 	ec.defSubrU(nil, "while", ec.while, 1)
 	ec.defSubrU(&ec.s.quote, "quote", ec.quote, 1)
-	ec.defSubrU(&ec.s.backquote, "`", ec.backquote, 1)
 	ec.defSubrU(&ec.s.function, "function", ec.function, 1)
 	ec.defSubrU(nil, "let", ec.let, 1)
 	ec.defSubrU(nil, "catch", ec.catch, 1)

@@ -275,6 +275,10 @@ func (ec *execContext) nconc(args ...lispObject) (lispObject, error) {
 	return val, nil
 }
 
+func (ec *execContext) provide(feature, subfeatures lispObject) (lispObject, error) {
+	return ec.nil_, nil
+}
+
 func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr1(nil, "length", ec.length, 1)
 	ec.defSubr2(&ec.s.equal, "equal", ec.equal, 2)
@@ -287,4 +291,5 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(nil, "plist-get", ec.plistGet, 2)
 	ec.defSubr3(nil, "plist-put", ec.plistPut, 3)
 	ec.defSubrM(nil, "nconc", ec.nconc, 0)
+	ec.defSubr2(&ec.s.provide, "provide", ec.provide, 1)
 }
