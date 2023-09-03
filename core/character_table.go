@@ -30,7 +30,7 @@ func (ec *execContext) makeCharTable(purpose, init lispObject) (lispObject, erro
 	}, nil
 }
 
-func (ec *execContext) charTableLookup(table *lispCharTable, c lispInt) (int, bool) {
+func (ec *execContext) charTableLookupInternal(table *lispCharTable, c lispInt) (int, bool) {
 	cmp := func(e lispCharTableEntry, v lispInt) int {
 		return int(e.start - v)
 	}
@@ -53,7 +53,7 @@ func (ec *execContext) charTableSet(table *lispCharTable, from, to lispInt, valu
 		to = from
 	}
 	rep := []lispCharTableEntry{{start: from, end: to, val: value}}
-	index, found := ec.charTableLookup(table, from)
+	index, found := ec.charTableLookupInternal(table, from)
 	elem := lispCharTableEntry{start: -1, end: -1}
 
 	if !found && index > 0 {
@@ -70,7 +70,7 @@ func (ec *execContext) charTableSet(table *lispCharTable, from, to lispInt, valu
 		}}, rep...)
 	}
 
-	index2, found := ec.charTableLookup(table, to)
+	index2, found := ec.charTableLookupInternal(table, to)
 
 	if !found && index2 > 0 {
 		elem = table.val[index2-1]
@@ -92,6 +92,24 @@ func (ec *execContext) charTableSet(table *lispCharTable, from, to lispInt, valu
 	table.val = slices.Replace(table.val, index, index2, rep...)
 }
 
+func (ec *execContext) charTableLookup(table *lispCharTable, c lispInt) (lispObject, error) {
+	val := ec.nil_
+	index, found := ec.charTableLookupInternal(table, c)
+	if found {
+		val = table.val[index].val
+	}
+	if val == ec.nil_ {
+		val = table.defaultVal
+	}
+
+	// Can use Go nil here because table.parent is *lispCharTable
+	if val == ec.nil_ && table.parent != nil {
+		return ec.charTableLookup(table.parent, c)
+	}
+
+	return val, nil
+}
+
 func (ec *execContext) charTableRange(table, range_ lispObject) (lispObject, error) {
 	if !chartablep(table) {
 		return ec.wrongTypeArgument(ec.s.charTablep, table)
@@ -103,11 +121,7 @@ func (ec *execContext) charTableRange(table, range_ lispObject) (lispObject, err
 		return ct.defaultVal, nil
 	} else if characterp(range_) {
 		c := xIntegerValue(range_)
-		index, found := ec.charTableLookup(ct, c)
-		if found {
-			return ct.val[index].val, nil
-		}
-		return ct.defaultVal, nil
+		return ec.charTableLookup(ct, c)
 	} else if consp(range_) {
 		if !characterp(xCar(range_)) {
 			return ec.wrongTypeArgument(ec.s.characterp, xCar(range_))
@@ -119,11 +133,7 @@ func (ec *execContext) charTableRange(table, range_ lispObject) (lispObject, err
 		// the FROM part - Emacs does the same-ish.
 		// See: https://lists.gnu.org/archive/html/emacs-devel/2023-09/msg00014.html
 		from := xIntegerValue(xCar(range_))
-		index, found := ec.charTableLookup(ct, from)
-		if found {
-			return ct.val[index].val, nil
-		}
-		return ct.defaultVal, nil
+		return ec.charTableLookup(ct, from)
 	} else {
 		return ec.signalError("Invalid RANGE argument to `char-table-range'")
 	}
@@ -158,10 +168,44 @@ func (ec *execContext) setCharTableRange(table, range_, value lispObject) (lispO
 	return value, nil
 }
 
+func (ec *execContext) charTableParent(table lispObject) (lispObject, error) {
+	if !chartablep(table) {
+		return ec.wrongTypeArgument(ec.s.charTablep, table)
+	}
+
+	parent := xCharTable(table).parent
+	if parent == nil {
+		return ec.nil_, nil
+	}
+	return parent, nil
+}
+
+func (ec *execContext) setCharTableParent(table, parent lispObject) (lispObject, error) {
+	if !chartablep(table) {
+		return ec.wrongTypeArgument(ec.s.charTablep, table)
+	}
+	if parent != ec.nil_ {
+		if !chartablep(parent) {
+			return ec.wrongTypeArgument(ec.s.charTablep, parent)
+		}
+
+		for temp := xCharTable(parent); temp != nil; temp = temp.parent {
+			if table == temp {
+				ec.signalError("Attempt to make a chartable be its own parent")
+			}
+		}
+	}
+
+	xCharTable(table).parent = xCharTable(parent)
+	return parent, nil
+}
+
 func (ec *execContext) symbolsOfCharacterTable() {
 	ec.defSym(&ec.s.charTableExtraSlots, "char-table-extra-slots")
 
 	ec.defSubr2(nil, "make-char-table", ec.makeCharTable, 1)
 	ec.defSubr2(nil, "char-table-range", ec.charTableRange, 2)
 	ec.defSubr3(nil, "set-char-table-range", ec.setCharTableRange, 3)
+	ec.defSubr1(nil, "char-table-parent", ec.charTableParent, 1)
+	ec.defSubr2(nil, "set-char-table-parent", ec.setCharTableParent, 2)
 }

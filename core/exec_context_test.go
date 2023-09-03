@@ -6,7 +6,7 @@ import (
 
 func TestIteration(t *testing.T) {
 	t.Parallel()
-	ec := newExecContext()
+	ec := newTestingInterpreter().ec
 
 	cases := [][]lispObject{
 		{},
@@ -41,7 +41,7 @@ func TestIteration(t *testing.T) {
 
 func TestIterationFail(t *testing.T) {
 	t.Parallel()
-	ec := newExecContext()
+	ec := newTestingInterpreter().ec
 
 	heads := []lispObject{
 		newCons(newInteger(1), newInteger(10)),

@@ -1,6 +1,4 @@
 SHELL = bash
-PIMACS_LISP = $(CURDIR)/lisp
-
 
 build:
 	go build
@@ -19,7 +17,7 @@ run: build
 	./pimacs
 
 test:
-	PIMACS_TESTING=true PIMACS_LISP=$(PIMACS_LISP) go test -v ./...
+	PIMACS_TESTING=true go test -v ./...
 
 debug:
 	dlv debug -- --load test.el

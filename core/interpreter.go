@@ -9,13 +9,29 @@ type Interpreter struct {
 	ec *execContext
 }
 
+type InterpreterConfig struct {
+	loadPathPrepend []string
+}
+
 func terminate(format string, v ...interface{}) {
 	panic(fmt.Sprintf(format, v...))
 }
 
-func NewInterpreter() *Interpreter {
+func NewInterpreterDefault() *Interpreter {
+	return NewInterpreter(InterpreterConfig{})
+}
+
+func NewInterpreter(config InterpreterConfig) *Interpreter {
 	return &Interpreter{
-		ec: newExecContext(),
+		ec: newExecContext(config.loadPathPrepend),
+	}
+}
+
+func newTestingInterpreter() *Interpreter {
+	return &Interpreter{
+		// When running tests, Go sets the CWD to the package's
+		// directory
+		ec: newExecContext([]string{"../core", "../lisp"}),
 	}
 }
 
@@ -34,6 +50,11 @@ func (inp *Interpreter) Done() <-chan bool {
 func (inp *Interpreter) RecursiveEdit() {
 	xEnsure(inp.ec.recursiveEdit())
 	inp.ec.done <- true
+}
+
+func (inp *Interpreter) LoadFile(filename string) error {
+	_, err := inp.ec.load(newString(filename), inp.ec.nil_, inp.ec.nil_, inp.ec.nil_, inp.ec.nil_)
+	return err
 }
 
 func (inp *Interpreter) ReadPrin1(source string) (string, error) {

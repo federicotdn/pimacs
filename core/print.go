@@ -112,6 +112,8 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 			}
 		}
 		ec.printString("]", printCharFn)
+	case lispTypeCharTable:
+		s = fmt.Sprintf("#^%+v", xCharTable(obj).val)
 	default:
 		s = fmt.Sprintf("#<INVALID DATATYPE '%+v'>", obj)
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 func repl() {
-	interpreter := core.NewInterpreter()
+	interpreter := core.NewInterpreterDefault()
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
@@ -46,40 +46,13 @@ func repl() {
 	}
 }
 
-func load(filename string) {
-	interpreter := core.NewInterpreter()
-
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	source := string(data)
-	printed, err := interpreter.ReadEvalPrin1(source)
-
-	if err != nil {
-		fmt.Println("load error:", err)
-		os.Exit(1)
-	}
-
-	fmt.Println(printed)
-}
-
 func main() {
-	const usage = "load Emacs Lisp FILE using the load function"
-
-	var filename string
 	var useTui bool
-	flag.StringVar(&filename, "load", "", usage)
-	flag.StringVar(&filename, "l", "", usage+" (shorthand)")
 	flag.BoolVar(&useTui, "tui", false, "start Pimacs in TUI mode")
 	flag.Parse()
 
 	if useTui {
 		tui.Run()
-	} else if filename != "" {
-		load(filename)
 	} else {
 		repl()
 	}

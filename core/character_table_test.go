@@ -6,7 +6,7 @@ import (
 
 func TestCharTableSet(t *testing.T) {
 	t.Parallel()
-	ec := newExecContext()
+	ec := newTestingInterpreter().ec
 
 	type insertion struct {
 		from, to lispInt
@@ -177,7 +177,7 @@ func TestCharTableSet(t *testing.T) {
 
 func TestCharTableLookup(t *testing.T) {
 	t.Parallel()
-	ec := newExecContext()
+	ec := newTestingInterpreter().ec
 	ct := xCharTable(xEnsure(ec.makeCharTable(ec.nil_, ec.nil_)))
 
 	ct.val = []lispCharTableEntry{
@@ -208,10 +208,15 @@ func TestCharTableLookup(t *testing.T) {
 	}
 
 	for i, case_ := range cases {
-		idx, found := ec.charTableLookup(ct, case_.c)
+		idx, found := ec.charTableLookupInternal(ct, case_.c)
 		if idx != case_.expectedIdx || found != case_.expectedFound {
 			t.Logf("mismatched character table lookup: case index %v", i)
 			t.Fail()
 		}
 	}
+}
+
+func TestCharTableLisp(t *testing.T) {
+	t.Parallel()
+	testLisp(t, "character_table_test.el")
 }

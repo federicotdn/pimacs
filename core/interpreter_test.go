@@ -50,14 +50,14 @@ func testStringToString(t *testing.T, fn func(string, *Interpreter) (string, err
 
 func readPrin1(input string, inp *Interpreter) (string, error) {
 	if inp == nil {
-		inp = NewInterpreter()
+		inp = newTestingInterpreter()
 	}
 	return inp.ReadPrin1(input)
 }
 
 func readEvalPrin1(input string, inp *Interpreter) (string, error) {
 	if inp == nil {
-		inp = NewInterpreter()
+		inp = newTestingInterpreter()
 	}
 	return inp.ReadEvalPrin1(input)
 }
@@ -305,7 +305,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(let ((a nil) (b 2)) b)", "2", nil, nil},
 		{"(let ((a nil) (b 2) c) c)", "nil", nil, nil},
 		{"(progn (let (a)) a)", "", anyError, nil},
-		{"(android-query-battery)", "nil", nil, nil}, // Test calling a stub
 		{"noninteractive", "t", nil, nil},
 		{"(cons (let ((noninteractive nil)) noninteractive) noninteractive)", "(nil . t)", nil, nil},
 		{`(progn (setq pimacs--repo "hello") pimacs--repo)`, `"hello"`, nil, nil},
@@ -319,7 +318,7 @@ func TestReadEvalPrint(t *testing.T) {
 
 func TestReadEvalPrintSpecificErr(t *testing.T) {
 	t.Parallel()
-	inp := NewInterpreter()
+	inp := newTestingInterpreter()
 	ec := inp.ec
 	sentinel := newString("sentinel")
 
@@ -333,4 +332,16 @@ func TestReadEvalPrintSpecificErr(t *testing.T) {
 	}
 
 	testStringToString(t, readEvalPrin1, cases)
+}
+
+func TestStubPanic(t *testing.T) {
+	t.Parallel()
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fail()
+		}
+	}()
+
+	inp := newTestingInterpreter()
+	inp.ReadEvalPrin1("(android-query-battery)")
 }

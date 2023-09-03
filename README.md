@@ -17,7 +17,6 @@ A partial, experimental implementation of an Elisp (Emacs Lisp) interpreter, wri
 
 ## Usage
 Assuming you have the Go compiler installed, simply use `make build` to compile Pimacs, and then `./pimacs` to start the REPL.
-You can also use `./pimacs --load myfile.el` to execute an Elisp script.
 
 Note that many, many Elisp functions and macros are **not** implemented. You can, however, use the following (among others):
 ```

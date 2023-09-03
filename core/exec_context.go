@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"github.com/federicotdn/pimacs/proto"
-	"os"
 )
 
 type stackEntryTag int
@@ -113,20 +112,24 @@ func (jmp *stackJumpSignal) Is(target error) bool {
 }
 
 func (jmp *stackJumpSignal) Error() string {
-	message := "stack jump: signal: "
+	message := "stack jump: signal:"
 	ending := "\nat " + jmp.goStack
 
 	if !symbolp(jmp.errorSymbol) {
-		message += fmt.Sprintf("'%+v' '<unknown>'", jmp.errorSymbol)
+		message += fmt.Sprintf(" '%+v' '<unknown>'", jmp.errorSymbol)
 		return message
 	}
 
 	name := xSymbolName(jmp.errorSymbol)
-	message += fmt.Sprintf("'%+v'", name)
+	message += fmt.Sprintf(" '%+v'", name)
 
 	data := xCdr(jmp.data)
 	if !consp(data) {
-		// data is probably nil, no more info to add
+		if stringp(data) {
+			message += fmt.Sprintf(" '%+v'", xStringValue(data))
+		} else {
+			message += fmt.Sprintf(" '%+v'", data)
+		}
 		return message + ending
 	}
 
@@ -150,15 +153,26 @@ func (jmp *stackJumpSignal) Error() string {
 		}
 
 		if symbolp(fn) {
-			message += fmt.Sprintf(" '%+v' ", xSymbolName(fn))
+			message += fmt.Sprintf(" '%+v'", xSymbolName(fn))
 		} else if subroutinep(fn) {
-			message += fmt.Sprintf(" '%+v' ", xSubroutine(fn).name)
+			message += fmt.Sprintf(" '%+v'", xSubroutine(fn).name)
 		} else {
-			message += " '<function>' "
+			message += " '<function>'"
 		}
 
 		count := xCar(xCdr(data))
-		message += fmt.Sprintf("'%+v'", xIntegerValue(count))
+		message += fmt.Sprintf(" '%+v'", xIntegerValue(count))
+	case ec.s.fileMissing:
+		message += fmt.Sprintf(" '%+v'", xStringValue(xCar(data)))
+	default:
+		for ; consp(data); data = xCdr(data) {
+		}
+		if stringp(data) {
+			message += fmt.Sprintf(" '%+v'", xStringValue(data))
+		} else {
+			message += fmt.Sprintf(" '%+v'", data)
+		}
+
 	}
 
 	return message + ending
@@ -397,7 +411,7 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 	sym.redirect = fwd
 }
 
-func newExecContext() *execContext {
+func newExecContext(loadPathPrepend []string) *execContext {
 	ec := execContext{
 		obarray:            make(map[string]*lispSymbol),
 		stack:              []stackEntry{},
@@ -436,12 +450,13 @@ func newExecContext() *execContext {
 
 	ec.initBuffer() // buffer.go
 
-	loadPath, ok := os.LookupEnv("PIMACS_LISP")
-	if !ok {
-		// Use relative path from CWD
-		loadPath = "lisp"
+	loadPath := []lispObject{}
+	for _, elem := range loadPathPrepend {
+		loadPath = append(loadPath, newString(elem))
 	}
-	ec.v.loadPath.val = ec.makeList(newString(loadPath))
+	loadPath = append(loadPath, newString("lisp"))
+
+	ec.v.loadPath.val = ec.makeList(loadPath...)
 
 	err := ec.loadElisp()
 	if err != nil {
@@ -616,7 +631,7 @@ func (es *emacsStubs) stub(name string) (lispObject, error) {
 }
 
 func (ec *execContext) stub(name string) (lispObject, error) {
-	println("stub invoked:", name)
+	ec.terminate("stub invoked: '%v'", name)
 	return ec.nil_, nil
 }
 
