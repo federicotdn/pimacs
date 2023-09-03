@@ -113,9 +113,34 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		}
 		ec.printString("]", printCharFn)
 	case lispTypeCharTable:
-		s = fmt.Sprintf("#^%+v", xCharTable(obj).val)
+		ct := xCharTable(obj)
+		ec.printString("#^[", printCharFn)
+		ec.printInternal(ct.subtype, printCharFn, escapeFlag)
+		ec.printString(" ", printCharFn)
+		ec.printInternal(ct.defaultVal, printCharFn, escapeFlag)
+		ec.printString(" ", printCharFn)
+		ec.printInternal(newInteger(ct.extraSlots), printCharFn, escapeFlag)
+		ec.printString(" ", printCharFn)
+
+		parent := ec.nil_
+		if ct.parent != nil {
+			parent = ct.parent
+		}
+		ec.printInternal(parent, printCharFn, escapeFlag)
+
+		for _, elem := range ct.val {
+			ec.printString(" ", printCharFn)
+			vec := []lispObject{
+				newInteger(elem.start),
+				newInteger(elem.end),
+				elem.val,
+			}
+			ec.printInternal(newVector(vec), printCharFn, escapeFlag)
+		}
+
+		ec.printString("]", printCharFn)
 	default:
-		s = fmt.Sprintf("#<INVALID DATATYPE '%+v'>", obj)
+		s = fmt.Sprintf("#<unknown datatype '%+v'>", obj)
 	}
 
 	err := ec.printString(s, printCharFn)
