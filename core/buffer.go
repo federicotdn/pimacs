@@ -100,6 +100,10 @@ func (ec *execContext) getBufferCreate(bufferOrName, inhibitBufferHooks lispObje
 
 	buf := ec.makeBuffer(xStringValue(bufferOrName))
 	newList, err := ec.nconc(ec.buffers, ec.makeList(newCons(bufferOrName, buf)))
+	if err != nil {
+		return nil, err
+	}
+
 	ec.buffers = newList
 
 	return buf, nil

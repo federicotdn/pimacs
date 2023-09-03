@@ -7,7 +7,7 @@ import (
 
 const (
 	eofRune rune = -1
-	nbsp         = '\u00A0'
+	nbsp    rune = '\u00A0'
 )
 
 func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject, error) {
@@ -127,7 +127,7 @@ func (ec *execContext) applyLambda(fn, originalArgs lispObject) (lispObject, err
 }
 
 func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObject, error) {
-	symsLeft := ec.nil_
+	var symsLeft lispObject
 	lexEnv := ec.nil_
 	defer ec.unwind()()
 
@@ -190,8 +190,8 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 
 			if lexEnv != ec.nil_ {
 				lexEnv = newCons(newCons(next, arg), lexEnv)
-			} else {
-				ec.stackPushLet(next, arg)
+			} else if err := ec.stackPushLet(next, arg); err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -207,7 +207,10 @@ func (ec *execContext) funcallLambda(fn lispObject, args ...lispObject) (lispObj
 	}
 
 	if lexEnv != ec.v.internalInterpreterEnv.val {
-		ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexEnv)
+		err := ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexEnv)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if !consp(fn) {
@@ -422,7 +425,9 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	}
 
 	defer ec.unwind()()
-	ec.stackPushLet(handlerVar, value)
+	if err = ec.stackPushLet(handlerVar, value); err != nil {
+		return nil, err
+	}
 
 	result, err = ec.progn(body)
 
@@ -560,6 +565,9 @@ func (ec *execContext) setq(originalArgs lispObject) (lispObject, error) {
 		lexBinding := ec.nil_
 		if symbolp(sym) {
 			lexBinding, err = ec.assq(sym, ec.v.internalInterpreterEnv.val)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		if lexBinding != ec.nil_ {
@@ -667,12 +675,16 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 			lexEnv = newCons(newCons(variable, tem), lexEnv)
 		} else {
 			// Bind variable dynamically
-			ec.stackPushLet(variable, tem)
+			if err = ec.stackPushLet(variable, tem); err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	if lexEnv != ec.v.internalInterpreterEnv.sym {
-		ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexEnv)
+		if err = ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexEnv); err != nil {
+			return nil, err
+		}
 	}
 
 	return ec.progn(xCdr(args))
@@ -685,7 +697,9 @@ func (ec *execContext) eval(form, lexical lispObject) (lispObject, error) {
 		lexical = ec.makeList(ec.t)
 	}
 
-	ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexical)
+	if err := ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexical); err != nil {
+		return nil, err
+	}
 	val, err := ec.evalSub(form)
 	if err != nil {
 		return nil, err
@@ -748,7 +762,9 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		}
 
 		defer ec.unwind()()
-		ec.stackPushLet(ec.v.lexicalBinding.sym, val)
+		if err := ec.stackPushLet(ec.v.lexicalBinding.sym, val); err != nil {
+			return nil, err
+		}
 
 		exp, err := ec.apply([]lispObject{xCdr(fn), originalArgs}...)
 		if err != nil {

@@ -6,6 +6,13 @@ import (
 	"strings"
 )
 
+func (ec *execContext) printStringE(str string, printCharFn lispObject, err error) error {
+	if err != nil {
+		return err
+	}
+	return ec.printString(str, printCharFn)
+}
+
 func (ec *execContext) printString(str string, printCharFn lispObject) error {
 	if printCharFn == ec.nil_ {
 		_, err := ec.insert(newString(str))
@@ -23,6 +30,13 @@ func (ec *execContext) printString(str string, printCharFn lispObject) error {
 
 	_, err := ec.funcall(printCharFn, newString(str))
 	return err
+}
+
+func (ec *execContext) printInternalE(obj, printCharFn lispObject, escapeFlag bool, err error) error {
+	if err != nil {
+		return err
+	}
+	return ec.printInternal(obj, printCharFn, escapeFlag)
 }
 
 func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag bool) error {
@@ -58,87 +72,59 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		}
 	case lispTypeCons:
 		err := ec.printString("(", printCharFn)
-		if err != nil {
-			return err
-		}
-
 		for ; consp(obj); obj = xCdr(obj) {
-			err := ec.printInternal(xCar(obj), printCharFn, escapeFlag)
-			if err != nil {
-				return err
-			}
-
+			err = ec.printInternalE(xCar(obj), printCharFn, escapeFlag, err)
 			if xCdr(obj) != ec.nil_ {
-				err = ec.printString(" ", printCharFn)
-				if err != nil {
-					return err
-				}
+				err = ec.printStringE(" ", printCharFn, err)
 			}
 		}
 
 		if obj != ec.nil_ {
-			err = ec.printString(". ", printCharFn)
-			if err != nil {
-				return err
-			}
-
-			err = ec.printInternal(obj, printCharFn, escapeFlag)
-			if err != nil {
-				return err
-			}
+			err = ec.printStringE(". ", printCharFn, err)
+			err = ec.printInternalE(obj, printCharFn, escapeFlag, err)
 		}
 
-		return ec.printString(")", printCharFn)
+		return ec.printStringE(")", printCharFn, err)
 	case lispTypeFloat:
 		s = fmt.Sprint(xFloat(obj).val)
 	case lispTypeVector:
 		err := ec.printString("[", printCharFn)
-		if err != nil {
-			return err
-		}
-
 		vec := xVector(obj)
 		for i, obj := range vec.val {
-			err = ec.printInternal(obj, printCharFn, escapeFlag)
-			if err != nil {
-				return err
-			}
+			err = ec.printInternalE(obj, printCharFn, escapeFlag, err)
 
 			if i < len(vec.val)-1 {
-				err := ec.printString(" ", printCharFn)
-				if err != nil {
-					return err
-				}
+				err = ec.printStringE(" ", printCharFn, err)
 			}
 		}
-		ec.printString("]", printCharFn)
+		return ec.printStringE("]", printCharFn, err)
 	case lispTypeCharTable:
 		ct := xCharTable(obj)
-		ec.printString("#^[", printCharFn)
-		ec.printInternal(ct.subtype, printCharFn, escapeFlag)
-		ec.printString(" ", printCharFn)
-		ec.printInternal(ct.defaultVal, printCharFn, escapeFlag)
-		ec.printString(" ", printCharFn)
-		ec.printInternal(newInteger(ct.extraSlots), printCharFn, escapeFlag)
-		ec.printString(" ", printCharFn)
+		err := ec.printString("#^[", printCharFn)
+		err = ec.printInternalE(ct.subtype, printCharFn, escapeFlag, err)
+		err = ec.printStringE(" ", printCharFn, err)
+		err = ec.printInternalE(ct.defaultVal, printCharFn, escapeFlag, err)
+		err = ec.printStringE(" ", printCharFn, err)
+		err = ec.printInternalE(newInteger(ct.extraSlots), printCharFn, escapeFlag, err)
+		err = ec.printStringE(" ", printCharFn, err)
 
 		parent := ec.nil_
 		if ct.parent != nil {
 			parent = ct.parent
 		}
-		ec.printInternal(parent, printCharFn, escapeFlag)
+		err = ec.printInternalE(parent, printCharFn, escapeFlag, err)
 
 		for _, elem := range ct.val {
-			ec.printString(" ", printCharFn)
+			err = ec.printStringE(" ", printCharFn, err)
 			vec := []lispObject{
 				newInteger(elem.start),
 				newInteger(elem.end),
 				elem.val,
 			}
-			ec.printInternal(newVector(vec), printCharFn, escapeFlag)
+			err = ec.printInternalE(newVector(vec), printCharFn, escapeFlag, err)
 		}
 
-		ec.printString("]", printCharFn)
+		return ec.printStringE("]", printCharFn, err)
 	default:
 		s = fmt.Sprintf("#<unknown datatype '%+v'>", obj)
 	}

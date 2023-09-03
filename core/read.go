@@ -670,9 +670,11 @@ func (ec *execContext) readEvalLoop(ctx readContext) error {
 
 	lex := ec.v.lexicalBinding.val
 	if lex == ec.nil_ || lex == ec.s.unbound {
-		ec.stackPushLet(ec.v.internalInterpreterEnv.sym, ec.nil_)
-	} else {
-		ec.stackPushLet(ec.v.internalInterpreterEnv.sym, ec.makeList(ec.t))
+		if err := ec.stackPushLet(ec.v.internalInterpreterEnv.sym, ec.nil_); err != nil {
+			return err
+		}
+	} else if err := ec.stackPushLet(ec.v.internalInterpreterEnv.sym, ec.makeList(ec.t)); err != nil {
+		return err
 	}
 
 	for {
@@ -703,7 +705,7 @@ func (ec *execContext) readEvalLoop(ctx readContext) error {
 			return err
 		}
 
-		val, err = ec.evalSub(val)
+		_, err = ec.evalSub(val)
 		if err != nil {
 			return err
 		}
@@ -792,16 +794,19 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 
 	defer ec.unwind()()
 	// Load is dynamic by default
-	ec.stackPushLet(ec.v.lexicalBinding.sym, ec.nil_)
+	if err := ec.stackPushLet(ec.v.lexicalBinding.sym, ec.nil_); err != nil {
+		return nil, err
+	}
 
 	ctx := readContextFile{reader: bufio.NewReader(f)}
 
 	if ec.lexicallyBoundp(&ctx) {
-		ec.stackPushLet(ec.v.lexicalBinding.sym, ec.t)
+		if err := ec.stackPushLet(ec.v.lexicalBinding.sym, ec.t); err != nil {
+			return nil, err
+		}
 	}
 
-	err := ec.readEvalLoop(&ctx)
-	if err != nil {
+	if err := ec.readEvalLoop(&ctx); err != nil {
 		return nil, err
 	}
 

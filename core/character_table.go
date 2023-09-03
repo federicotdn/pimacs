@@ -147,7 +147,7 @@ func (ec *execContext) setCharTableRange(table, range_, value lispObject) (lispO
 	ct := xCharTable(table)
 
 	if range_ == ec.t {
-		ec.charTableSet(ct, 0, maxChar, value)
+		ec.charTableSet(ct, 0, runeToLispInt(maxChar), value)
 	} else if range_ == ec.nil_ {
 		ct.defaultVal = value
 	} else if characterp(range_) {
@@ -191,7 +191,7 @@ func (ec *execContext) setCharTableParent(table, parent lispObject) (lispObject,
 
 		for temp := xCharTable(parent); temp != nil; temp = temp.parent {
 			if table == temp {
-				ec.signalError("Attempt to make a chartable be its own parent")
+				return ec.signalError("Attempt to make a chartable be its own parent")
 			}
 		}
 	}

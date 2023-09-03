@@ -7,6 +7,7 @@ import (
 func TestCharTableSet(t *testing.T) {
 	t.Parallel()
 	ec := newTestingInterpreter().ec
+	maxChar := runeToLispInt(maxChar)
 
 	type insertion struct {
 		from, to lispInt

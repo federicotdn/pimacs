@@ -48,7 +48,7 @@
 (lt--defun lt--run-all-tests ()
   (while lt--tests-to-run
     (setq test (car lt--tests-to-run))
-    (princ "+++ RUN-LISP: " t)
+    (princ "+++ LISP: " t)
     (princ (symbol-name test) t)
     (princ "\n" t)
     (unwind-protect (funcall test)

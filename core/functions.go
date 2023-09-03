@@ -8,7 +8,7 @@ func (ec *execContext) listLength(obj lispObject) (int, error) {
 	num := 0
 
 	iter := ec.iterate(obj)
-	for ; iter.hasNext(); obj = iter.nextCons() {
+	for ; iter.hasNext(); iter.nextCons() {
 		num += 1
 	}
 
@@ -160,11 +160,7 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 	for ; iter.hasNext(); tail = iter.nextCons() {
 		next := xCdr(tail)
 		if !consp(next) {
-			if next == ec.nil_ {
-				break
-			} else {
-				return ec.wrongTypeArgument(ec.s.plistp, plist)
-			}
+			return ec.wrongTypeArgument(ec.s.plistp, plist)
 		}
 
 		if prop == xCar(tail) {
@@ -176,7 +172,8 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 		}
 
 		prev = tail
-		tail = xCdr(tail)
+		// Advance in pairs when traversing plist
+		iter.nextCons()
 	}
 
 	if iter.hasError() {
@@ -208,7 +205,8 @@ func (ec *execContext) plistGet(plist, prop lispObject) (lispObject, error) {
 			return xCar(xCdr(plist)), nil
 		}
 
-		plist = iter.nextCons()
+		// Advance in pairs when traversing plist
+		iter.nextCons()
 	}
 
 	return ec.nil_, nil

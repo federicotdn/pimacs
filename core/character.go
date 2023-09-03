@@ -2,9 +2,13 @@ package core
 
 const (
 	eightBitCodeOffset rune = 0x3fff00
-	max5ByteChar            = 0x3fff7f
-	maxChar                 = 0x3fffff
+	max5ByteChar       rune = 0x3fff7f
+	maxChar            rune = 0x3fffff
 )
+
+func runeToLispInt(c rune) lispInt {
+	return lispInt(c)
+}
 
 func charValidp(c rune) bool {
 	return 0 <= c && c <= maxChar

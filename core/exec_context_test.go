@@ -51,7 +51,7 @@ func TestIterationFail(t *testing.T) {
 
 	for _, head := range heads {
 		iter := ec.iterate(head)
-		for ; iter.hasNext(); head = iter.nextCons() {
+		for ; iter.hasNext(); iter.nextCons() {
 		}
 
 		if !iter.hasError() {

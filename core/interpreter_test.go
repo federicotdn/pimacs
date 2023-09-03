@@ -241,7 +241,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(plist-put nil 'c 3)", "(c 3)", nil, nil},
 		{"(plist-put nil :foo 1)", "(:foo 1)", nil, nil},
 		{"(plist-put (cons 1 2) :a 1)", "", anyError, nil},
-		{"(plist-put (1 2 3 . 4) :a 1)", "", anyError, nil},
 		{"(plist-put 99 :a 1)", "", anyError, nil},
 		{"(condition-case nil 42)", "42", nil, nil},
 		{"(condition-case foo 42)", "42", nil, nil},
@@ -313,6 +312,7 @@ func TestReadEvalPrint(t *testing.T) {
 		{"[[[]]]", "[[[]]]", nil, nil},
 		{"[1 2 (+ 1 1)]", "[1 2 (+ 1 1)]", nil, nil},
 		{"(vectorp [])", "t", nil, nil},
+		{"(make-char-table nil)", "#^[nil nil 0 nil]", nil, nil},
 	})
 }
 
@@ -329,6 +329,8 @@ func TestReadEvalPrintSpecificErr(t *testing.T) {
 		{")", "", xErrOnly(ec.signalN(ec.s.invalidReadSyntax)), inp},
 		{"(char-table-range 123 123)", "", xErrOnly(ec.wrongTypeArgument(ec.s.charTablep, sentinel)), inp},
 		{"(signal 1 2)", "", xErrOnly(ec.wrongTypeArgument(ec.s.symbolp, sentinel)), inp},
+		{"(plist-put '(:b) :a 1)", "", xErrOnly(ec.wrongTypeArgument(ec.s.plistp, sentinel)), inp},
+		{"(plist-put '(1 2 3 . 4) :a 1)", "", xErrOnly(ec.wrongTypeArgument(ec.s.plistp, sentinel)), inp},
 	}
 
 	testStringToString(t, readEvalPrin1, cases)
@@ -343,5 +345,5 @@ func TestStubPanic(t *testing.T) {
 	}()
 
 	inp := newTestingInterpreter()
-	inp.ReadEvalPrin1("(android-query-battery)")
+	inp.ReadEvalPrin1("(android-query-battery)") //nolint:errcheck
 }

@@ -47,7 +47,7 @@ loop:
 				col := 0
 				row := 0
 				width, height := s.Size()
-				for _, r := range []rune(op.Text) {
+				for _, r := range []rune(op.Text) { //nolint: staticcheck,gosimple
 					if r == '\n' {
 						col = 0
 						row++
