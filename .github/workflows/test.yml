@@ -1,9 +1,14 @@
 name: Run tests
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - 'extra/*'
+      - 'tools/*'
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
