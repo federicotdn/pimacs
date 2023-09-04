@@ -615,33 +615,34 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 	for argnum, elt := range varList {
 		if symbolp(elt) {
 			temps[argnum] = ec.nil_
-		} else {
-			cdr, err := ec.cdr(elt)
-			if err != nil {
-				return nil, err
-			}
-
-			cddr, err := ec.cdr(cdr)
-			if err != nil {
-				return nil, err
-			}
-
-			if cddr != ec.nil_ {
-				return ec.signalError("`let' bindings can only have one value-form '%+v'", elt)
-			}
-
-			cadr, err := ec.car(cdr)
-			if err != nil {
-				return nil, err
-			}
-
-			val, err := ec.evalSub(cadr)
-			if err != nil {
-				return nil, err
-			}
-
-			temps[argnum] = val
+			continue
 		}
+		cdr, err := ec.cdr(elt)
+		if err != nil {
+			return nil, err
+		}
+
+		cddr, err := ec.cdr(cdr)
+		if err != nil {
+			return nil, err
+		}
+
+		if cddr != ec.nil_ {
+			return ec.signalError("`let' bindings can only have one value-form '%+v'", elt)
+		}
+
+		cadr, err := ec.car(cdr)
+		if err != nil {
+			return nil, err
+		}
+
+		val, err := ec.evalSub(cadr)
+		if err != nil {
+			return nil, err
+		}
+
+		temps[argnum] = val
+
 	}
 
 	lexEnv := ec.v.internalInterpreterEnv.val
@@ -681,6 +682,69 @@ func (ec *execContext) let(args lispObject) (lispObject, error) {
 		if err = ec.stackPushLet(ec.v.internalInterpreterEnv.sym, lexEnv); err != nil {
 			return nil, err
 		}
+	}
+
+	return ec.progn(xCdr(args))
+}
+
+func (ec *execContext) letX(args lispObject) (lispObject, error) {
+	defer ec.unwind()()
+
+	lexEnv := ec.v.internalInterpreterEnv.val
+
+	varList := xCar(args)
+	iter := ec.iterate(varList)
+	for ; iter.hasNext(); varList = iter.nextCons() {
+		elem := xCar(varList)
+		var variable, value lispObject
+
+		if symbolp(elem) {
+			variable = elem
+			value = ec.nil_
+		} else {
+			var err error
+			variable, err = ec.car(elem)
+			if err != nil {
+				return nil, err
+			}
+
+			tail := xCdr(elem)
+			if !consp(tail) {
+				return ec.wrongTypeArgument(ec.s.listp, elem)
+			}
+
+			if xCdr(tail) != ec.nil_ {
+				return ec.signalError("`let' bindings can only have one value-form '%+v'", elem)
+			}
+
+			if value, err = ec.evalSub(xCar(tail)); err != nil {
+				return nil, err
+			}
+		}
+
+		included, err := ec.memq(variable, ec.v.internalInterpreterEnv.val)
+		if err != nil {
+			return nil, err
+		}
+		if lexEnv != ec.nil_ && symbolp(variable) && !xSymbol(variable).special && included == ec.nil_ {
+			newEnv := newCons(newCons(variable, value), ec.v.internalInterpreterEnv.val)
+
+			if ec.v.internalInterpreterEnv.val == lexEnv {
+				if err = ec.stackPushLet(ec.v.internalInterpreterEnv.sym, newEnv); err != nil {
+					return nil, err
+				}
+			} else {
+				ec.v.internalInterpreterEnv.val = newEnv
+			}
+		} else if err := ec.stackPushLet(variable, value); err != nil {
+			return nil, err
+
+		}
+
+	}
+
+	if iter.hasError() {
+		return iter.error()
 	}
 
 	return ec.progn(xCdr(args))
@@ -794,6 +858,7 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubrU(&ec.s.quote, "quote", ec.quote, 1)
 	ec.defSubrU(&ec.s.function, "function", ec.function, 1)
 	ec.defSubrU(nil, "let", ec.let, 1)
+	ec.defSubrU(nil, "let*", ec.letX, 1)
 	ec.defSubrU(nil, "catch", ec.catch, 1)
 	ec.defSubrU(nil, "unwind-protect", ec.unwindProtect, 1)
 	ec.defSubrU(nil, "condition-case", ec.conditionCase, 2)

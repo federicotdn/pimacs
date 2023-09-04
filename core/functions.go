@@ -1,6 +1,7 @@
 package core
 
 import (
+	"slices"
 	"unicode/utf8"
 )
 
@@ -118,15 +119,19 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 			if err != nil {
 				return nil, err
 			}
-
 			if equal == ec.nil_ {
 				return ec.false_()
 			}
 
-			o2 = xCdr(o2)
-			if xCdr(o1) == o2 {
+			equal, err = ec.equal(xCdr(o1), xCdr(o2))
+			if err != nil {
+				return nil, err
+			}
+			if equal != ec.nil_ {
 				return ec.true_()
 			}
+
+			o2 = xCdr(o2)
 		}
 
 		if iter.hasError() {
@@ -143,6 +148,25 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 	case lispTypeSymbol:
 		// Symbols must match exactly (eq).
 		return ec.false_()
+	case lispTypeVector:
+		v1 := xVector(o1)
+		v2 := xVector(o2)
+
+		if len(v1.val) != len(v2.val) {
+			return ec.false_()
+		}
+
+		for i := 0; i < len(v1.val); i++ {
+			equal, err := ec.equal(v1.val[i], v2.val[i])
+			if err != nil {
+				return nil, err
+			}
+			if equal == ec.nil_ {
+				return ec.false_()
+			}
+		}
+
+		return ec.true_()
 	default:
 		return ec.pimacsUnimplemented(ec.s.equal, "implementation missing for object type '%v'", t1)
 	}
@@ -279,6 +303,35 @@ func (ec *execContext) provide(feature, subfeatures lispObject) (lispObject, err
 	return ec.nil_, nil
 }
 
+func (ec *execContext) nreverse(seq lispObject) (lispObject, error) {
+	return ec.reverse(seq)
+}
+
+func (ec *execContext) reverse(seq lispObject) (lispObject, error) {
+	switch seq.getType() {
+	case lispTypeSymbol:
+		if seq != ec.nil_ {
+			break
+		}
+		fallthrough
+	case lispTypeCons:
+		result, err := ec.listToSlice(seq)
+		if err != nil {
+			return nil, err
+		}
+		slices.Reverse(result)
+		return ec.makeList(result...), nil
+	case lispTypeVector:
+		copy := slices.Clone(xVector(seq).val)
+		slices.Reverse(copy)
+		return newVector(copy), nil
+	case lispTypeString:
+		return ec.pimacsUnimplemented(ec.s.reverse, "no reverse for string")
+	}
+
+	return ec.wrongTypeArgument(ec.s.sequencep, seq)
+}
+
 func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr1(nil, "length", ec.length, 1)
 	ec.defSubr2(&ec.s.equal, "equal", ec.equal, 2)
@@ -292,4 +345,6 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr3(nil, "plist-put", ec.plistPut, 3)
 	ec.defSubrM(nil, "nconc", ec.nconc, 0)
 	ec.defSubr2(&ec.s.provide, "provide", ec.provide, 1)
+	ec.defSubr1(nil, "nreverse", ec.nreverse, 1)
+	ec.defSubr1(&ec.s.reverse, "reverse", ec.reverse, 1)
 }

@@ -17,22 +17,27 @@ func terminate(format string, v ...interface{}) {
 	panic(fmt.Sprintf(format, v...))
 }
 
-func NewInterpreterDefault() *Interpreter {
+func NewInterpreterDefault() (*Interpreter, error) {
 	return NewInterpreter(InterpreterConfig{})
 }
 
-func NewInterpreter(config InterpreterConfig) *Interpreter {
-	return &Interpreter{
-		ec: newExecContext(config.loadPathPrepend),
+func NewInterpreter(config InterpreterConfig) (*Interpreter, error) {
+	ec, err := newExecContext(config.loadPathPrepend)
+	if err != nil {
+		return nil, err
 	}
+
+	return &Interpreter{ec: ec}, nil
 }
 
 func newTestingInterpreter() *Interpreter {
-	return &Interpreter{
-		// When running tests, Go sets the CWD to the package's
-		// directory
-		ec: newExecContext([]string{"../core", "../lisp", "../lisp/emacs"}),
+	// When running tests, Go sets the CWD to the package's
+	// directory
+	ec, err := newExecContext([]string{"../core", "../lisp", "../lisp/emacs"})
+	if err != nil {
+		panic(err)
 	}
+	return &Interpreter{ec: ec}
 }
 
 func (inp *Interpreter) InputEventsChan() chan<- proto.InputEvent {

@@ -10,6 +10,10 @@ func runeToLispInt(c rune) lispInt {
 	return lispInt(c)
 }
 
+func lispIntToRune(i lispInt) rune {
+	return rune(i)
+}
+
 func charValidp(c rune) bool {
 	return 0 <= c && c <= maxChar
 }

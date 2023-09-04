@@ -123,7 +123,8 @@ func (jmp *stackJumpSignal) Error() string {
 	name := xSymbolName(jmp.errorSymbol)
 	message += fmt.Sprintf(" '%+v'", name)
 
-	data := xCdr(jmp.data)
+	originalData := xCdr(jmp.data)
+	data := originalData
 	if !consp(data) {
 		if stringp(data) {
 			message += fmt.Sprintf(" '%+v'", xStringValue(data))
@@ -136,7 +137,7 @@ func (jmp *stackJumpSignal) Error() string {
 	ec := jmp.ec
 
 	switch jmp.errorSymbol {
-	case ec.s.error_:
+	case ec.s.error_, ec.s.pimacsUnimplemented, ec.s.fileMissing:
 		message += fmt.Sprintf(" '%+v'", xStringValue(xCar(data)))
 	case ec.s.voidVariable:
 		message += fmt.Sprintf(" '%+v'", xSymbolName(xCar(data)))
@@ -162,16 +163,8 @@ func (jmp *stackJumpSignal) Error() string {
 
 		count := xCar(xCdr(data))
 		message += fmt.Sprintf(" '%+v'", xIntegerValue(count))
-	case ec.s.fileMissing:
-		message += fmt.Sprintf(" '%+v'", xStringValue(xCar(data)))
 	default:
-		for ; consp(data); data = xCdr(data) {
-		}
-		if stringp(data) {
-			message += fmt.Sprintf(" '%+v'", xStringValue(data))
-		} else {
-			message += fmt.Sprintf(" '%+v'", data)
-		}
+		message += fmt.Sprintf(" '%+v'", originalData)
 
 	}
 
@@ -411,7 +404,7 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 	sym.redirect = fwd
 }
 
-func newExecContext(loadPathPrepend []string) *execContext {
+func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec := execContext{
 		obarray:            make(map[string]*lispSymbol),
 		stack:              []stackEntry{},
@@ -458,22 +451,17 @@ func newExecContext(loadPathPrepend []string) *execContext {
 
 	ec.v.loadPath.val = ec.makeList(loadPath...)
 
-	err := ec.loadElisp()
-	if err != nil {
-		panic(err)
+	if err := ec.loadElisp(); err != nil {
+		return nil, err
 	}
 
-	return &ec
+	return &ec, nil
 }
 
 func (ec *execContext) loadElisp() error {
-	files := []string{"pimacs.el", "emacs-lisp/backquote.el"}
-
-	for _, path := range files {
-		_, err := ec.load(newString(path), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
-		if err != nil {
-			return err
-		}
+	_, err := ec.load(newString("pimacs.el"), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -99,6 +99,8 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		}
 		return ec.printStringE("]", printCharFn, err)
 	case lispTypeCharTable:
+		// Thread err through each print*E call so that we don't have to
+		// check err a million times
 		ct := xCharTable(obj)
 		err := ec.printString("#^[", printCharFn)
 		err = ec.printInternalE(ct.subtype, printCharFn, escapeFlag, err)

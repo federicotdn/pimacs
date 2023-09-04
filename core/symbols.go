@@ -37,6 +37,7 @@ type symbols struct {
 	recursiveEdit      lispObject
 	charTablep         lispObject
 	provide            lispObject
+	reverse            lispObject
 
 	// Errors
 	error_                 lispObject

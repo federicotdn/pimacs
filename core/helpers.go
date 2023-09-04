@@ -161,7 +161,7 @@ func xIntegerValue(obj lispObject) lispInt {
 }
 
 func xIntegerRune(obj lispObject) rune {
-	return rune(xIntegerValue(obj))
+	return lispIntToRune(xIntegerValue(obj))
 }
 
 func newInteger(val lispInt) *lispInteger {
@@ -200,7 +200,7 @@ func characterp(obj lispObject) bool {
 	if !integerp(obj) {
 		return false
 	}
-	return charValidp(rune(xIntegerValue(obj)))
+	return charValidp(xIntegerRune(obj))
 }
 
 func arrayp(obj lispObject) bool {

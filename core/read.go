@@ -413,7 +413,19 @@ read_obj:
 		stack.push(readStackElem{elementType: readStackSpecial, special: ec.s.backquote})
 		goto read_obj
 	case c == ',':
-		return ec.pimacsUnimplemented(ec.s.read, "unknown token: ','")
+		next := ctx.read()
+		var sym lispObject
+
+		if next == '@' {
+			sym = ec.s.commaAt
+		} else {
+			if next >= 0 {
+				ctx.unread(next)
+			}
+			sym = ec.s.comma
+		}
+		stack.push(readStackElem{elementType: readStackSpecial, special: sym})
+		goto read_obj
 	case c == '?':
 		obj, err = ec.readCharLiteral(ctx)
 		if err != nil {

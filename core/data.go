@@ -248,6 +248,11 @@ func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
 	return ec.true_()
 }
 
+func (ec *execContext) bareSymbol(sym lispObject) (lispObject, error) {
+	// TODO: Is this correct?
+	return sym, nil
+}
+
 func (ec *execContext) symbolsOfData() {
 	ec.defSym(&ec.s.wholeNump, "wholenump")
 
@@ -282,4 +287,5 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr3(nil, "defalias", ec.defalias, 2)
 	ec.defSubrM(nil, "+", ec.plusSign, 0)
 	ec.defSubrM(nil, "<", ec.lessThanSign, 1)
+	ec.defSubr1(nil, "bare-symbol", ec.bareSymbol, 1)
 }

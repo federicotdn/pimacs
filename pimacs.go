@@ -11,7 +11,10 @@ import (
 )
 
 func repl() {
-	interpreter := core.NewInterpreterDefault()
+	interpreter, err := core.NewInterpreterDefault()
+	if err != nil {
+		panic(err)
+	}
 
 	for {
 		reader := bufio.NewReader(os.Stdin)

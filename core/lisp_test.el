@@ -7,6 +7,8 @@
 (setq lt--dbg-count 0)
 
 (defmacro lt--deftest (name arglist &rest body)
+  (if (memq name lt--tests-to-run)
+      (signal 'test-duplicated (symbol-name name)))
   (setq lt--tests-to-run (cons name lt--tests-to-run))
   (list 'defalias
 	(list 'quote name)
@@ -28,6 +30,7 @@
   (setq lt--dbg-count (+ lt--dbg-count 1)))
 
 (defun lt--run-all-tests ()
+  (setq lt--tests-to-run (reverse lt--tests-to-run))
   (while lt--tests-to-run
     (setq test (car lt--tests-to-run))
     (princ "+++ LISP: " t)

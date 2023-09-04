@@ -15,7 +15,10 @@ func Run() {
 		panic(err)
 	}
 
-	inp := core.NewInterpreterDefault()
+	inp, err := core.NewInterpreterDefault()
+	if err != nil {
+		panic(err)
+	}
 
 	tcellEvents := make(chan tcell.Event)
 	quit := make(chan struct{})

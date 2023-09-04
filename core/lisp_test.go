@@ -10,12 +10,12 @@ func testLisp(t *testing.T, filename string) {
 	err := inp.LoadFile("lisp_test.el")
 	if err != nil {
 		t.Logf("failed to load 'lisp_test.el': %v", err)
-		t.Fail()
+		t.FailNow()
 	}
 	err = inp.LoadFile(filename)
 	if err != nil {
 		t.Logf("failed to load '%v': %+v", filename, err)
-		t.Fail()
+		t.FailNow()
 	}
 	_, err = inp.ReadEvalPrin1("(lt--run-all-tests)")
 	if err != nil {
