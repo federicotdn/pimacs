@@ -211,30 +211,3 @@ func arrayp(obj lispObject) bool {
 func naturalp(obj lispObject) bool {
 	return integerp(obj) && xIntegerValue(obj) >= 0
 }
-
-// Debug utilities //
-
-func debugRepr(obj lispObject) string {
-	switch obj.getType() {
-	case lispTypeCons:
-		return fmt.Sprintf("CONS(%v, %v)", debugRepr(xCar(obj)), debugRepr(xCdr(obj)))
-	case lispTypeFloat:
-		return fmt.Sprintf("FLOAT(%v)", xFloatValue(obj))
-	case lispTypeString:
-		return fmt.Sprintf("STRING(%v)", xStringValue(obj))
-	case lispTypeInteger:
-		return fmt.Sprintf("INTEGER(%v)", xIntegerValue(obj))
-	case lispTypeSymbol:
-		return fmt.Sprintf("SYMBOL(%v)", xSymbolName(obj))
-	case lispTypeVector:
-		return "VECTOR()"
-	case lispTypeBuffer:
-		buf := xBuffer(obj)
-		return fmt.Sprintf("BUFFER(name=%v, live=%v)", buf.name, buf.live)
-	case lispTypeSubroutine:
-		subr := xSubroutine(obj)
-		return fmt.Sprintf("SUBROUTINE(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
-	default:
-		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
-	}
-}
