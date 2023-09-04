@@ -12,6 +12,7 @@ const (
 	entryLetForwarded
 	entryCatch
 	entryFnLispObject
+	entryBacktrace
 )
 
 type stackEntry interface {
@@ -27,6 +28,7 @@ type stackJumpSignal struct {
 	errorSymbol lispObject
 	data        lispObject
 	goStack     string
+	lispStack   string
 	ec          *execContext
 }
 
@@ -46,6 +48,7 @@ type execContext struct {
 	done   chan bool
 
 	errorOnVarRedefine bool
+	testing            bool
 }
 
 type emacsStubs struct {
@@ -69,6 +72,13 @@ type stackEntryCatch struct {
 type stackEntryFnLispObject struct {
 	function func(lispObject)
 	arg      lispObject
+}
+
+type stackEntryBacktrace struct {
+	debugOnExit bool
+	function    lispObject
+	args        []lispObject
+	evaluated   bool
 }
 
 func (jmp *stackJumpTag) Error() string {
@@ -113,7 +123,7 @@ func (jmp *stackJumpSignal) Is(target error) bool {
 
 func (jmp *stackJumpSignal) Error() string {
 	message := "stack jump: signal:"
-	ending := "\nat " + jmp.goStack
+	ending := "\nbacktrace:\n" + jmp.lispStack
 
 	if !symbolp(jmp.errorSymbol) {
 		message += fmt.Sprintf(" '%+v' '<unknown>'", jmp.errorSymbol)
@@ -185,6 +195,10 @@ func (se *stackEntryCatch) tag() stackEntryTag {
 
 func (se *stackEntryFnLispObject) tag() stackEntryTag {
 	return entryFnLispObject
+}
+
+func (se *stackEntryBacktrace) tag() stackEntryTag {
+	return entryBacktrace
 }
 
 func (ec *execContext) makeSymbol(name string, init bool) *lispSymbol {
@@ -536,6 +550,14 @@ func (ec *execContext) stackPushFnLispObject(function func(lispObject), arg lisp
 	})
 }
 
+func (ec *execContext) stackPushBacktrace(function lispObject, args []lispObject, evaluated bool) {
+	ec.stack = append(ec.stack, &stackEntryBacktrace{
+		function:  function,
+		args:      args,
+		evaluated: evaluated,
+	})
+}
+
 func (ec *execContext) catchInStack(tag lispObject) bool {
 	for _, binding := range ec.stack {
 		if binding.tag() != entryCatch {
@@ -587,16 +609,57 @@ func (ec *execContext) stackPopTo(target int) {
 			if err != nil {
 				ec.terminate("could not restore forwarded symbol value: '%+v'", let)
 			}
-		case entryCatch:
 		case entryFnLispObject:
 			entry := current.(*stackEntryFnLispObject)
 			entry.function(entry.arg)
+		case entryCatch:
+		case entryBacktrace:
 		default:
 			ec.terminate("unknown stack item tag: '%v'", current.tag())
 		}
 
 		ec.stack = ec.stack[:len(ec.stack)-1]
 	}
+}
+
+func (ec *execContext) printLispStack() (string, error) {
+	lispStack := ""
+	for i := len(ec.stack) - 1; i >= 0; i-- {
+		if ec.stack[i].tag() != entryBacktrace {
+			continue
+		}
+		bt := ec.stack[i].(*stackEntryBacktrace)
+
+		functionName := "<unknown function>"
+		if symbolp(bt.function) {
+			functionName = xSymbolName(bt.function)
+		}
+
+		lispStack += fmt.Sprintf("  %v(", functionName)
+
+		for j, arg := range bt.args {
+			s, err := ec.prin1ToString(arg, ec.nil_)
+			if err != nil {
+				return "", err
+			}
+
+			printed := xStringValue(s)
+			if len(printed) > 10 {
+				printed = printed[:10] + "[...]"
+			}
+			lispStack += printed
+
+			if j < len(bt.args)-1 {
+				lispStack += " "
+			}
+		}
+
+		lispStack += ")"
+		if i > 0 {
+			lispStack += "\n"
+		}
+	}
+	return lispStack, nil
 }
 
 func (ec *execContext) bool(b bool) (lispObject, error) {
@@ -624,5 +687,14 @@ func (ec *execContext) stub(name string) (lispObject, error) {
 }
 
 func (ec *execContext) terminate(format string, v ...interface{}) {
+	if !ec.testing {
+		stack, err := ec.printLispStack()
+		if err != nil {
+			fmt.Printf("no lisp backtrace available: %v", err)
+		} else {
+			fmt.Println("backtrace:")
+			fmt.Println(stack)
+		}
+	}
 	terminate(format, v...)
 }

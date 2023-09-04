@@ -332,6 +332,11 @@ func (ec *execContext) reverse(seq lispObject) (lispObject, error) {
 	return ec.wrongTypeArgument(ec.s.sequencep, seq)
 }
 
+func (ec *execContext) require(feature, filename, noerror lispObject) (lispObject, error) {
+	// TODO: Implement
+	return ec.nil_, nil
+}
+
 func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr1(nil, "length", ec.length, 1)
 	ec.defSubr2(&ec.s.equal, "equal", ec.equal, 2)
@@ -347,4 +352,5 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(&ec.s.provide, "provide", ec.provide, 1)
 	ec.defSubr1(nil, "nreverse", ec.nreverse, 1)
 	ec.defSubr1(&ec.s.reverse, "reverse", ec.reverse, 1)
+	ec.defSubr3(nil, "require", ec.require, 1)
 }

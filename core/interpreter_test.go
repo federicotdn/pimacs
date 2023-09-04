@@ -292,7 +292,6 @@ func TestReadEvalPrint(t *testing.T) {
 		{`(nconc (cons 1 2) '(4 5 6))`, `(1 4 5 6)`, nil, nil},
 		{`(length (buffer-list))`, `1`, nil, nil},
 		{"(getenv-internal \"FOO\")", "nil", nil, nil},
-		{"(getenv-internal \"PIMACS_TESTING\")", "\"true\"", nil, nil},
 		{"(intern \"\")", "##", nil, nil},
 		{`(intern "\\")`, `\\`, nil, nil},
 		{"(setq)", "nil", nil, nil},

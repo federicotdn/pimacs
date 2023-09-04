@@ -16,10 +16,6 @@
 	(list 'quote name)
 	(list 'function (cons 'lambda (cons arglist body)))))
 
-;; A very simplified version of defconst
-(defmacro defconst (name value &optional _docs)
-  (list 'setq name value))
-
 ;; A very simplified version of defvar
 (defmacro defvar (name &optional value _docs)
   (list 'setq name value))

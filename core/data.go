@@ -109,6 +109,20 @@ func (ec *execContext) cdr(obj lispObject) (lispObject, error) {
 	return xCdr(obj), nil
 }
 
+func (ec *execContext) carSafe(obj lispObject) (lispObject, error) {
+	if !consp(obj) {
+		return ec.nil_, nil
+	}
+	return xCar(obj), nil
+}
+
+func (ec *execContext) cdrSafe(obj lispObject) (lispObject, error) {
+	if !consp(obj) {
+		return ec.nil_, nil
+	}
+	return xCdr(obj), nil
+}
+
 func (ec *execContext) setCar(obj, newCar lispObject) (lispObject, error) {
 	if !consp(obj) {
 		return ec.wrongTypeArgument(ec.s.consp, obj)
@@ -275,6 +289,8 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(nil, "fmakunbound", ec.fmakunbound, 1)
 	ec.defSubr1(nil, "car", ec.car, 1)
 	ec.defSubr1(nil, "cdr", ec.cdr, 1)
+	ec.defSubr1(nil, "car-safe", ec.carSafe, 1)
+	ec.defSubr1(nil, "cdr-safe", ec.cdrSafe, 1)
 	ec.defSubr2(nil, "setcar", ec.setCar, 2)
 	ec.defSubr2(nil, "setcdr", ec.setCdr, 2)
 	ec.defSubr1(nil, "symbol-plist", ec.symbolPlist, 1)

@@ -37,6 +37,7 @@ func newTestingInterpreter() *Interpreter {
 	if err != nil {
 		panic(err)
 	}
+	ec.testing = true
 	return &Interpreter{ec: ec}
 }
 

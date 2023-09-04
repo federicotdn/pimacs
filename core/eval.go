@@ -240,6 +240,9 @@ func (ec *execContext) funcall(args ...lispObject) (lispObject, error) {
 	originalFn := args[0]
 	fn := originalFn
 
+	defer ec.unwind()()
+	ec.stackPushBacktrace(originalFn, args[1:], true)
+
 	if symbolp(fn) && fn != ec.nil_ {
 		fn = xSymbol(fn).function
 	}
@@ -450,10 +453,16 @@ func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) 
 		errorSymbol = ec.s.error_
 	}
 
+	lispStack, err := ec.printLispStack()
+	if err != nil {
+		ec.terminate("error when printing lisp stack: %v", err)
+	}
+
 	return nil, &stackJumpSignal{
 		errorSymbol: errorSymbol,
 		data:        newCons(errorSymbol, data),
 		goStack:     string(buf[:n]),
+		lispStack:   lispStack,
 		ec:          ec,
 	}
 }
@@ -469,6 +478,46 @@ func (ec *execContext) quote(args lispObject) (lispObject, error) {
 	}
 
 	return xCar(args), nil
+}
+
+func (ec *execContext) and(args lispObject) (lispObject, error) {
+	val := ec.t
+
+	for consp(args) {
+		arg := xCar(args)
+		args = xCdr(args)
+		var err error
+		val, err = ec.evalSub(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		if val == ec.nil_ {
+			break
+		}
+	}
+
+	return val, nil
+}
+
+func (ec *execContext) or(args lispObject) (lispObject, error) {
+	val := ec.nil_
+
+	for consp(args) {
+		arg := xCar(args)
+		args = xCdr(args)
+		var err error
+		val, err = ec.evalSub(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		if val != ec.nil_ {
+			break
+		}
+	}
+
+	return val, nil
 }
 
 func (ec *execContext) if_(args lispObject) (lispObject, error) {
@@ -512,6 +561,36 @@ func (ec *execContext) while(args lispObject) (lispObject, error) {
 	}
 
 	return ec.nil_, nil
+}
+
+func (ec *execContext) cond(args lispObject) (lispObject, error) {
+	val := args
+	for consp(args) {
+		clause := xCar(args)
+		if !consp(clause) {
+			return ec.wrongTypeArgument(ec.s.consp, clause)
+		}
+		var err error
+		val, err = ec.evalSub(xCar(clause))
+		if err != nil {
+			return nil, err
+		}
+
+		if val != ec.nil_ {
+			if xCdr(clause) != ec.nil_ {
+				val, err = ec.progn(xCdr(clause))
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			break
+		}
+
+		args = xCdr(args)
+	}
+
+	return val, nil
 }
 
 func (ec *execContext) progn(body lispObject) (lispObject, error) {
@@ -600,6 +679,20 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 	}
 
 	return quoted, nil
+}
+
+func (ec *execContext) defconst(args lispObject) (lispObject, error) {
+	// TOOD: Incomplete, shares common code with defvar too?
+	sym := xCar(args)
+	if !symbolp(sym) {
+		return ec.wrongTypeArgument(ec.s.symbolp, sym)
+	}
+	xSymbol(sym).special = true
+	val, err := ec.evalSub(xCar(xCdr(args)))
+	if err != nil {
+		return nil, err
+	}
+	return sym, ec.setInternal(sym, val)
 }
 
 func (ec *execContext) let(args lispObject) (lispObject, error) {
@@ -793,6 +886,13 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 	}
 	fn := originalFn
 
+	argsSlice, err := ec.listToSlice(originalArgs)
+	if err != nil {
+		return nil, err
+	}
+	defer ec.unwind()()
+	ec.stackPushBacktrace(originalFn, argsSlice, false)
+
 	if !symbolp(fn) {
 		fn, err = ec.function(ec.makeList(fn))
 		if err != nil {
@@ -821,7 +921,6 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 			val = ec.nil_
 		}
 
-		defer ec.unwind()()
 		if err := ec.stackPushLet(ec.v.lexicalBinding.sym, val); err != nil {
 			return nil, err
 		}
@@ -852,11 +951,15 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubrM(nil, "funcall", ec.funcall, 1)
 	ec.defSubrM(nil, "apply", ec.apply, 1)
 	ec.defSubrU(nil, "progn", ec.progn, 0)
+	ec.defSubrU(nil, "cond", ec.cond, 0)
 	ec.defSubrU(&ec.s.setq, "setq", ec.setq, 0)
+	ec.defSubrU(nil, "and", ec.and, 0)
+	ec.defSubrU(nil, "or", ec.or, 0)
 	ec.defSubrU(nil, "if", ec.if_, 2)
 	ec.defSubrU(nil, "while", ec.while, 1)
 	ec.defSubrU(&ec.s.quote, "quote", ec.quote, 1)
 	ec.defSubrU(&ec.s.function, "function", ec.function, 1)
+	ec.defSubrU(nil, "defconst", ec.defconst, 2)
 	ec.defSubrU(nil, "let", ec.let, 1)
 	ec.defSubrU(nil, "let*", ec.letX, 1)
 	ec.defSubrU(nil, "catch", ec.catch, 1)

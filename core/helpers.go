@@ -1,7 +1,5 @@
 package core
 
-import "fmt"
-
 // General helpers //
 
 func xEnsure(obj lispObject, err error) lispObject {
