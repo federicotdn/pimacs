@@ -593,6 +593,15 @@ func (ec *execContext) cond(args lispObject) (lispObject, error) {
 	return val, nil
 }
 
+func (ec *execContext) prog1(body lispObject) (lispObject, error) {
+	val, err := ec.evalSub(xCar(body))
+	if err != nil {
+		return nil, err
+	}
+
+	return val, ec.progIgnore(xCdr(body))
+}
+
 func (ec *execContext) progn(body lispObject) (lispObject, error) {
 	val := ec.nil_
 
@@ -951,6 +960,7 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubrM(nil, "funcall", ec.funcall, 1)
 	ec.defSubrM(nil, "apply", ec.apply, 1)
 	ec.defSubrU(nil, "progn", ec.progn, 0)
+	ec.defSubrU(nil, "prog1", ec.prog1, 1)
 	ec.defSubrU(nil, "cond", ec.cond, 0)
 	ec.defSubrU(&ec.s.setq, "setq", ec.setq, 0)
 	ec.defSubrU(nil, "and", ec.and, 0)

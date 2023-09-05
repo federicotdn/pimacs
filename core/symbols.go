@@ -38,6 +38,8 @@ type symbols struct {
 	charTablep         lispObject
 	provide            lispObject
 	reverse            lispObject
+	mapCar             lispObject
+	eql                lispObject
 
 	// Errors
 	error_                 lispObject

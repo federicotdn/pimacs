@@ -22,6 +22,15 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 	})
 }
 
+func (ec *execContext) pimacsImplementationStats() (lispObject, error) {
+	data := map[string]lispObject{
+		"subroutines": newInteger(lispInt(ec.init.subrs)),
+		"stubs":       newInteger(lispInt(ec.init.stubs)),
+		"completion":  newFloat(lispFp(100.0 * float32(ec.init.subrs) / float32(ec.init.stubs))),
+	}
+	return ec.makePlist(data)
+}
+
 func (ec *execContext) symbolsOfPimacsTools() {
 	ec.defVarLisp(
 		&ec.v.pimacsRepo,
@@ -30,4 +39,5 @@ func (ec *execContext) symbolsOfPimacsTools() {
 	)
 
 	ec.defSubr1(nil, "pimacs--symbol-debug", ec.pimacsSymbolDebug, 1)
+	ec.defSubr0(nil, "pimacs--impl-stats", ec.pimacsImplementationStats)
 }

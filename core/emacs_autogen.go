@@ -99,478 +99,6 @@ func (es *emacsStubs) vector_autogen(args ...lispObject) (lispObject, error) {
 	return es.stub("vector") // Source file: alloc.c
 }
 
-func (es *emacsStubs) androidDetectMouse_autogen() (lispObject, error) {
-	return es.stub("android-detect-mouse") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidDisplayMonitorAttributesList_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("android-display-monitor-attributes-list") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidFrameEdges_autogen(frame, type_ lispObject) (lispObject, error) {
-	return es.stub("android-frame-edges") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidFrameGeometry_autogen(frame lispObject) (lispObject, error) {
-	return es.stub("android-frame-geometry") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidFrameListZOrder_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("android-frame-list-z-order") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidFrameRestack_autogen(frame1, frame2, frame3 lispObject) (lispObject, error) {
-	return es.stub("android-frame-restack") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidGetConnection_autogen() (lispObject, error) {
-	return es.stub("android-get-connection") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidMouseAbsolutePixelPosition_autogen() (lispObject, error) {
-	return es.stub("android-mouse-absolute-pixel-position") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidQueryBattery_autogen() (lispObject, error) {
-	return es.stub("android-query-battery") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidRequestDirectoryAccess_autogen() (lispObject, error) {
-	return es.stub("android-request-directory-access") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidSetMouseAbsolutePixelPosition_autogen(x, y lispObject) (lispObject, error) {
-	return es.stub("android-set-mouse-absolute-pixel-position") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) androidToggleOnScreenKeyboard_autogen(frame, hide lispObject) (lispObject, error) {
-	return es.stub("android-toggle-on-screen-keyboard") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xCreateFrame_autogen(parms lispObject) (lispObject, error) {
-	return es.stub("x-create-frame") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xCreateFrame_1_autogen(parms lispObject) (lispObject, error) {
-	return es.stub("x-create-frame") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xCreateFrame_2_autogen(parms lispObject) (lispObject, error) {
-	return es.stub("x-create-frame") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xCreateFrame_3_autogen(parameters lispObject) (lispObject, error) {
-	return es.stub("x-create-frame") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xCreateFrame_4_autogen(parms lispObject) (lispObject, error) {
-	return es.stub("x-create-frame") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayBackingStore_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-backing-store") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayBackingStore_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-backing-store") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayBackingStore_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-backing-store") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayBackingStore_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-backing-store") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayBackingStore_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-backing-store") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayColorCells_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-color-cells") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayColorCells_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-color-cells") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayColorCells_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-color-cells") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayColorCells_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-color-cells") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayColorCells_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-color-cells") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayGrayscaleP_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-grayscale-p") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayGrayscaleP_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-grayscale-p") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayGrayscaleP_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-grayscale-p") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayGrayscaleP_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-grayscale-p") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayGrayscaleP_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-grayscale-p") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayList_autogen() (lispObject, error) {
-	return es.stub("x-display-list") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayList_1_autogen() (lispObject, error) {
-	return es.stub("x-display-list") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayList_2_autogen() (lispObject, error) {
-	return es.stub("x-display-list") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayList_3_autogen() (lispObject, error) {
-	return es.stub("x-display-list") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayList_4_autogen() (lispObject, error) {
-	return es.stub("x-display-list") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayMmHeight_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-height") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayMmHeight_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-height") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayMmHeight_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-height") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayMmHeight_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-height") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayMmHeight_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-height") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayMmWidth_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-width") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayMmWidth_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-width") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayMmWidth_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-width") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayMmWidth_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-width") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayMmWidth_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-mm-width") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayPixelHeight_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-height") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayPixelHeight_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-height") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayPixelHeight_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-height") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayPixelHeight_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-height") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayPixelHeight_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-height") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayPixelWidth_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-width") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayPixelWidth_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-width") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayPixelWidth_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-width") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayPixelWidth_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-width") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayPixelWidth_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-pixel-width") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayPlanes_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-planes") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayPlanes_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-planes") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayPlanes_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-planes") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayPlanes_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-planes") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayPlanes_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-planes") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayScreens_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-screens") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayScreens_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-screens") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayScreens_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-screens") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayScreens_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-screens") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayScreens_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-screens") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplayVisualClass_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-visual-class") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xDisplayVisualClass_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-visual-class") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplayVisualClass_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-visual-class") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplayVisualClass_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-visual-class") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplayVisualClass_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-visual-class") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xHideTip_autogen() (lispObject, error) {
-	return es.stub("x-hide-tip") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xHideTip_1_autogen() (lispObject, error) {
-	return es.stub("x-hide-tip") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xHideTip_2_autogen() (lispObject, error) {
-	return es.stub("x-hide-tip") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xHideTip_3_autogen() (lispObject, error) {
-	return es.stub("x-hide-tip") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xHideTip_4_autogen() (lispObject, error) {
-	return es.stub("x-hide-tip") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xServerVendor_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-server-vendor") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xServerVendor_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-server-vendor") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xServerVendor_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-server-vendor") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xServerVendor_3_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-server-vendor") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xServerVersion_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-server-version") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xServerVersion_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-server-version") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xServerVersion_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-server-version") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xServerVersion_3_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-server-version") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xShowTip_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return es.stub("x-show-tip") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xShowTip_1_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return es.stub("x-show-tip") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xShowTip_2_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return es.stub("x-show-tip") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xShowTip_3_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return es.stub("x-show-tip") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xShowTip_4_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
-	return es.stub("x-show-tip") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xwColorDefinedP_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-defined-p") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xwColorDefinedP_1_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-defined-p") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xwColorDefinedP_2_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-defined-p") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xwColorDefinedP_3_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-defined-p") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xwColorDefinedP_4_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-defined-p") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xwColorValues_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-values") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xwColorValues_1_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-values") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xwColorValues_2_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-values") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xwColorValues_3_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-values") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xwColorValues_4_autogen(color, frame lispObject) (lispObject, error) {
-	return es.stub("xw-color-values") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xwDisplayColorP_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("xw-display-color-p") // Source file: androidfns.c
-}
-
-func (es *emacsStubs) xwDisplayColorP_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("xw-display-color-p") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xwDisplayColorP_2_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("xw-display-color-p") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xwDisplayColorP_3_autogen(display lispObject) (lispObject, error) {
-	return es.stub("xw-display-color-p") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xwDisplayColorP_4_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("xw-display-color-p") // Source file: xfns.c
-}
-
-func (es *emacsStubs) menuOrPopupActiveP_autogen() (lispObject, error) {
-	return es.stub("menu-or-popup-active-p") // Source file: androidmenu.c
-}
-
-func (es *emacsStubs) menuOrPopupActiveP_1_autogen() (lispObject, error) {
-	return es.stub("menu-or-popup-active-p") // Source file: haikumenu.c
-}
-
-func (es *emacsStubs) menuOrPopupActiveP_2_autogen() (lispObject, error) {
-	return es.stub("menu-or-popup-active-p") // Source file: pgtkmenu.c
-}
-
-func (es *emacsStubs) menuOrPopupActiveP_3_autogen() (lispObject, error) {
-	return es.stub("menu-or-popup-active-p") // Source file: w32menu.c
-}
-
-func (es *emacsStubs) menuOrPopupActiveP_4_autogen() (lispObject, error) {
-	return es.stub("menu-or-popup-active-p") // Source file: xmenu.c
-}
-
-func (es *emacsStubs) androidBrowseUrl_autogen(url, send lispObject) (lispObject, error) {
-	return es.stub("android-browse-url") // Source file: androidselect.c
-}
-
-func (es *emacsStubs) androidClipboardExistsP_autogen() (lispObject, error) {
-	return es.stub("android-clipboard-exists-p") // Source file: androidselect.c
-}
-
-func (es *emacsStubs) androidClipboardOwnerP_autogen() (lispObject, error) {
-	return es.stub("android-clipboard-owner-p") // Source file: androidselect.c
-}
-
-func (es *emacsStubs) androidGetClipboard_autogen() (lispObject, error) {
-	return es.stub("android-get-clipboard") // Source file: androidselect.c
-}
-
-func (es *emacsStubs) androidGetClipboardData_autogen(type_ lispObject) (lispObject, error) {
-	return es.stub("android-get-clipboard-data") // Source file: androidselect.c
-}
-
-func (es *emacsStubs) androidGetClipboardTargets_autogen() (lispObject, error) {
-	return es.stub("android-get-clipboard-targets") // Source file: androidselect.c
-}
-
-func (es *emacsStubs) androidNotificationsNotify_autogen(args ...lispObject) (lispObject, error) {
-	return es.stub("android-notifications-notify") // Source file: androidselect.c
-}
-
-func (es *emacsStubs) androidSetClipboard_autogen(string lispObject) (lispObject, error) {
-	return es.stub("android-set-clipboard") // Source file: androidselect.c
-}
-
 func (es *emacsStubs) debugTimerCheck_autogen() (lispObject, error) {
 	return es.stub("debug-timer-check") // Source file: atimer.c
 }
@@ -1975,54 +1503,6 @@ func (es *emacsStubs) textQuotingStyle_autogen() (lispObject, error) {
 	return es.stub("text-quoting-style") // Source file: doc.c
 }
 
-func (es *emacsStubs) fileSystemInfo_autogen(filename lispObject) (lispObject, error) {
-	return es.stub("file-system-info") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) fileSystemInfo_1_autogen(filename lispObject) (lispObject, error) {
-	return es.stub("file-system-info") // Source file: fileio.c
-}
-
-func (es *emacsStubs) fileSystemInfo_2_autogen(filename lispObject) (lispObject, error) {
-	return es.stub("file-system-info") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) insertStartupScreen_autogen() (lispObject, error) {
-	return es.stub("insert-startup-screen") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) int86_autogen(interrupt, registers lispObject) (lispObject, error) {
-	return es.stub("int86") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) dosMemget_autogen(address, vector lispObject) (lispObject, error) {
-	return es.stub("msdos-memget") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) dosMemput_autogen(address, vector lispObject) (lispObject, error) {
-	return es.stub("msdos-memput") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) msdosMouseDisable_autogen() (lispObject, error) {
-	return es.stub("msdos-mouse-disable") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) msdosMouseEnable_autogen() (lispObject, error) {
-	return es.stub("msdos-mouse-enable") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) msdosMouseInit_autogen() (lispObject, error) {
-	return es.stub("msdos-mouse-init") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) msdosMouseP_autogen() (lispObject, error) {
-	return es.stub("msdos-mouse-p") // Source file: dosfns.c
-}
-
-func (es *emacsStubs) msdosSetKeyboard_autogen(country_code, allkeys lispObject) (lispObject, error) {
-	return es.stub("msdos-set-keyboard") // Source file: dosfns.c
-}
-
 func (es *emacsStubs) bobp_autogen() (lispObject, error) {
 	return es.stub("bobp") // Source file: editfns.c
 }
@@ -2681,6 +2161,14 @@ func (es *emacsStubs) fileSelinuxContext_autogen(filename lispObject) (lispObjec
 
 func (es *emacsStubs) fileSymlinkP_autogen(filename lispObject) (lispObject, error) {
 	return es.stub("file-symlink-p") // Source file: fileio.c
+}
+
+func (es *emacsStubs) fileSystemInfo_autogen(filename lispObject) (lispObject, error) {
+	return es.stub("file-system-info") // Source file: fileio.c
+}
+
+func (es *emacsStubs) fileSystemInfo_1_autogen(filename lispObject) (lispObject, error) {
+	return es.stub("file-system-info") // Source file: w32fns.c
 }
 
 func (es *emacsStubs) fileWritableP_autogen(filename lispObject) (lispObject, error) {
@@ -3807,178 +3295,6 @@ func (es *emacsStubs) gnutlsSymmetricEncrypt_autogen(cipher, key, iv, input, aea
 	return es.stub("gnutls-symmetric-encrypt") // Source file: gnutls.c
 }
 
-func (es *emacsStubs) haikuDisplayMonitorAttributesList_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("haiku-display-monitor-attributes-list") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuFrameEdges_autogen(frame, type_ lispObject) (lispObject, error) {
-	return es.stub("haiku-frame-edges") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuFrameGeometry_autogen(frame lispObject) (lispObject, error) {
-	return es.stub("haiku-frame-geometry") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuFrameListZOrder_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("haiku-frame-list-z-order") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuFrameRestack_autogen(frame1, frame2, above lispObject) (lispObject, error) {
-	return es.stub("haiku-frame-restack") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuGetVersionString_autogen() (lispObject, error) {
-	return es.stub("haiku-get-version-string") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuMouseAbsolutePixelPosition_autogen() (lispObject, error) {
-	return es.stub("haiku-mouse-absolute-pixel-position") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuPutResource_autogen(resource, string lispObject) (lispObject, error) {
-	return es.stub("haiku-put-resource") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuReadFileName_autogen(prompt, frame, dir, mustmatch, dir_only_p, save_text lispObject) (lispObject, error) {
-	return es.stub("haiku-read-file-name") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuSaveSessionReply_autogen(quit_reply lispObject) (lispObject, error) {
-	return es.stub("haiku-save-session-reply") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) haikuSetMouseAbsolutePixelPosition_autogen(x, y lispObject) (lispObject, error) {
-	return es.stub("haiku-set-mouse-absolute-pixel-position") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xCloseConnection_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-close-connection") // Source file: haikufns.c, attributes: noreturn
-}
-
-func (es *emacsStubs) xCloseConnection_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-close-connection") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xCloseConnection_2_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-close-connection") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xCloseConnection_3_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-close-connection") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDisplaySaveUnder_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-save-under") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDisplaySaveUnder_1_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-save-under") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xDisplaySaveUnder_2_autogen(display lispObject) (lispObject, error) {
-	return es.stub("x-display-save-under") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xDisplaySaveUnder_3_autogen(terminal lispObject) (lispObject, error) {
-	return es.stub("x-display-save-under") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xDoubleBufferedP_autogen(frame lispObject) (lispObject, error) {
-	return es.stub("x-double-buffered-p") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xDoubleBufferedP_1_autogen(frame lispObject) (lispObject, error) {
-	return es.stub("x-double-buffered-p") // Source file: xfns.c
-}
-
-func (es *emacsStubs) xOpenConnection_autogen(display, resource_string, must_succeed lispObject) (lispObject, error) {
-	return es.stub("x-open-connection") // Source file: haikufns.c
-}
-
-func (es *emacsStubs) xOpenConnection_1_autogen(display, resource_string, must_succeed lispObject) (lispObject, error) {
-	return es.stub("x-open-connection") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xOpenConnection_2_autogen(display, xrm_string, must_succeed lispObject) (lispObject, error) {
-	return es.stub("x-open-connection") // Source file: w32fns.c
-}
-
-func (es *emacsStubs) xOpenConnection_3_autogen(display, xrm_string, must_succeed lispObject) (lispObject, error) {
-	return es.stub("x-open-connection") // Source file: xfns.c
-}
-
-func (es *emacsStubs) fontGetSystemFont_autogen() (lispObject, error) {
-	return es.stub("font-get-system-font") // Source file: haikufont.c
-}
-
-func (es *emacsStubs) fontGetSystemFont_1_autogen() (lispObject, error) {
-	return es.stub("font-get-system-font") // Source file: xsettings.c
-}
-
-func (es *emacsStubs) fontGetSystemNormalFont_autogen() (lispObject, error) {
-	return es.stub("font-get-system-normal-font") // Source file: haikufont.c
-}
-
-func (es *emacsStubs) fontGetSystemNormalFont_1_autogen() (lispObject, error) {
-	return es.stub("font-get-system-normal-font") // Source file: xsettings.c
-}
-
-func (es *emacsStubs) xSelectFont_autogen(frame, exclude_proportional lispObject) (lispObject, error) {
-	return es.stub("x-select-font") // Source file: haikufont.c
-}
-
-func (es *emacsStubs) xSelectFont_1_autogen(frame, ignored lispObject) (lispObject, error) {
-	return es.stub("x-select-font") // Source file: pgtkfns.c
-}
-
-func (es *emacsStubs) xSelectFont_2_autogen(frame, exclude_proportional lispObject) (lispObject, error) {
-	return es.stub("x-select-font") // Source file: w32font.c
-}
-
-func (es *emacsStubs) xSelectFont_3_autogen(frame, ignored lispObject) (lispObject, error) {
-	return es.stub("x-select-font") // Source file: xfns.c
-}
-
-func (es *emacsStubs) haikuMenuBarOpen_autogen(frame lispObject) (lispObject, error) {
-	return es.stub("haiku-menu-bar-open") // Source file: haikumenu.c
-}
-
-func (es *emacsStubs) haikuDragMessage_autogen(frame, message, allow_same_frame, follow_tooltip lispObject) (lispObject, error) {
-	return es.stub("haiku-drag-message") // Source file: haikuselect.c
-}
-
-func (es *emacsStubs) haikuNotificationsNotify_autogen(args ...lispObject) (lispObject, error) {
-	return es.stub("haiku-notifications-notify") // Source file: haikuselect.c
-}
-
-func (es *emacsStubs) haikuRosterLaunch_autogen(file_or_type, args lispObject) (lispObject, error) {
-	return es.stub("haiku-roster-launch") // Source file: haikuselect.c
-}
-
-func (es *emacsStubs) haikuSelectionData_autogen(clipboard, name lispObject) (lispObject, error) {
-	return es.stub("haiku-selection-data") // Source file: haikuselect.c
-}
-
-func (es *emacsStubs) haikuSelectionOwnerP_autogen(selection lispObject) (lispObject, error) {
-	return es.stub("haiku-selection-owner-p") // Source file: haikuselect.c
-}
-
-func (es *emacsStubs) haikuSelectionPut_autogen(clipboard, name, data, clear lispObject) (lispObject, error) {
-	return es.stub("haiku-selection-put") // Source file: haikuselect.c
-}
-
-func (es *emacsStubs) haikuSelectionTimestamp_autogen(clipboard lispObject) (lispObject, error) {
-	return es.stub("haiku-selection-timestamp") // Source file: haikuselect.c
-}
-
-func (es *emacsStubs) haikuSendMessage_autogen(program, message lispObject) (lispObject, error) {
-	return es.stub("haiku-send-message") // Source file: haikuselect.c
-}
-
-func (es *emacsStubs) haikuWriteNodeAttribute_autogen(file, name, message lispObject) (lispObject, error) {
-	return es.stub("haiku-write-node-attribute") // Source file: haikuselect.c
-}
-
 func (es *emacsStubs) clearImageCache_autogen(filter, animation_cache lispObject) (lispObject, error) {
 	return es.stub("clear-image-cache") // Source file: image.c
 }
@@ -4675,6 +3991,174 @@ func (es *emacsStubs) pgtkSetResource_autogen(attribute, value lispObject) (lisp
 	return es.stub("pgtk-set-resource") // Source file: pgtkfns.c
 }
 
+func (es *emacsStubs) xCloseConnection_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-close-connection") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xCloseConnection_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-close-connection") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xCloseConnection_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-close-connection") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xCreateFrame_autogen(parms lispObject) (lispObject, error) {
+	return es.stub("x-create-frame") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xCreateFrame_1_autogen(parameters lispObject) (lispObject, error) {
+	return es.stub("x-create-frame") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xCreateFrame_2_autogen(parms lispObject) (lispObject, error) {
+	return es.stub("x-create-frame") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayBackingStore_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-backing-store") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayBackingStore_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-backing-store") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayBackingStore_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-backing-store") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayColorCells_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-color-cells") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayColorCells_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-color-cells") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayColorCells_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-color-cells") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayGrayscaleP_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-grayscale-p") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayGrayscaleP_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-grayscale-p") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayGrayscaleP_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-grayscale-p") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayList_autogen() (lispObject, error) {
+	return es.stub("x-display-list") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayList_1_autogen() (lispObject, error) {
+	return es.stub("x-display-list") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayList_2_autogen() (lispObject, error) {
+	return es.stub("x-display-list") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayMmHeight_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-mm-height") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayMmHeight_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-mm-height") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayMmHeight_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-mm-height") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayMmWidth_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-mm-width") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayMmWidth_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-mm-width") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayMmWidth_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-mm-width") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayPixelHeight_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-pixel-height") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayPixelHeight_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-pixel-height") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayPixelHeight_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-pixel-height") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayPixelWidth_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-pixel-width") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayPixelWidth_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-pixel-width") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayPixelWidth_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-pixel-width") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayPlanes_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-planes") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayPlanes_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-planes") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayPlanes_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-planes") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplaySaveUnder_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-save-under") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplaySaveUnder_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-save-under") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplaySaveUnder_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-save-under") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayScreens_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-screens") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayScreens_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-screens") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayScreens_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-screens") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xDisplayVisualClass_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-visual-class") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xDisplayVisualClass_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("x-display-visual-class") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xDisplayVisualClass_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-display-visual-class") // Source file: xfns.c
+}
+
 func (es *emacsStubs) xExportFrames_autogen(frames, type_ lispObject) (lispObject, error) {
 	return es.stub("x-export-frames") // Source file: pgtkfns.c
 }
@@ -4707,6 +4191,42 @@ func (es *emacsStubs) xGtkDebug_1_autogen(enable lispObject) (lispObject, error)
 	return es.stub("x-gtk-debug") // Source file: xfns.c
 }
 
+func (es *emacsStubs) xHideTip_autogen() (lispObject, error) {
+	return es.stub("x-hide-tip") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xHideTip_1_autogen() (lispObject, error) {
+	return es.stub("x-hide-tip") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xHideTip_2_autogen() (lispObject, error) {
+	return es.stub("x-hide-tip") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xOpenConnection_autogen(display, resource_string, must_succeed lispObject) (lispObject, error) {
+	return es.stub("x-open-connection") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xOpenConnection_1_autogen(display, xrm_string, must_succeed lispObject) (lispObject, error) {
+	return es.stub("x-open-connection") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xOpenConnection_2_autogen(display, xrm_string, must_succeed lispObject) (lispObject, error) {
+	return es.stub("x-open-connection") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xSelectFont_autogen(frame, ignored lispObject) (lispObject, error) {
+	return es.stub("x-select-font") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xSelectFont_1_autogen(frame, exclude_proportional lispObject) (lispObject, error) {
+	return es.stub("x-select-font") // Source file: w32font.c
+}
+
+func (es *emacsStubs) xSelectFont_2_autogen(frame, ignored lispObject) (lispObject, error) {
+	return es.stub("x-select-font") // Source file: xfns.c
+}
+
 func (es *emacsStubs) xServerMaxRequestSize_autogen(terminal lispObject) (lispObject, error) {
 	return es.stub("x-server-max-request-size") // Source file: pgtkfns.c
 }
@@ -4719,8 +4239,68 @@ func (es *emacsStubs) xServerMaxRequestSize_2_autogen(terminal lispObject) (lisp
 	return es.stub("x-server-max-request-size") // Source file: xfns.c
 }
 
+func (es *emacsStubs) xShowTip_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return es.stub("x-show-tip") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xShowTip_1_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return es.stub("x-show-tip") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xShowTip_2_autogen(string, frame, parms, timeout, dx, dy lispObject) (lispObject, error) {
+	return es.stub("x-show-tip") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xwColorDefinedP_autogen(color, frame lispObject) (lispObject, error) {
+	return es.stub("xw-color-defined-p") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xwColorDefinedP_1_autogen(color, frame lispObject) (lispObject, error) {
+	return es.stub("xw-color-defined-p") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xwColorDefinedP_2_autogen(color, frame lispObject) (lispObject, error) {
+	return es.stub("xw-color-defined-p") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xwColorValues_autogen(color, frame lispObject) (lispObject, error) {
+	return es.stub("xw-color-values") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xwColorValues_1_autogen(color, frame lispObject) (lispObject, error) {
+	return es.stub("xw-color-values") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xwColorValues_2_autogen(color, frame lispObject) (lispObject, error) {
+	return es.stub("xw-color-values") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xwDisplayColorP_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("xw-display-color-p") // Source file: pgtkfns.c
+}
+
+func (es *emacsStubs) xwDisplayColorP_1_autogen(display lispObject) (lispObject, error) {
+	return es.stub("xw-display-color-p") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xwDisplayColorP_2_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("xw-display-color-p") // Source file: xfns.c
+}
+
 func (es *emacsStubs) pgtkUseImContext_autogen(use_p, terminal lispObject) (lispObject, error) {
 	return es.stub("pgtk-use-im-context") // Source file: pgtkim.c
+}
+
+func (es *emacsStubs) menuOrPopupActiveP_autogen() (lispObject, error) {
+	return es.stub("menu-or-popup-active-p") // Source file: pgtkmenu.c
+}
+
+func (es *emacsStubs) menuOrPopupActiveP_1_autogen() (lispObject, error) {
+	return es.stub("menu-or-popup-active-p") // Source file: w32menu.c
+}
+
+func (es *emacsStubs) menuOrPopupActiveP_2_autogen() (lispObject, error) {
+	return es.stub("menu-or-popup-active-p") // Source file: xmenu.c
 }
 
 func (es *emacsStubs) xMenuBarOpenInternal_autogen(frame lispObject) (lispObject, error) {
@@ -5173,10 +4753,6 @@ func (es *emacsStubs) setMatchData_autogen(list, reseat lispObject) (lispObject,
 
 func (es *emacsStubs) stringMatch_autogen(regexp, string, start, inhibit_modify lispObject) (lispObject, error) {
 	return es.stub("string-match") // Source file: search.c
-}
-
-func (es *emacsStubs) androidEnumerateFonts_autogen() (lispObject, error) {
-	return es.stub("android-enumerate-fonts") // Source file: sfntfont-android.c
 }
 
 func (es *emacsStubs) playSoundInternal_autogen(sound lispObject) (lispObject, error) {
@@ -5961,6 +5537,22 @@ func (es *emacsStubs) xDeleteWindowProperty_autogen(prop, frame lispObject) (lis
 
 func (es *emacsStubs) xDeleteWindowProperty_1_autogen(prop, frame, window_id lispObject) (lispObject, error) {
 	return es.stub("x-delete-window-property") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xServerVendor_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-server-vendor") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xServerVendor_1_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-server-vendor") // Source file: xfns.c
+}
+
+func (es *emacsStubs) xServerVersion_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-server-version") // Source file: w32fns.c
+}
+
+func (es *emacsStubs) xServerVersion_1_autogen(terminal lispObject) (lispObject, error) {
+	return es.stub("x-server-version") // Source file: xfns.c
 }
 
 func (es *emacsStubs) xSynchronize_autogen(on, display lispObject) (lispObject, error) {
@@ -6787,6 +6379,10 @@ func (es *emacsStubs) xDisplayLastUserTime_autogen(time_object, terminal lispObj
 	return es.stub("x-display-set-last-user-time") // Source file: xfns.c
 }
 
+func (es *emacsStubs) xDoubleBufferedP_autogen(frame lispObject) (lispObject, error) {
+	return es.stub("x-double-buffered-p") // Source file: xfns.c
+}
+
 func (es *emacsStubs) xFrameEdges_autogen(frame, type_ lispObject) (lispObject, error) {
 	return es.stub("x-frame-edges") // Source file: xfns.c
 }
@@ -6901,6 +6497,14 @@ func (es *emacsStubs) xSelectionOwnerP_autogen(selection, terminal lispObject) (
 
 func (es *emacsStubs) xSendClientMessage_autogen(display, dest, from, message_type, format, values lispObject) (lispObject, error) {
 	return es.stub("x-send-client-message") // Source file: xselect.c
+}
+
+func (es *emacsStubs) fontGetSystemFont_autogen() (lispObject, error) {
+	return es.stub("font-get-system-font") // Source file: xsettings.c
+}
+
+func (es *emacsStubs) fontGetSystemNormalFont_autogen() (lispObject, error) {
+	return es.stub("font-get-system-normal-font") // Source file: xsettings.c
 }
 
 func (es *emacsStubs) toolBarGetSystemStyle_autogen() (lispObject, error) {
@@ -7081,124 +6685,6 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubrM(nil, "record", es.record_autogen, 1)
 	ec.defSubr1(nil, "suspicious-object", es.suspiciousObject_autogen, 1)
 	ec.defSubrM(nil, "vector", es.vector_autogen, 0)
-	ec.defSubr0(nil, "android-detect-mouse", es.androidDetectMouse_autogen)
-	ec.defSubr1(nil, "android-display-monitor-attributes-list", es.androidDisplayMonitorAttributesList_autogen, 0)
-	ec.defSubr2(nil, "android-frame-edges", es.androidFrameEdges_autogen, 0)
-	ec.defSubr1(nil, "android-frame-geometry", es.androidFrameGeometry_autogen, 0)
-	ec.defSubr1(nil, "android-frame-list-z-order", es.androidFrameListZOrder_autogen, 0)
-	ec.defSubr3(nil, "android-frame-restack", es.androidFrameRestack_autogen, 2)
-	ec.defSubr0(nil, "android-get-connection", es.androidGetConnection_autogen)
-	ec.defSubr0(nil, "android-mouse-absolute-pixel-position", es.androidMouseAbsolutePixelPosition_autogen)
-	ec.defSubr0(nil, "android-query-battery", es.androidQueryBattery_autogen)
-	ec.defSubr0(nil, "android-request-directory-access", es.androidRequestDirectoryAccess_autogen)
-	ec.defSubr2(nil, "android-set-mouse-absolute-pixel-position", es.androidSetMouseAbsolutePixelPosition_autogen, 2)
-	ec.defSubr2(nil, "android-toggle-on-screen-keyboard", es.androidToggleOnScreenKeyboard_autogen, 2)
-	ec.defSubr1(nil, "x-create-frame", es.xCreateFrame_autogen, 1)
-	ec.defSubr1(nil, "x-create-frame", es.xCreateFrame_1_autogen, 1)
-	ec.defSubr1(nil, "x-create-frame", es.xCreateFrame_2_autogen, 1)
-	ec.defSubr1(nil, "x-create-frame", es.xCreateFrame_3_autogen, 1)
-	ec.defSubr1(nil, "x-create-frame", es.xCreateFrame_4_autogen, 1)
-	ec.defSubr1(nil, "x-display-backing-store", es.xDisplayBackingStore_autogen, 0)
-	ec.defSubr1(nil, "x-display-backing-store", es.xDisplayBackingStore_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-backing-store", es.xDisplayBackingStore_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-backing-store", es.xDisplayBackingStore_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-backing-store", es.xDisplayBackingStore_4_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", es.xDisplayColorCells_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", es.xDisplayColorCells_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", es.xDisplayColorCells_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", es.xDisplayColorCells_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-color-cells", es.xDisplayColorCells_4_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", es.xDisplayGrayscaleP_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", es.xDisplayGrayscaleP_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", es.xDisplayGrayscaleP_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", es.xDisplayGrayscaleP_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-grayscale-p", es.xDisplayGrayscaleP_4_autogen, 0)
-	ec.defSubr0(nil, "x-display-list", es.xDisplayList_autogen)
-	ec.defSubr0(nil, "x-display-list", es.xDisplayList_1_autogen)
-	ec.defSubr0(nil, "x-display-list", es.xDisplayList_2_autogen)
-	ec.defSubr0(nil, "x-display-list", es.xDisplayList_3_autogen)
-	ec.defSubr0(nil, "x-display-list", es.xDisplayList_4_autogen)
-	ec.defSubr1(nil, "x-display-mm-height", es.xDisplayMmHeight_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-height", es.xDisplayMmHeight_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-height", es.xDisplayMmHeight_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-height", es.xDisplayMmHeight_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-height", es.xDisplayMmHeight_4_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", es.xDisplayMmWidth_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", es.xDisplayMmWidth_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", es.xDisplayMmWidth_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", es.xDisplayMmWidth_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-mm-width", es.xDisplayMmWidth_4_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", es.xDisplayPixelHeight_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", es.xDisplayPixelHeight_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", es.xDisplayPixelHeight_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", es.xDisplayPixelHeight_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-height", es.xDisplayPixelHeight_4_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", es.xDisplayPixelWidth_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", es.xDisplayPixelWidth_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", es.xDisplayPixelWidth_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", es.xDisplayPixelWidth_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-pixel-width", es.xDisplayPixelWidth_4_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", es.xDisplayPlanes_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", es.xDisplayPlanes_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", es.xDisplayPlanes_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", es.xDisplayPlanes_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-planes", es.xDisplayPlanes_4_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", es.xDisplayScreens_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", es.xDisplayScreens_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", es.xDisplayScreens_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", es.xDisplayScreens_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-screens", es.xDisplayScreens_4_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", es.xDisplayVisualClass_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", es.xDisplayVisualClass_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", es.xDisplayVisualClass_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", es.xDisplayVisualClass_3_autogen, 0)
-	ec.defSubr1(nil, "x-display-visual-class", es.xDisplayVisualClass_4_autogen, 0)
-	ec.defSubr0(nil, "x-hide-tip", es.xHideTip_autogen)
-	ec.defSubr0(nil, "x-hide-tip", es.xHideTip_1_autogen)
-	ec.defSubr0(nil, "x-hide-tip", es.xHideTip_2_autogen)
-	ec.defSubr0(nil, "x-hide-tip", es.xHideTip_3_autogen)
-	ec.defSubr0(nil, "x-hide-tip", es.xHideTip_4_autogen)
-	ec.defSubr1(nil, "x-server-vendor", es.xServerVendor_autogen, 0)
-	ec.defSubr1(nil, "x-server-vendor", es.xServerVendor_1_autogen, 0)
-	ec.defSubr1(nil, "x-server-vendor", es.xServerVendor_2_autogen, 0)
-	ec.defSubr1(nil, "x-server-vendor", es.xServerVendor_3_autogen, 0)
-	ec.defSubr1(nil, "x-server-version", es.xServerVersion_autogen, 0)
-	ec.defSubr1(nil, "x-server-version", es.xServerVersion_1_autogen, 0)
-	ec.defSubr1(nil, "x-server-version", es.xServerVersion_2_autogen, 0)
-	ec.defSubr1(nil, "x-server-version", es.xServerVersion_3_autogen, 0)
-	ec.defSubr6(nil, "x-show-tip", es.xShowTip_autogen, 1)
-	ec.defSubr6(nil, "x-show-tip", es.xShowTip_1_autogen, 1)
-	ec.defSubr6(nil, "x-show-tip", es.xShowTip_2_autogen, 1)
-	ec.defSubr6(nil, "x-show-tip", es.xShowTip_3_autogen, 1)
-	ec.defSubr6(nil, "x-show-tip", es.xShowTip_4_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", es.xwColorDefinedP_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", es.xwColorDefinedP_1_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", es.xwColorDefinedP_2_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", es.xwColorDefinedP_3_autogen, 1)
-	ec.defSubr2(nil, "xw-color-defined-p", es.xwColorDefinedP_4_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", es.xwColorValues_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", es.xwColorValues_1_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", es.xwColorValues_2_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", es.xwColorValues_3_autogen, 1)
-	ec.defSubr2(nil, "xw-color-values", es.xwColorValues_4_autogen, 1)
-	ec.defSubr1(nil, "xw-display-color-p", es.xwDisplayColorP_autogen, 0)
-	ec.defSubr1(nil, "xw-display-color-p", es.xwDisplayColorP_1_autogen, 0)
-	ec.defSubr1(nil, "xw-display-color-p", es.xwDisplayColorP_2_autogen, 0)
-	ec.defSubr1(nil, "xw-display-color-p", es.xwDisplayColorP_3_autogen, 0)
-	ec.defSubr1(nil, "xw-display-color-p", es.xwDisplayColorP_4_autogen, 0)
-	ec.defSubr0(nil, "menu-or-popup-active-p", es.menuOrPopupActiveP_autogen)
-	ec.defSubr0(nil, "menu-or-popup-active-p", es.menuOrPopupActiveP_1_autogen)
-	ec.defSubr0(nil, "menu-or-popup-active-p", es.menuOrPopupActiveP_2_autogen)
-	ec.defSubr0(nil, "menu-or-popup-active-p", es.menuOrPopupActiveP_3_autogen)
-	ec.defSubr0(nil, "menu-or-popup-active-p", es.menuOrPopupActiveP_4_autogen)
-	ec.defSubr2(nil, "android-browse-url", es.androidBrowseUrl_autogen, 1)
-	ec.defSubr0(nil, "android-clipboard-exists-p", es.androidClipboardExistsP_autogen)
-	ec.defSubr0(nil, "android-clipboard-owner-p", es.androidClipboardOwnerP_autogen)
-	ec.defSubr0(nil, "android-get-clipboard", es.androidGetClipboard_autogen)
-	ec.defSubr1(nil, "android-get-clipboard-data", es.androidGetClipboardData_autogen, 1)
-	ec.defSubr0(nil, "android-get-clipboard-targets", es.androidGetClipboardTargets_autogen)
-	ec.defSubrM(nil, "android-notifications-notify", es.androidNotificationsNotify_autogen, 0)
-	ec.defSubr1(nil, "android-set-clipboard", es.androidSetClipboard_autogen, 1)
 	ec.defSubr0(nil, "debug-timer-check", es.debugTimerCheck_autogen)
 	ec.defSubr1(nil, "barf-if-buffer-read-only", es.barfIfBufferReadOnly_autogen, 0)
 	ec.defSubr1(nil, "buffer-base-buffer", es.bufferBaseBuffer_autogen, 0)
@@ -7550,18 +7036,6 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr3(nil, "documentation-property", es.documentationProperty_autogen, 2)
 	ec.defSubr1(nil, "internal-subr-documentation", es.subrDocumentation_autogen, 1)
 	ec.defSubr0(nil, "text-quoting-style", es.textQuotingStyle_autogen)
-	ec.defSubr1(nil, "file-system-info", es.fileSystemInfo_autogen, 1)
-	ec.defSubr1(nil, "file-system-info", es.fileSystemInfo_1_autogen, 1)
-	ec.defSubr1(nil, "file-system-info", es.fileSystemInfo_2_autogen, 1)
-	ec.defSubr0(nil, "insert-startup-screen", es.insertStartupScreen_autogen)
-	ec.defSubr2(nil, "int86", es.int86_autogen, 2)
-	ec.defSubr2(nil, "msdos-memget", es.dosMemget_autogen, 2)
-	ec.defSubr2(nil, "msdos-memput", es.dosMemput_autogen, 2)
-	ec.defSubr0(nil, "msdos-mouse-disable", es.msdosMouseDisable_autogen)
-	ec.defSubr0(nil, "msdos-mouse-enable", es.msdosMouseEnable_autogen)
-	ec.defSubr0(nil, "msdos-mouse-init", es.msdosMouseInit_autogen)
-	ec.defSubr0(nil, "msdos-mouse-p", es.msdosMouseP_autogen)
-	ec.defSubr2(nil, "msdos-set-keyboard", es.msdosSetKeyboard_autogen, 1)
 	ec.defSubr0(nil, "bobp", es.bobp_autogen)
 	ec.defSubr0(nil, "bolp", es.bolp_autogen)
 	ec.defSubr1(nil, "buffer-size", es.bufferSize_autogen, 0)
@@ -7727,6 +7201,8 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "file-regular-p", es.fileRegularP_autogen, 1)
 	ec.defSubr1(nil, "file-selinux-context", es.fileSelinuxContext_autogen, 1)
 	ec.defSubr1(nil, "file-symlink-p", es.fileSymlinkP_autogen, 1)
+	ec.defSubr1(nil, "file-system-info", es.fileSystemInfo_autogen, 1)
+	ec.defSubr1(nil, "file-system-info", es.fileSystemInfo_1_autogen, 1)
 	ec.defSubr1(nil, "file-writable-p", es.fileWritableP_autogen, 1)
 	ec.defSubr2(nil, "find-file-name-handler", es.findFileNameHandler_autogen, 2)
 	ec.defSubr5(nil, "insert-file-contents", es.insertFileContents_autogen, 1)
@@ -8008,49 +7484,6 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "gnutls-peer-status-warning-describe", es.gnutlsPeerStatusWarningDescribe_autogen, 1)
 	ec.defSubr5(nil, "gnutls-symmetric-decrypt", es.gnutlsSymmetricDecrypt_autogen, 4)
 	ec.defSubr5(nil, "gnutls-symmetric-encrypt", es.gnutlsSymmetricEncrypt_autogen, 4)
-	ec.defSubr1(nil, "haiku-display-monitor-attributes-list", es.haikuDisplayMonitorAttributesList_autogen, 0)
-	ec.defSubr2(nil, "haiku-frame-edges", es.haikuFrameEdges_autogen, 0)
-	ec.defSubr1(nil, "haiku-frame-geometry", es.haikuFrameGeometry_autogen, 0)
-	ec.defSubr1(nil, "haiku-frame-list-z-order", es.haikuFrameListZOrder_autogen, 0)
-	ec.defSubr3(nil, "haiku-frame-restack", es.haikuFrameRestack_autogen, 2)
-	ec.defSubr0(nil, "haiku-get-version-string", es.haikuGetVersionString_autogen)
-	ec.defSubr0(nil, "haiku-mouse-absolute-pixel-position", es.haikuMouseAbsolutePixelPosition_autogen)
-	ec.defSubr2(nil, "haiku-put-resource", es.haikuPutResource_autogen, 2)
-	ec.defSubr6(nil, "haiku-read-file-name", es.haikuReadFileName_autogen, 1)
-	ec.defSubr1(nil, "haiku-save-session-reply", es.haikuSaveSessionReply_autogen, 1)
-	ec.defSubr2(nil, "haiku-set-mouse-absolute-pixel-position", es.haikuSetMouseAbsolutePixelPosition_autogen, 2)
-	ec.defSubr1(nil, "x-close-connection", es.xCloseConnection_autogen, 1)
-	ec.defSubr1(nil, "x-close-connection", es.xCloseConnection_1_autogen, 1)
-	ec.defSubr1(nil, "x-close-connection", es.xCloseConnection_2_autogen, 1)
-	ec.defSubr1(nil, "x-close-connection", es.xCloseConnection_3_autogen, 1)
-	ec.defSubr1(nil, "x-display-save-under", es.xDisplaySaveUnder_autogen, 0)
-	ec.defSubr1(nil, "x-display-save-under", es.xDisplaySaveUnder_1_autogen, 0)
-	ec.defSubr1(nil, "x-display-save-under", es.xDisplaySaveUnder_2_autogen, 0)
-	ec.defSubr1(nil, "x-display-save-under", es.xDisplaySaveUnder_3_autogen, 0)
-	ec.defSubr1(nil, "x-double-buffered-p", es.xDoubleBufferedP_autogen, 0)
-	ec.defSubr1(nil, "x-double-buffered-p", es.xDoubleBufferedP_1_autogen, 0)
-	ec.defSubr3(nil, "x-open-connection", es.xOpenConnection_autogen, 1)
-	ec.defSubr3(nil, "x-open-connection", es.xOpenConnection_1_autogen, 1)
-	ec.defSubr3(nil, "x-open-connection", es.xOpenConnection_2_autogen, 1)
-	ec.defSubr3(nil, "x-open-connection", es.xOpenConnection_3_autogen, 1)
-	ec.defSubr0(nil, "font-get-system-font", es.fontGetSystemFont_autogen)
-	ec.defSubr0(nil, "font-get-system-font", es.fontGetSystemFont_1_autogen)
-	ec.defSubr0(nil, "font-get-system-normal-font", es.fontGetSystemNormalFont_autogen)
-	ec.defSubr0(nil, "font-get-system-normal-font", es.fontGetSystemNormalFont_1_autogen)
-	ec.defSubr2(nil, "x-select-font", es.xSelectFont_autogen, 0)
-	ec.defSubr2(nil, "x-select-font", es.xSelectFont_1_autogen, 0)
-	ec.defSubr2(nil, "x-select-font", es.xSelectFont_2_autogen, 0)
-	ec.defSubr2(nil, "x-select-font", es.xSelectFont_3_autogen, 0)
-	ec.defSubr1(nil, "haiku-menu-bar-open", es.haikuMenuBarOpen_autogen, 0)
-	ec.defSubr4(nil, "haiku-drag-message", es.haikuDragMessage_autogen, 2)
-	ec.defSubrM(nil, "haiku-notifications-notify", es.haikuNotificationsNotify_autogen, 0)
-	ec.defSubr2(nil, "haiku-roster-launch", es.haikuRosterLaunch_autogen, 2)
-	ec.defSubr2(nil, "haiku-selection-data", es.haikuSelectionData_autogen, 2)
-	ec.defSubr1(nil, "haiku-selection-owner-p", es.haikuSelectionOwnerP_autogen, 0)
-	ec.defSubr4(nil, "haiku-selection-put", es.haikuSelectionPut_autogen, 2)
-	ec.defSubr1(nil, "haiku-selection-timestamp", es.haikuSelectionTimestamp_autogen, 1)
-	ec.defSubr2(nil, "haiku-send-message", es.haikuSendMessage_autogen, 2)
-	ec.defSubr3(nil, "haiku-write-node-attribute", es.haikuWriteNodeAttribute_autogen, 3)
 	ec.defSubr2(nil, "clear-image-cache", es.clearImageCache_autogen, 0)
 	ec.defSubr0(nil, "image-cache-size", es.imageCacheSize_autogen)
 	ec.defSubr2(nil, "image-flush", es.imageFlush_autogen, 1)
@@ -8225,6 +7658,48 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr2(nil, "pgtk-set-monitor-scale-factor", es.pgtkSetMonitorScaleFactor_autogen, 2)
 	ec.defSubr2(nil, "pgtk-set-mouse-absolute-pixel-position", es.pgtkSetMouseAbsolutePixelPosition_autogen, 2)
 	ec.defSubr2(nil, "pgtk-set-resource", es.pgtkSetResource_autogen, 2)
+	ec.defSubr1(nil, "x-close-connection", es.xCloseConnection_autogen, 1)
+	ec.defSubr1(nil, "x-close-connection", es.xCloseConnection_1_autogen, 1)
+	ec.defSubr1(nil, "x-close-connection", es.xCloseConnection_2_autogen, 1)
+	ec.defSubr1(nil, "x-create-frame", es.xCreateFrame_autogen, 1)
+	ec.defSubr1(nil, "x-create-frame", es.xCreateFrame_1_autogen, 1)
+	ec.defSubr1(nil, "x-create-frame", es.xCreateFrame_2_autogen, 1)
+	ec.defSubr1(nil, "x-display-backing-store", es.xDisplayBackingStore_autogen, 0)
+	ec.defSubr1(nil, "x-display-backing-store", es.xDisplayBackingStore_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-backing-store", es.xDisplayBackingStore_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-color-cells", es.xDisplayColorCells_autogen, 0)
+	ec.defSubr1(nil, "x-display-color-cells", es.xDisplayColorCells_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-color-cells", es.xDisplayColorCells_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-grayscale-p", es.xDisplayGrayscaleP_autogen, 0)
+	ec.defSubr1(nil, "x-display-grayscale-p", es.xDisplayGrayscaleP_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-grayscale-p", es.xDisplayGrayscaleP_2_autogen, 0)
+	ec.defSubr0(nil, "x-display-list", es.xDisplayList_autogen)
+	ec.defSubr0(nil, "x-display-list", es.xDisplayList_1_autogen)
+	ec.defSubr0(nil, "x-display-list", es.xDisplayList_2_autogen)
+	ec.defSubr1(nil, "x-display-mm-height", es.xDisplayMmHeight_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-height", es.xDisplayMmHeight_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-height", es.xDisplayMmHeight_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-width", es.xDisplayMmWidth_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-width", es.xDisplayMmWidth_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-mm-width", es.xDisplayMmWidth_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-height", es.xDisplayPixelHeight_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-height", es.xDisplayPixelHeight_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-height", es.xDisplayPixelHeight_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-width", es.xDisplayPixelWidth_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-width", es.xDisplayPixelWidth_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-pixel-width", es.xDisplayPixelWidth_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-planes", es.xDisplayPlanes_autogen, 0)
+	ec.defSubr1(nil, "x-display-planes", es.xDisplayPlanes_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-planes", es.xDisplayPlanes_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-save-under", es.xDisplaySaveUnder_autogen, 0)
+	ec.defSubr1(nil, "x-display-save-under", es.xDisplaySaveUnder_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-save-under", es.xDisplaySaveUnder_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-screens", es.xDisplayScreens_autogen, 0)
+	ec.defSubr1(nil, "x-display-screens", es.xDisplayScreens_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-screens", es.xDisplayScreens_2_autogen, 0)
+	ec.defSubr1(nil, "x-display-visual-class", es.xDisplayVisualClass_autogen, 0)
+	ec.defSubr1(nil, "x-display-visual-class", es.xDisplayVisualClass_1_autogen, 0)
+	ec.defSubr1(nil, "x-display-visual-class", es.xDisplayVisualClass_2_autogen, 0)
 	ec.defSubr2(nil, "x-export-frames", es.xExportFrames_autogen, 0)
 	ec.defSubr2(nil, "x-export-frames", es.xExportFrames_1_autogen, 0)
 	ec.defSubr5(nil, "x-file-dialog", es.xFileDialog_autogen, 2)
@@ -8233,10 +7708,34 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr5(nil, "x-file-dialog", es.xFileDialog_3_autogen, 2)
 	ec.defSubr1(nil, "x-gtk-debug", es.xGtkDebug_autogen, 1)
 	ec.defSubr1(nil, "x-gtk-debug", es.xGtkDebug_1_autogen, 1)
+	ec.defSubr0(nil, "x-hide-tip", es.xHideTip_autogen)
+	ec.defSubr0(nil, "x-hide-tip", es.xHideTip_1_autogen)
+	ec.defSubr0(nil, "x-hide-tip", es.xHideTip_2_autogen)
+	ec.defSubr3(nil, "x-open-connection", es.xOpenConnection_autogen, 1)
+	ec.defSubr3(nil, "x-open-connection", es.xOpenConnection_1_autogen, 1)
+	ec.defSubr3(nil, "x-open-connection", es.xOpenConnection_2_autogen, 1)
+	ec.defSubr2(nil, "x-select-font", es.xSelectFont_autogen, 0)
+	ec.defSubr2(nil, "x-select-font", es.xSelectFont_1_autogen, 0)
+	ec.defSubr2(nil, "x-select-font", es.xSelectFont_2_autogen, 0)
 	ec.defSubr1(nil, "x-server-max-request-size", es.xServerMaxRequestSize_autogen, 0)
 	ec.defSubr1(nil, "x-server-max-request-size", es.xServerMaxRequestSize_1_autogen, 0)
 	ec.defSubr1(nil, "x-server-max-request-size", es.xServerMaxRequestSize_2_autogen, 0)
+	ec.defSubr6(nil, "x-show-tip", es.xShowTip_autogen, 1)
+	ec.defSubr6(nil, "x-show-tip", es.xShowTip_1_autogen, 1)
+	ec.defSubr6(nil, "x-show-tip", es.xShowTip_2_autogen, 1)
+	ec.defSubr2(nil, "xw-color-defined-p", es.xwColorDefinedP_autogen, 1)
+	ec.defSubr2(nil, "xw-color-defined-p", es.xwColorDefinedP_1_autogen, 1)
+	ec.defSubr2(nil, "xw-color-defined-p", es.xwColorDefinedP_2_autogen, 1)
+	ec.defSubr2(nil, "xw-color-values", es.xwColorValues_autogen, 1)
+	ec.defSubr2(nil, "xw-color-values", es.xwColorValues_1_autogen, 1)
+	ec.defSubr2(nil, "xw-color-values", es.xwColorValues_2_autogen, 1)
+	ec.defSubr1(nil, "xw-display-color-p", es.xwDisplayColorP_autogen, 0)
+	ec.defSubr1(nil, "xw-display-color-p", es.xwDisplayColorP_1_autogen, 0)
+	ec.defSubr1(nil, "xw-display-color-p", es.xwDisplayColorP_2_autogen, 0)
 	ec.defSubr2(nil, "pgtk-use-im-context", es.pgtkUseImContext_autogen, 1)
+	ec.defSubr0(nil, "menu-or-popup-active-p", es.menuOrPopupActiveP_autogen)
+	ec.defSubr0(nil, "menu-or-popup-active-p", es.menuOrPopupActiveP_1_autogen)
+	ec.defSubr0(nil, "menu-or-popup-active-p", es.menuOrPopupActiveP_2_autogen)
 	ec.defSubr1(nil, "x-menu-bar-open-internal", es.xMenuBarOpenInternal_autogen, 0)
 	ec.defSubr1(nil, "x-menu-bar-open-internal", es.xMenuBarOpenInternal_1_autogen, 0)
 	ec.defSubr1(nil, "x-menu-bar-open-internal", es.xMenuBarOpenInternal_2_autogen, 0)
@@ -8350,7 +7849,6 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr4(nil, "search-forward", es.searchForward_autogen, 1)
 	ec.defSubr2(nil, "set-match-data", es.setMatchData_autogen, 1)
 	ec.defSubr4(nil, "string-match", es.stringMatch_autogen, 2)
-	ec.defSubr0(nil, "android-enumerate-fonts", es.androidEnumerateFonts_autogen)
 	ec.defSubr1(nil, "play-sound-internal", es.playSoundInternal_autogen, 1)
 	ec.defSubr0(nil, "sqlite-available-p", es.sqliteAvailableP_autogen)
 	ec.defSubr1(nil, "sqlite-close", es.sqliteClose_autogen, 1)
@@ -8547,6 +8045,10 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr7(nil, "x-change-window-property", es.xChangeWindowProperty_1_autogen, 2)
 	ec.defSubr2(nil, "x-delete-window-property", es.xDeleteWindowProperty_autogen, 1)
 	ec.defSubr3(nil, "x-delete-window-property", es.xDeleteWindowProperty_1_autogen, 1)
+	ec.defSubr1(nil, "x-server-vendor", es.xServerVendor_autogen, 0)
+	ec.defSubr1(nil, "x-server-vendor", es.xServerVendor_1_autogen, 0)
+	ec.defSubr1(nil, "x-server-version", es.xServerVersion_autogen, 0)
+	ec.defSubr1(nil, "x-server-version", es.xServerVersion_1_autogen, 0)
 	ec.defSubr2(nil, "x-synchronize", es.xSynchronize_autogen, 1)
 	ec.defSubr2(nil, "x-synchronize", es.xSynchronize_1_autogen, 1)
 	ec.defSubr6(nil, "x-window-property", es.xWindowProperty_autogen, 1)
@@ -8753,6 +8255,7 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr6(nil, "x-begin-drag", es.xBeginDrag_autogen, 1)
 	ec.defSubr1(nil, "x-display-monitor-attributes-list", es.xDisplayMonitorAttributesList_autogen, 0)
 	ec.defSubr2(nil, "x-display-set-last-user-time", es.xDisplayLastUserTime_autogen, 1)
+	ec.defSubr1(nil, "x-double-buffered-p", es.xDoubleBufferedP_autogen, 0)
 	ec.defSubr2(nil, "x-frame-edges", es.xFrameEdges_autogen, 0)
 	ec.defSubr1(nil, "x-frame-geometry", es.xFrameGeometry_autogen, 0)
 	ec.defSubr1(nil, "x-frame-list-z-order", es.xFrameListZOrder_autogen, 0)
@@ -8782,6 +8285,8 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr2(nil, "x-selection-exists-p", es.xSelectionExistsP_autogen, 0)
 	ec.defSubr2(nil, "x-selection-owner-p", es.xSelectionOwnerP_autogen, 0)
 	ec.defSubr6(nil, "x-send-client-message", es.xSendClientMessage_autogen, 6)
+	ec.defSubr0(nil, "font-get-system-font", es.fontGetSystemFont_autogen)
+	ec.defSubr0(nil, "font-get-system-normal-font", es.fontGetSystemNormalFont_autogen)
 	ec.defSubr0(nil, "tool-bar-get-system-style", es.toolBarGetSystemStyle_autogen)
 	ec.defSubr1(nil, "handle-save-session", es.handleSaveSession_autogen, 1)
 	ec.defSubr1(nil, "delete-xwidget-view", es.deleteXwidgetView_autogen, 1)
@@ -8822,5 +8327,5 @@ func (ec *execContext) symbolsOfEmacs_autogen() {
 	ec.defSubr1(nil, "xwidgetp", es.xwidgetp_autogen, 1)
 }
 
-// Subroutines count: 1762
+// Subroutines count: 1663
 // Constants count: 2

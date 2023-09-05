@@ -290,11 +290,20 @@ def generate_go_file(
     return s
 
 
+def ignore_file(filename: str) -> bool:
+    return any([
+        filename == "msdos.c",
+        filename == "dosfns.c",
+        "android" in filename,
+        "haiku" in filename,
+    ])
+
+
 def gen_stubs(pimacs_base: Path, emacs_base: Path, emacs_commit: str, emacs_branch: str) -> None:
     all_defuns = []
 
     for p in sorted(emacs_base.joinpath("src").rglob("*")):
-        if not p.suffix == ".c" or p.name == "msdos.c":
+        if not p.suffix == ".c" or ignore_file(p.name):
             continue
 
         defuns, *_ = extract_declarations(p)

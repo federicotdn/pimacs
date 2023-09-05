@@ -20,18 +20,23 @@ Assuming you have the Go compiler installed, simply use `make build` to compile 
 
 Note that many, many Elisp functions and macros are **not** implemented. You can, however, use the following (among others):
 ```
-if while eval funcall apply quote function progn
-unwind-protect condition-case throw signal
-prin1 prin1-to-string print princ
-intern read-from-string read
-length equal assq memq get put plist-get plist-put nconc
-null symbol-plist symbol-name set fset eq defalias setq
-setcar setcdr car cdr cons list + <
-current-buffer get-buffer set-buffer buffer-string insert
+intern read-from-string read load eval funcall apply progn prog1 cond
+setq and or if while quote function defconst let let* catch
+unwind-protect condition-case throw signal prin1 print princ
+prin1-to-string null sequencep consp listp symbolp stringp
+number-or-marker-p char-or-string-p integerp numberp bufferp
+characterp char-table-p vectorp boundp fboundp makunbound fmakunbound
+car cdr car-safe cdr-safe setcar setcdr symbol-plist symbol-name set
+fset symbol-value symbol-function eq defalias + < bare-symbol cons
+list length equal eql assq assoc memq get put plistp plist-get plist-put
+nconc provide nreverse reverse require nthcdr nth mapcar buffer-string
+insert current-buffer set-buffer get-buffer buffer-name buffer-list
+get-buffer-create read-from-minibuffer getenv-internal recursive-edit
+make-char-table char-table-range set-char-table-range
+char-table-parent set-char-table-parent
 ```
-(and additionally, many predicate functions e.g. `stringp`, `consp`, etc.)
 
-Note that some of these may be only partially implemented.
+Note that some of these may be only partially implemented, or be a stub/placeholder.
 
 ### Examples
 Set a variable and read it:

@@ -47,8 +47,13 @@ type execContext struct {
 	ops    chan proto.DrawOp
 	done   chan bool
 
-	errorOnVarRedefine bool
-	testing            bool
+	testing bool
+
+	init struct {
+		errorOnVarRedefine bool
+		subrs              int
+		stubs              int
+	}
 }
 
 type emacsStubs struct {
@@ -317,8 +322,14 @@ func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name strin
 		maxArgs: maxArgs,
 	}
 
+	if ec.init.errorOnVarRedefine {
+		ec.init.subrs++
+	} else {
+		ec.init.stubs++
+	}
+
 	if symbol != nil && *symbol != nil {
-		if ec.errorOnVarRedefine {
+		if ec.init.errorOnVarRedefine {
 			ec.terminate("subroutine value already set: '%+v'", *symbol)
 		}
 		return sub
@@ -392,7 +403,7 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 		*symbol = sym
 	}
 
-	ec.internNewSymbol(sym, ec.errorOnVarRedefine)
+	ec.internNewSymbol(sym, ec.init.errorOnVarRedefine)
 	return sym
 }
 
@@ -420,14 +431,15 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 
 func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec := execContext{
-		obarray:            make(map[string]*lispSymbol),
-		stack:              []stackEntry{},
-		errorOnVarRedefine: true,
+		obarray: make(map[string]*lispSymbol),
+		stack:   []stackEntry{},
 		// TODO: Move '10' to config value
 		events: make(chan proto.InputEvent, 10),
 		ops:    make(chan proto.DrawOp, 10),
 		done:   make(chan bool),
 	}
+
+	ec.init.errorOnVarRedefine = true
 
 	ec.initSymbols()             // symbols.go
 	ec.symbolsOfErrors()         // errors.gmo
@@ -448,9 +460,8 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 
 	// Load Emacs stubs at the end, without erroring out
 	// on repeated defuns or defvars
-	ec.errorOnVarRedefine = false
+	ec.init.errorOnVarRedefine = false
 	ec.symbolsOfEmacs_autogen()
-	ec.errorOnVarRedefine = true
 
 	ec.checkSymbolValues()
 	ec.checkVarValues()
@@ -473,7 +484,7 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 }
 
 func (ec *execContext) loadElisp() error {
-	_, err := ec.load(newString("pimacs.el"), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
+	_, err := ec.load(newString("loadup-pimacs.el"), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
 	if err != nil {
 		return err
 	}

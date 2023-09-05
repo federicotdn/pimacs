@@ -346,5 +346,5 @@ func TestStubPanic(t *testing.T) {
 	}()
 
 	inp := newTestingInterpreter()
-	inp.ReadEvalPrin1("(android-query-battery)") //nolint:errcheck
+	inp.ReadEvalPrin1("(comp-libgccjit-version)") //nolint:errcheck
 }

@@ -1,4 +1,6 @@
-;;; pimacs.el --- Base file for Pimacs  -*- lexical-binding: t; -*-
+;;; loadup-pimacs.el --- Base file for Pimacs  -*- lexical-binding: t; -*-
+
+;; Eventually to be replaced with loadup.el.
 
 ;; A very simplified version of defmacro
 (defalias 'defmacro

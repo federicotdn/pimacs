@@ -25,6 +25,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 	switch obj.getType() {
 	case lispTypeString:
+		// TODO: Probably not correct given EU8 encoding
 		num = utf8.RuneCountInString(xString(obj).val)
 	case lispTypeCons:
 		var err error
@@ -32,6 +33,8 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 		if err != nil {
 			return nil, err
 		}
+	case lispTypeVector:
+		num = len(xVector(obj).val)
 	default:
 		if obj != ec.nil_ {
 			return ec.wrongTypeArgument(ec.s.sequencep, obj)
@@ -97,6 +100,31 @@ func (ec *execContext) memq(elt, list lispObject) (lispObject, error) {
 	return ec.nil_, nil
 }
 
+func (ec *execContext) eql(o1, o2 lispObject) (lispObject, error) {
+	if o1 == o2 {
+		return ec.true_()
+	}
+
+	t1, t2 := o1.getType(), o2.getType()
+	if t1 != t2 {
+		return ec.false_()
+	}
+
+	switch t1 {
+	case lispTypeInteger:
+		if xIntegerValue(o1) == xIntegerValue(o2) {
+			return ec.true_()
+		}
+	case lispTypeFloat:
+		// TODO: Probably not correct, needs to match Emacs eql
+		if xFloatValue(o1) == xFloatValue(o2) {
+			return ec.true_()
+		}
+	}
+
+	return ec.false_()
+}
+
 func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 	if o1 == o2 {
 		return ec.true_()
@@ -140,9 +168,9 @@ func (ec *execContext) equal(o1, o2 lispObject) (lispObject, error) {
 
 		return ec.false_()
 	case lispTypeFloat:
-		return ec.bool(xFloatValue(o1) == xFloatValue(o2))
+		fallthrough
 	case lispTypeInteger:
-		return ec.bool(xIntegerValue(o1) == xIntegerValue(o2))
+		return ec.eql(o1, o2)
 	case lispTypeString:
 		return ec.bool(xStringValue(o1) == xStringValue(o2))
 	case lispTypeSymbol:
@@ -337,9 +365,87 @@ func (ec *execContext) require(feature, filename, noerror lispObject) (lispObjec
 	return ec.nil_, nil
 }
 
+func (ec *execContext) nthCdr(n, list lispObject) (lispObject, error) {
+	if !integerp(n) {
+		return ec.wrongTypeArgument(ec.s.integerp, n)
+	}
+	num := xIntegerValue(n)
+	tail := list
+
+	for ; 0 < num; num, tail = num-1, xCdr(tail) {
+		if !consp(tail) {
+			if tail != ec.nil_ {
+				return ec.wrongTypeArgument(ec.s.listp, list)
+			}
+			return ec.nil_, nil
+		}
+	}
+
+	return tail, nil
+}
+
+func (ec *execContext) nth(n, list lispObject) (lispObject, error) {
+	cdr, err := ec.nthCdr(n, list)
+	if err != nil {
+		return nil, err
+	}
+	return ec.car(cdr)
+}
+
+func (ec *execContext) mapCarInternal(seq lispObject, length lispObject, function lispObject) ([]lispObject, error) {
+	if !integerp(length) {
+		return nil, xErrOnly(ec.wrongTypeArgument(ec.s.integerp, length))
+	}
+
+	leni := xIntegerValue(length)
+
+	switch {
+	case seq == ec.nil_:
+		return []lispObject{}, nil
+	case consp(seq):
+		result := []lispObject{}
+		tail := seq
+		for i := lispInt(0); i < leni; i++ {
+			if !consp(tail) {
+				return result, nil
+			}
+
+			tmp, err := ec.funcall(function, xCar(tail))
+			if err != nil {
+				return nil, err
+			}
+
+			result = append(result, tmp)
+			tail = xCdr(tail)
+		}
+
+		return result, nil
+	default:
+		return nil, xErrOnly(ec.pimacsUnimplemented(ec.s.mapCar, "mapcar unimplemented for this object: '%+v'", seq))
+	}
+}
+
+func (ec *execContext) mapCar(function, sequence lispObject) (lispObject, error) {
+	length, err := ec.length(sequence)
+	if err != nil {
+		return nil, err
+	}
+
+	if chartablep(sequence) {
+		return ec.wrongTypeArgument(ec.s.listp, sequence)
+	}
+
+	result, err := ec.mapCarInternal(sequence, length, function)
+	if err != nil {
+		return nil, err
+	}
+	return ec.makeList(result...), nil
+}
+
 func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr1(nil, "length", ec.length, 1)
 	ec.defSubr2(&ec.s.equal, "equal", ec.equal, 2)
+	ec.defSubr2(&ec.s.eql, "eql", ec.eql, 2)
 	ec.defSubr2(nil, "assq", ec.assq, 2)
 	ec.defSubr3(nil, "assoc", ec.assoc, 2)
 	ec.defSubr2(nil, "memq", ec.memq, 2)
@@ -353,4 +459,7 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr1(nil, "nreverse", ec.nreverse, 1)
 	ec.defSubr1(&ec.s.reverse, "reverse", ec.reverse, 1)
 	ec.defSubr3(nil, "require", ec.require, 1)
+	ec.defSubr2(nil, "nthcdr", ec.nthCdr, 2)
+	ec.defSubr2(nil, "nth", ec.nth, 2)
+	ec.defSubr2(&ec.s.mapCar, "mapcar", ec.mapCar, 2)
 }
