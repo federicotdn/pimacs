@@ -36,8 +36,8 @@ type execContext struct {
 	stack      []stackEntry
 	nil_       lispObject
 	t          lispObject
-	s          symbols
-	v          vars
+	s          *symbols
+	v          *vars
 	obarray    map[string]*lispSymbol
 	currentBuf *lispBuffer
 	buffers    lispObject
@@ -435,6 +435,8 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 
 func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec := execContext{
+		s:       &symbols{},
+		v:       &vars{},
 		obarray: make(map[string]*lispSymbol),
 		stack:   []stackEntry{},
 		// TODO: Move '10' to config value

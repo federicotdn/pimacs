@@ -96,7 +96,7 @@ type vars struct {
 }
 
 func (ec *execContext) initSymbols() {
-	g := &ec.s
+	g := ec.s
 
 	// Set up nil and unbound first so that we can use
 	// ec.makeSymbol()
@@ -126,7 +126,7 @@ func (ec *execContext) initSymbols() {
 }
 
 func (ec *execContext) checkSymbolValues() {
-	v := reflect.ValueOf(ec.s)
+	v := reflect.ValueOf(*ec.s)
 
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
@@ -137,7 +137,7 @@ func (ec *execContext) checkSymbolValues() {
 }
 
 func (ec *execContext) checkVarValues() {
-	v := reflect.ValueOf(ec.v)
+	v := reflect.ValueOf(*ec.v)
 
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
