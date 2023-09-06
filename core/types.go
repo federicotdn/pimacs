@@ -17,6 +17,7 @@ const (
 	lispTypeSubroutine
 	lispTypeBuffer
 	lispTypeCharTable
+	lispTypeHashTable
 	argsMany      = -1
 	argsUnevalled = -2
 )
@@ -120,6 +121,17 @@ type lispCharTable struct {
 	extraSlots lispInt
 }
 
+type lispHashTableTest struct {
+	name             lispObject
+	userHashFunction lispObject
+	userCompFunction lispObject
+	hashFunction     func(lispObject) lispObject
+	compFunction     func(lispObject, lispObject) lispObject
+}
+
+type lispHashTable struct {
+}
+
 func (s *lispSubroutine) setAttrs(noReturn bool) {
 	s.noReturn = noReturn
 }
@@ -189,6 +201,10 @@ func (ls *lispBuffer) getType() lispType {
 
 func (ct *lispCharTable) getType() lispType {
 	return lispTypeCharTable
+}
+
+func (ct *lispHashTable) getType() lispType {
+	return lispTypeHashTable
 }
 
 func (e *lispCharTableEntry) contains(c lispInt) bool {

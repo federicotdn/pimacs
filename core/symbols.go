@@ -71,6 +71,17 @@ type symbols struct {
 	readChar            lispObject
 	charTableExtraSlots lispObject
 	wholeNump           lispObject
+	cTest               lispObject
+	cSize               lispObject
+	cPureCopy           lispObject
+	cRehashSize         lispObject
+	cRehashThreshold    lispObject
+	cWeakness           lispObject
+	key                 lispObject
+	value               lispObject
+	hashTableTest       lispObject
+	keyOrValue          lispObject
+	keyAndValue         lispObject
 }
 
 type vars struct {

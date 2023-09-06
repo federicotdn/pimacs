@@ -43,6 +43,10 @@ type execContext struct {
 	buffers    lispObject
 	stubs      *emacsStubs
 
+	hashTestEq     *lispHashTableTest
+	hashTestEql    *lispHashTableTest
+	hashTableEqual *lispHashTableTest
+
 	events chan proto.InputEvent
 	ops    chan proto.DrawOp
 	done   chan bool

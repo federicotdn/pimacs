@@ -442,7 +442,37 @@ func (ec *execContext) mapCar(function, sequence lispObject) (lispObject, error)
 	return ec.makeList(result...), nil
 }
 
+func (ec *execContext) getKeyArg(key lispObject, args ...lispObject) (lispObject, bool) {
+	for i, arg := range args {
+		if arg == key && i+1 < len(args) {
+			return args[i+1], true
+		}
+	}
+
+	return nil, false
+}
+
+func (ec *execContext) makeHashTable(args ...lispObject) (lispObject, error) {
+	test, found := ec.getKeyArg(ec.s.cTest)
+	if !found {
+		test = ec.s.eql
+	}
+	return test, nil
+}
+
 func (ec *execContext) symbolsOfFunctions() {
+	ec.defSym(&ec.s.cTest, ":test")
+	ec.defSym(&ec.s.cSize, ":size")
+	ec.defSym(&ec.s.cPureCopy, ":purecopy")
+	ec.defSym(&ec.s.cRehashSize, ":rehash-size")
+	ec.defSym(&ec.s.cRehashThreshold, ":rehash-threshold")
+	ec.defSym(&ec.s.cWeakness, ":weakness")
+	ec.defSym(&ec.s.key, "key")
+	ec.defSym(&ec.s.value, "value")
+	ec.defSym(&ec.s.hashTableTest, "hash-table-test")
+	ec.defSym(&ec.s.keyOrValue, "key-or-value")
+	ec.defSym(&ec.s.keyAndValue, "key-and-value")
+
 	ec.defSubr1(nil, "length", ec.length, 1)
 	ec.defSubr2(&ec.s.equal, "equal", ec.equal, 2)
 	ec.defSubr2(&ec.s.eql, "eql", ec.eql, 2)
@@ -462,4 +492,9 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(nil, "nthcdr", ec.nthCdr, 2)
 	ec.defSubr2(nil, "nth", ec.nth, 2)
 	ec.defSubr2(&ec.s.mapCar, "mapcar", ec.mapCar, 2)
+	ec.defSubrM(nil, "make-hash-table", ec.makeHashTable, 0)
+}
+
+func (ec *execContext) initFunctions() {
+
 }
