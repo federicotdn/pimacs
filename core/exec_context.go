@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"github.com/federicotdn/pimacs/proto"
+	"sync"
 )
 
 type stackEntryTag int
@@ -32,16 +33,31 @@ type stackJumpSignal struct {
 	ec          *execContext
 }
 
+type obarrayType struct {
+	values map[string]*lispSymbol
+	lock   *sync.Mutex
+}
+
+type goroutineLocals struct {
+	stack                  []stackEntry
+	currentBuf             *lispBuffer
+	internalInterpreterEnv forwardLispObj
+	lexicalBinding         forwardLispObj
+}
+
 type execContext struct {
-	stack      []stackEntry
-	nil_       lispObject
-	t          lispObject
-	s          *symbols
-	v          *vars
-	obarray    map[string]*lispSymbol
-	currentBuf *lispBuffer
-	buffers    lispObject
-	stubs      *emacsStubs
+	gl *goroutineLocals
+
+	nil_ lispObject
+	t    lispObject
+	s    *symbols
+	v    *vars
+
+	obarray obarrayType
+	// TODO: allow concurrent access to `buffers`
+	buffers lispObject
+
+	stubs *emacsStubs
 
 	hashTestEq     *lispHashTableTest
 	hashTestEql    *lispHashTableTest
@@ -392,7 +408,6 @@ func (ec *execContext) defSubr8(symbol *lispObject, name string, fn lispFn8, min
 func (ec *execContext) defSubrM(symbol *lispObject, name string, fn lispFnM, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, argsMany)
 }
-
 func (ec *execContext) defSubrU(symbol *lispObject, name string, fn lispFn1, minArgs int) *lispSubroutine {
 	return ec.defSubrInternal(symbol, fn, name, minArgs, argsUnevalled)
 }
@@ -407,7 +422,10 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 		*symbol = sym
 	}
 
-	ec.internNewSymbol(sym, ec.init.errorOnVarRedefine)
+	_, existed := ec.internInstanceInternal(sym)
+	if existed && ec.init.errorOnVarRedefine {
+		ec.terminate("symbol already initialized: '%+v'", *symbol)
+	}
 	return sym
 }
 
@@ -433,12 +451,62 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 	sym.redirect = fwd
 }
 
+func (ec *execContext) internInternal(name string) (*lispSymbol, bool) {
+	sym := ec.makeSymbol(name, true)
+	return ec.internInstanceInternal(sym)
+}
+
+func (ec *execContext) internInstanceInternal(sym *lispSymbol) (*lispSymbol, bool) {
+	ec.obarray.lock.Lock()
+	defer ec.obarray.lock.Unlock()
+
+	prev, existed := ec.obarray.values[sym.name]
+	if existed {
+		return prev, existed
+	}
+
+	ec.obarray.values[sym.name] = sym
+	return sym, false
+}
+
+func (ec *execContext) uninternInternal(name string) bool {
+	ec.obarray.lock.Lock()
+	defer ec.obarray.lock.Unlock()
+
+	_, existed := ec.obarray.values[name]
+	if !existed {
+		return false
+	}
+
+	delete(ec.obarray.values, name)
+	return true
+}
+
+func newObarray() obarrayType {
+	return obarrayType{
+		values: make(map[string]*lispSymbol),
+		lock:   &sync.Mutex{},
+	}
+}
+
+func (ec *execContext) initGoroutineLocals(lexicalBinding bool) {
+	lexical := ec.nil_
+	if lexicalBinding {
+		lexical = ec.t
+	}
+	ec.defVarLisp(&ec.gl.lexicalBinding, "lexical-binding", lexical)
+	ec.defVarLisp(&ec.gl.internalInterpreterEnv, "internal-interpreter-environment", ec.nil_)
+	ec.uninternInternal("internal-interpreter-environment")
+
+	ec.initBufferGoroutineLocals() // buffer.go
+}
+
 func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec := execContext{
+		gl:      &goroutineLocals{},
 		s:       &symbols{},
 		v:       &vars{},
-		obarray: make(map[string]*lispSymbol),
-		stack:   []stackEntry{},
+		obarray: newObarray(),
 		// TODO: Move '10' to config value
 		events: make(chan proto.InputEvent, 10),
 		ops:    make(chan proto.DrawOp, 10),
@@ -447,8 +515,10 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 
 	ec.init.errorOnVarRedefine = true
 
+	// Symbol and vars basic initialization
 	ec.initSymbols()             // symbols.go
-	ec.symbolsOfErrors()         // errors.gmo
+	ec.symbolsOfExecContext()    // exec_context.go
+	ec.symbolsOfErrors()         // errors.go
 	ec.symbolsOfRead()           // read.go
 	ec.symbolsOfEval()           // eval.go
 	ec.symbolsOfPrint()          // print.go
@@ -460,9 +530,14 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec.symbolsOfCallProc()       // callproc.go
 	ec.symbolsOfKeyboard()       // keyboard.go
 	ec.symbolsOfCharacterTable() // character_table.go
+	ec.symbolsOfGoroutine()      // goroutine.go
 	ec.symbolsOfPimacsTools()    // pimacs_tools.go
 
-	ec.defVarBool(&ec.v.nonInteractive, "noninteractive", true)
+	// Other initializations, e.g. creating buffers list
+	ec.initBuffer() // buffer.go
+
+	// Goroutine-specific initialization
+	ec.initGoroutineLocals(false)
 
 	// Load Emacs stubs at the end, without erroring out
 	// on repeated defuns or defvars
@@ -472,8 +547,23 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec.checkSymbolValues()
 	ec.checkVarValues()
 
-	ec.initBuffer() // buffer.go
+	// We are now ready to evaluate Elisp code
+	return &ec, ec.loadElisp(loadPathPrepend)
+}
 
+func (ec *execContext) symbolsOfExecContext() {
+	ec.defVarBool(&ec.v.nonInteractive, "noninteractive", true)
+}
+
+func (ec *execContext) copyExecContext() *execContext {
+	copy := *ec
+	copy.gl = &goroutineLocals{}
+	// Make new execContexts in new goroutine use lexical binding
+	copy.initGoroutineLocals(true)
+	return &copy
+}
+
+func (ec *execContext) loadElisp(loadPathPrepend []string) error {
 	loadPath := []lispObject{}
 	for _, elem := range loadPathPrepend {
 		loadPath = append(loadPath, newString(elem))
@@ -482,31 +572,12 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 
 	ec.v.loadPath.val = ec.makeList(loadPath...)
 
-	if err := ec.loadElisp(); err != nil {
-		return nil, err
-	}
-
-	return &ec, nil
-}
-
-func (ec *execContext) loadElisp() error {
 	_, err := ec.load(newString("loadup-pimacs.el"), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (ec *execContext) internNewSymbol(symbol *lispSymbol, errorOnExisting bool) {
-	prev, ok := ec.obarray[symbol.name]
-	if ok && prev != symbol {
-		if errorOnExisting {
-			ec.terminate("different symbol with that name already interned, name: '%v'", symbol.name)
-		}
-		return
-	}
-	ec.obarray[symbol.name] = symbol
 }
 
 func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
@@ -528,7 +599,7 @@ func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) error {
 	sym := xSymbol(symbol)
 
 	if sym.redirect == nil {
-		ec.stack = append(ec.stack, &stackEntryLet{
+		ec.gl.stack = append(ec.gl.stack, &stackEntryLet{
 			symbol: sym,
 			oldVal: sym.val,
 		})
@@ -543,14 +614,14 @@ func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) error {
 		if err != nil {
 			return err
 		}
-		ec.stack = append(ec.stack, entry)
+		ec.gl.stack = append(ec.gl.stack, entry)
 	}
 
 	return nil
 }
 
 func (ec *execContext) stackPushCatch(tag lispObject) {
-	ec.stack = append(ec.stack, &stackEntryCatch{
+	ec.gl.stack = append(ec.gl.stack, &stackEntryCatch{
 		catchTag: tag,
 	})
 }
@@ -561,14 +632,14 @@ func (ec *execContext) stackPushCurrentBuffer() {
 }
 
 func (ec *execContext) stackPushFnLispObject(function func(lispObject), arg lispObject) {
-	ec.stack = append(ec.stack, &stackEntryFnLispObject{
+	ec.gl.stack = append(ec.gl.stack, &stackEntryFnLispObject{
 		function: function,
 		arg:      arg,
 	})
 }
 
 func (ec *execContext) stackPushBacktrace(function lispObject, args []lispObject, evaluated bool) {
-	ec.stack = append(ec.stack, &stackEntryBacktrace{
+	ec.gl.stack = append(ec.gl.stack, &stackEntryBacktrace{
 		function:  function,
 		args:      args,
 		evaluated: evaluated,
@@ -576,7 +647,7 @@ func (ec *execContext) stackPushBacktrace(function lispObject, args []lispObject
 }
 
 func (ec *execContext) catchInStack(tag lispObject) bool {
-	for _, binding := range ec.stack {
+	for _, binding := range ec.gl.stack {
 		if binding.tag() != entryCatch {
 			continue
 		}
@@ -603,17 +674,17 @@ func (ec *execContext) unwind() func() {
 }
 
 func (ec *execContext) stackSize() int {
-	return len(ec.stack)
+	return len(ec.gl.stack)
 }
 
 func (ec *execContext) stackPopTo(target int) {
-	size := len(ec.stack)
+	size := len(ec.gl.stack)
 	if target < 0 || size < target {
 		ec.terminate("unable to pop back to '%v', size is '%v'", target, size)
 	}
 
-	for len(ec.stack) > target {
-		current := ec.stack[len(ec.stack)-1]
+	for len(ec.gl.stack) > target {
+		current := ec.gl.stack[len(ec.gl.stack)-1]
 
 		switch current.tag() {
 		case entryLet:
@@ -635,17 +706,17 @@ func (ec *execContext) stackPopTo(target int) {
 			ec.terminate("unknown stack item tag: '%v'", current.tag())
 		}
 
-		ec.stack = ec.stack[:len(ec.stack)-1]
+		ec.gl.stack = ec.gl.stack[:len(ec.gl.stack)-1]
 	}
 }
 
 func (ec *execContext) printLispStack() (string, error) {
 	lispStack := ""
-	for i := len(ec.stack) - 1; i >= 0; i-- {
-		if ec.stack[i].tag() != entryBacktrace {
+	for i := len(ec.gl.stack) - 1; i >= 0; i-- {
+		if ec.gl.stack[i].tag() != entryBacktrace {
 			continue
 		}
-		bt := ec.stack[i].(*stackEntryBacktrace)
+		bt := ec.gl.stack[i].(*stackEntryBacktrace)
 
 		functionName := "<unknown function>"
 		if symbolp(bt.function) {

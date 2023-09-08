@@ -577,14 +577,9 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	}
 
 	name := xStringValue(str)
+	sym, existed := ec.internInternal(name)
 
-	sym, ok := ec.obarray[name]
-	if !ok {
-		sym = ec.makeSymbol(name, true)
-		ec.internNewSymbol(sym, true)
-	}
-
-	if strings.HasPrefix(name, ":") {
+	if !existed && strings.HasPrefix(name, ":") {
 		_, err := ec.set(sym, sym)
 		if err != nil {
 			return nil, err
@@ -593,6 +588,19 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	}
 
 	return sym, nil
+}
+
+func (ec *execContext) unintern(name, _ lispObject) (lispObject, error) {
+	nameStr := ""
+	if symbolp(name) {
+		nameStr = xSymbolName(name)
+	} else if stringp(name) {
+		nameStr = xStringValue(name)
+	} else {
+		return ec.wrongTypeArgument(ec.s.stringp, name)
+	}
+
+	return ec.bool(ec.uninternInternal(nameStr))
 }
 
 func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
@@ -680,12 +688,12 @@ func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 func (ec *execContext) readEvalLoop(ctx readContext) error {
 	defer ec.unwind()()
 
-	lex := ec.v.lexicalBinding.val
+	lex := ec.gl.lexicalBinding.val
 	if lex == ec.nil_ || lex == ec.s.unbound {
-		if err := ec.stackPushLet(ec.v.internalInterpreterEnv.sym, ec.nil_); err != nil {
+		if err := ec.stackPushLet(ec.gl.internalInterpreterEnv.sym, ec.nil_); err != nil {
 			return err
 		}
-	} else if err := ec.stackPushLet(ec.v.internalInterpreterEnv.sym, ec.makeList(ec.t)); err != nil {
+	} else if err := ec.stackPushLet(ec.gl.internalInterpreterEnv.sym, ec.makeList(ec.t)); err != nil {
 		return err
 	}
 
@@ -806,14 +814,14 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 
 	defer ec.unwind()()
 	// Load is dynamic by default
-	if err := ec.stackPushLet(ec.v.lexicalBinding.sym, ec.nil_); err != nil {
+	if err := ec.stackPushLet(ec.gl.lexicalBinding.sym, ec.nil_); err != nil {
 		return nil, err
 	}
 
 	ctx := readContextFile{reader: bufio.NewReader(f)}
 
 	if ec.lexicallyBoundp(&ctx) {
-		if err := ec.stackPushLet(ec.v.lexicalBinding.sym, ec.t); err != nil {
+		if err := ec.stackPushLet(ec.gl.lexicalBinding.sym, ec.t); err != nil {
 			return nil, err
 		}
 	}
@@ -827,7 +835,6 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 
 func (ec *execContext) symbolsOfRead() {
 	ec.defVarLisp(&ec.v.standardInput, "standard-input", ec.t)
-	ec.defVarLisp(&ec.v.lexicalBinding, "lexical-binding", ec.nil_)
 	ec.defVarLisp(&ec.v.loadPath, "load-path", ec.nil_)
 	ec.defSym(&ec.s.readChar, "read-char")
 	ec.defSym(&ec.s.backquote, "`")
@@ -835,6 +842,7 @@ func (ec *execContext) symbolsOfRead() {
 	ec.defSym(&ec.s.commaAt, "@,")
 
 	ec.defSubr2(nil, "intern", ec.intern, 1)
+	ec.defSubr2(nil, "unintern", ec.unintern, 1)
 	ec.defSubr3(nil, "read-from-string", ec.readFromString, 1)
 	ec.defSubr1(&ec.s.read, "read", ec.read, 0)
 	ec.defSubr5(nil, "load", ec.load, 1)

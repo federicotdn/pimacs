@@ -3,9 +3,9 @@ package core
 func (ec *execContext) insert(args ...lispObject) (lispObject, error) {
 	for _, arg := range args {
 		if characterp(arg) {
-			ec.currentBuf.contents += string(xIntegerRune(arg))
+			ec.gl.currentBuf.contents += string(xIntegerRune(arg))
 		} else if stringp(arg) {
-			ec.currentBuf.contents += xStringValue(arg)
+			ec.gl.currentBuf.contents += xStringValue(arg)
 		} else {
 			return ec.wrongTypeArgument(ec.s.charOrStringp, arg)
 		}
@@ -15,11 +15,11 @@ func (ec *execContext) insert(args ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) bufferString() (lispObject, error) {
-	return newString(ec.currentBuf.contents), nil
+	return newString(ec.gl.currentBuf.contents), nil
 }
 
 func (ec *execContext) currentBuffer() (lispObject, error) {
-	return ec.currentBuf, nil
+	return ec.gl.currentBuf, nil
 }
 
 func (ec *execContext) currentBufferInternal() lispObject {
@@ -34,7 +34,7 @@ func (ec *execContext) setBufferIfLive(obj lispObject) {
 }
 
 func (ec *execContext) setBufferInternal(buf *lispBuffer) {
-	ec.currentBuf = buf
+	ec.gl.currentBuf = buf
 }
 
 func (ec *execContext) setBuffer(bufferOrName lispObject) (lispObject, error) {
@@ -148,6 +148,9 @@ func (ec *execContext) symbolsOfBuffer() {
 
 func (ec *execContext) initBuffer() {
 	ec.buffers = ec.makeList()
+}
+
+func (ec *execContext) initBufferGoroutineLocals() {
 	buf := xEnsure(ec.getBufferCreate(newString("*scratch*"), ec.nil_))
-	ec.currentBuf = xBuffer(buf)
+	ec.gl.currentBuf = xBuffer(buf)
 }

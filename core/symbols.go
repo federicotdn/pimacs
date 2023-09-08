@@ -86,13 +86,11 @@ type symbols struct {
 
 type vars struct {
 	// Variables with static Go values
-	internalInterpreterEnv forwardLispObj
-	nonInteractive         forwardBool
-	standardOutput         forwardLispObj
-	standardInput          forwardLispObj
-	lexicalBinding         forwardLispObj
-	loadPath               forwardLispObj
-	pimacsRepo             forwardLispObj
+	nonInteractive forwardBool
+	standardOutput forwardLispObj
+	standardInput  forwardLispObj
+	loadPath       forwardLispObj
+	pimacsRepo     forwardLispObj
 }
 
 func (ec *execContext) initSymbols() {
@@ -106,7 +104,9 @@ func (ec *execContext) initSymbols() {
 	// Set the attributes and intern nil
 	unbound.setAttributes(unbound, nil_, nil_)
 	nil_.setAttributes(nil_, nil_, nil_)
-	ec.internNewSymbol(nil_, true)
+	// NOTE: This should be the only access to the obarray not done
+	// via ec.internInternal().
+	ec.obarray.values["nil"] = nil_
 
 	// nil and unbound are now complete
 

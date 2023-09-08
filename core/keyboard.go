@@ -15,27 +15,27 @@ func (ec *execContext) handleInputEventKey(state *commandLoopState, ev *proto.In
 
 	if ev.Rune == '`' {
 		state.debug = !state.debug
-		ec.currentBuf.contents = ""
+		ec.gl.currentBuf.contents = ""
 	}
 
 	if state.debug {
-		ec.currentBuf.contents = "KEY: "
+		ec.gl.currentBuf.contents = "KEY: "
 
 		if ev.HasMod(proto.ModAlt) {
-			ec.currentBuf.contents += "Alt "
+			ec.gl.currentBuf.contents += "Alt "
 		}
 		if ev.HasMod(proto.ModCtrl) {
-			ec.currentBuf.contents += "Ctrl "
+			ec.gl.currentBuf.contents += "Ctrl "
 		}
 		if ev.HasMod(proto.ModShift) {
-			ec.currentBuf.contents += "Shift "
+			ec.gl.currentBuf.contents += "Shift "
 		}
 		if ev.HasMod(proto.ModMeta) {
-			ec.currentBuf.contents += "Meta "
+			ec.gl.currentBuf.contents += "Meta "
 		}
 
-		ec.currentBuf.contents += fmt.Sprintf("key: <%v> | rune: <%v> <%c>", ev.Key, ev.Rune, ev.Rune)
-		ec.ops <- &proto.DrawOpSetText{Text: ec.currentBuf.contents}
+		ec.gl.currentBuf.contents += fmt.Sprintf("key: <%v> | rune: <%v> <%c>", ev.Key, ev.Rune, ev.Rune)
+		ec.ops <- &proto.DrawOpSetText{Text: ec.gl.currentBuf.contents}
 
 		return false
 	}
@@ -47,8 +47,8 @@ func (ec *execContext) handleInputEventKey(state *commandLoopState, ev *proto.In
 
 	if ev.Key == proto.KeyEnter {
 		// TODO: Don't manipulate buffer contents like this
-		str := newString(ec.currentBuf.contents)
-		ec.currentBuf.contents = ""
+		str := newString(ec.gl.currentBuf.contents)
+		ec.gl.currentBuf.contents = ""
 
 		obj, err := ec.readFromString(str, ec.nil_, ec.nil_)
 		if err != nil {
@@ -70,8 +70,8 @@ func (ec *execContext) handleInputEventKey(state *commandLoopState, ev *proto.In
 
 		ec.ops <- &proto.DrawOpSetText{Text: xStringValue(printed)}
 	} else {
-		ec.currentBuf.contents += string(ev.Rune)
-		ec.ops <- &proto.DrawOpSetText{Text: ec.currentBuf.contents}
+		ec.gl.currentBuf.contents += string(ev.Rune)
+		ec.ops <- &proto.DrawOpSetText{Text: ec.gl.currentBuf.contents}
 	}
 	return false
 }
