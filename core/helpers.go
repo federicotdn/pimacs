@@ -1,5 +1,9 @@
 package core
 
+import (
+	"fmt"
+)
+
 // General helpers //
 
 func xEnsure(obj lispObject, err error) lispObject {
@@ -208,4 +212,53 @@ func arrayp(obj lispObject) bool {
 
 func naturalp(obj lispObject) bool {
 	return integerp(obj) && xIntegerValue(obj) >= 0
+}
+
+// Debug utilities //
+
+func debugRepr(obj lispObject) string {
+	return debugReprInternal(obj, 20)
+}
+
+func debugReprInternal(obj lispObject, depth int) string {
+	if depth <= 0 {
+		return "(...)"
+	}
+	depth--
+
+	switch obj.getType() {
+	case lispTypeCons:
+		return fmt.Sprintf("(%v . %v)", debugReprInternal(xCar(obj), depth), debugReprInternal(xCdr(obj), depth))
+	case lispTypeFloat:
+		return fmt.Sprintf("%vf", xFloatValue(obj))
+	case lispTypeString:
+		return fmt.Sprintf("\"%v\"", xStringValue(obj))
+	case lispTypeInteger:
+		return fmt.Sprintf("int(%v)", xIntegerValue(obj))
+	case lispTypeSymbol:
+		sym := xSymbol(obj)
+		if sym.val == sym || sym.function == sym {
+			return sym.name
+		}
+
+		if sym.redirect == nil {
+			return fmt.Sprintf("sym(%v, v=%v, f=%v)", sym.name, debugReprInternal(sym.val, depth), debugReprInternal(sym.function, depth))
+		} else {
+			return fmt.Sprintf("sym(%v, v=FWD, f=%v)", sym.name, debugReprInternal(sym.function, depth))
+		}
+	case lispTypeVector:
+		s := "["
+		for _, elem := range xVector(obj).val {
+			s += debugReprInternal(elem, depth) + ", "
+		}
+		return s + "]"
+	case lispTypeBuffer:
+		buf := xBuffer(obj)
+		return fmt.Sprintf("buf(name=%v, live=%v)", buf.name, buf.live)
+	case lispTypeSubroutine:
+		subr := xSubroutine(obj)
+		return fmt.Sprintf("subr(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
+	default:
+		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
+	}
 }
