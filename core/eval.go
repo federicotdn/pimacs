@@ -453,10 +453,7 @@ func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) 
 		errorSymbol = ec.s.error_
 	}
 
-	lispStack, err := ec.printLispStack()
-	if err != nil {
-		ec.terminate("error when printing lisp stack: %v", err)
-	}
+	lispStack := ec.printLispStack()
 
 	return nil, &stackJumpSignal{
 		errorSymbol: errorSymbol,

@@ -258,6 +258,8 @@ func debugReprInternal(obj lispObject, depth int) string {
 	case lispTypeSubroutine:
 		subr := xSubroutine(obj)
 		return fmt.Sprintf("subr(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
+	case lispTypeCharTable:
+		return fmt.Sprintf("chartab(subtype=%v)", xCharTable(obj).subtype)
 	default:
 		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
 	}

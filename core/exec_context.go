@@ -709,44 +709,46 @@ func (ec *execContext) stackPopTo(target int) {
 	}
 }
 
-func (ec *execContext) printLispStack() (string, error) {
+func (ec *execContext) printLispStack() string {
 	lispStack := ""
 	for i := len(ec.gl.stack) - 1; i >= 0; i-- {
-		if ec.gl.stack[i].tag() != entryBacktrace {
-			continue
-		}
-		bt := ec.gl.stack[i].(*stackEntryBacktrace)
 
-		functionName := "<unknown function>"
-		if symbolp(bt.function) {
-			functionName = xSymbolName(bt.function)
-		}
-
-		lispStack += fmt.Sprintf("  %v(", functionName)
-
-		for j, arg := range bt.args {
-			s, err := ec.prin1ToString(arg, ec.nil_)
-			if err != nil {
-				return "", err
+		switch elem := ec.gl.stack[i].(type) {
+		case *stackEntryBacktrace:
+			functionName := "<unknown function>"
+			if symbolp(elem.function) {
+				functionName = xSymbolName(elem.function)
 			}
 
-			printed := xStringValue(s)
-			if len(printed) > 10 {
-				printed = printed[:10] + "[...]"
-			}
-			lispStack += printed
+			lispStack += fmt.Sprintf("  - bt: %v(", functionName)
 
-			if j < len(bt.args)-1 {
-				lispStack += " "
+			for j, arg := range elem.args {
+				printed := debugRepr(arg)
+				if len(printed) > 10 {
+					printed = printed[:10] + "[...]"
+				}
+				lispStack += printed
+
+				if j < len(elem.args)-1 {
+					lispStack += " "
+				}
 			}
+
+			lispStack += ")"
+		case *stackEntryLet:
+			lispStack += fmt.Sprintf("  - let: %v = %v", debugRepr(elem.symbol), debugRepr(elem.oldVal))
+		case *stackEntryLetForwarded:
+			lispStack += fmt.Sprintf("  - letfwd: %v = %v", debugRepr(elem.symbol), debugRepr(elem.oldVal))
+		default:
+			lispStack += "  - other"
 		}
 
-		lispStack += ")"
 		if i > 0 {
 			lispStack += "\n"
 		}
+
 	}
-	return lispStack, nil
+	return lispStack
 }
 
 func (ec *execContext) bool(b bool) (lispObject, error) {
@@ -771,13 +773,9 @@ func (ec *execContext) stub(name string) (lispObject, error) {
 
 func (ec *execContext) terminate(format string, v ...interface{}) {
 	if !ec.testing {
-		stack, err := ec.printLispStack()
-		if err != nil {
-			fmt.Printf("no lisp backtrace available: %v", err)
-		} else {
-			fmt.Println("backtrace:")
-			fmt.Println(stack)
-		}
+		stack := ec.printLispStack()
+		fmt.Println("backtrace:")
+		fmt.Println(stack)
 	}
 	terminate(format, v...)
 }

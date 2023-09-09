@@ -8,7 +8,13 @@ func (ec *execContext) makeGoroutine(function, name lispObject) (lispObject, err
 	newEc := ec.copyExecContext()
 
 	go func() {
-		// TODO: Set up internalInterpreterEnv etc.
+		if err := ec.stackPushLet(ec.gl.lexicalBinding.sym, ec.t); err != nil {
+			newEc.terminate("error in goroutine: '%+v'", err)
+		}
+		if err := ec.setupInternalInterpreterEnv(); err != nil {
+			newEc.terminate("error in goroutine: '%+v'", err)
+		}
+
 		_, err := newEc.funcall(function)
 		if err != nil {
 			newEc.terminate("error in goroutine: '%+v'", err)

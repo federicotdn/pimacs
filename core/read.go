@@ -685,15 +685,20 @@ func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
 	return false
 }
 
+func (ec *execContext) setupInternalInterpreterEnv() error {
+	lex := ec.gl.lexicalBinding.val
+	if lex == ec.nil_ || lex == ec.s.unbound {
+		return ec.stackPushLet(ec.gl.internalInterpreterEnv.sym, ec.nil_)
+	} else {
+		return ec.stackPushLet(ec.gl.internalInterpreterEnv.sym, ec.makeList(ec.t))
+	}
+}
+
 func (ec *execContext) readEvalLoop(ctx readContext) error {
 	defer ec.unwind()()
 
-	lex := ec.gl.lexicalBinding.val
-	if lex == ec.nil_ || lex == ec.s.unbound {
-		if err := ec.stackPushLet(ec.gl.internalInterpreterEnv.sym, ec.nil_); err != nil {
-			return err
-		}
-	} else if err := ec.stackPushLet(ec.gl.internalInterpreterEnv.sym, ec.makeList(ec.t)); err != nil {
+	err := ec.setupInternalInterpreterEnv()
+	if err != nil {
 		return err
 	}
 
