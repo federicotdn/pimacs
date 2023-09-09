@@ -127,6 +127,8 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		}
 
 		return ec.printStringE("]", printCharFn, err)
+	case lispTypeChannel:
+		s = "#<channel>"
 	default:
 		s = fmt.Sprintf("#<unknown datatype '%+v'>", obj)
 	}

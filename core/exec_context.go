@@ -751,19 +751,23 @@ func (ec *execContext) printLispStack() string {
 	return lispStack
 }
 
-func (ec *execContext) bool(b bool) (lispObject, error) {
+func (ec *execContext) boolVal(b bool) lispObject {
 	if b {
-		return ec.t, nil
+		return ec.t
 	}
-	return ec.nil_, nil
+	return ec.nil_
+}
+
+func (ec *execContext) bool(b bool) (lispObject, error) {
+	return ec.boolVal(b), nil
 }
 
 func (ec *execContext) true_() (lispObject, error) {
-	return ec.t, nil
+	return ec.bool(true)
 }
 
 func (ec *execContext) false_() (lispObject, error) {
-	return ec.nil_, nil
+	return ec.bool(false)
 }
 
 func (ec *execContext) stub(name string) (lispObject, error) {

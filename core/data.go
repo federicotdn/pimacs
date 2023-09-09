@@ -56,6 +56,10 @@ func (ec *execContext) charTablep(object lispObject) (lispObject, error) {
 	return ec.bool(chartablep(object))
 }
 
+func (ec *execContext) channelp(object lispObject) (lispObject, error) {
+	return ec.bool(channelp(object))
+}
+
 func (ec *execContext) boundp(symbol lispObject) (lispObject, error) {
 	if !symbolp(symbol) {
 		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
@@ -287,6 +291,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.s.bufferp, "bufferp", (*execContext).bufferp, 1)
 	ec.defSubr2(&ec.s.characterp, "characterp", (*execContext).characterp, 1)
 	ec.defSubr1(&ec.s.charTablep, "char-table-p", (*execContext).charTablep, 1)
+	ec.defSubr1(&ec.s.channelp, "channelp", (*execContext).channelp, 1)
 	ec.defSubr1(nil, "vectorp", (*execContext).vectorp, 1)
 	ec.defSubr1(nil, "boundp", (*execContext).boundp, 1)
 	ec.defSubr1(nil, "fboundp", (*execContext).fboundp, 1)

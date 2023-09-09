@@ -192,6 +192,16 @@ func newFloat(val lispFp) *lispFloat {
 	}
 }
 
+// Channel helpers //
+
+func channelp(obj lispObject) bool {
+	return obj.getType() == lispTypeChannel
+}
+
+func xChannel(obj lispObject) *lispChannel {
+	return xCast[*lispChannel](obj, "channel")
+}
+
 // Cross-type helpers //
 
 func numberp(obj lispObject) bool {
@@ -260,6 +270,8 @@ func debugReprInternal(obj lispObject, depth int) string {
 		return fmt.Sprintf("subr(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
 	case lispTypeCharTable:
 		return fmt.Sprintf("chartab(subtype=%v)", xCharTable(obj).subtype)
+	case lispTypeChannel:
+		return fmt.Sprintf("channel(%v)", xChannel(obj).val)
 	default:
 		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
 	}

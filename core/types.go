@@ -18,6 +18,7 @@ const (
 	lispTypeBuffer
 	lispTypeCharTable
 	lispTypeHashTable
+	lispTypeChannel
 	argsMany      = -1
 	argsUnevalled = -2
 )
@@ -132,6 +133,10 @@ type lispHashTableTest struct {
 type lispHashTable struct {
 }
 
+type lispChannel struct {
+	val chan lispObject
+}
+
 func (s *lispSubroutine) setAttrs(noReturn bool) {
 	s.noReturn = noReturn
 }
@@ -203,8 +208,12 @@ func (ct *lispCharTable) getType() lispType {
 	return lispTypeCharTable
 }
 
-func (ct *lispHashTable) getType() lispType {
+func (ht *lispHashTable) getType() lispType {
 	return lispTypeHashTable
+}
+
+func (ch *lispChannel) getType() lispType {
+	return lispTypeChannel
 }
 
 func (e *lispCharTableEntry) contains(c lispInt) bool {

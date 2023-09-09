@@ -18,6 +18,7 @@ type symbols struct {
 	consp              lispObject
 	symbolp            lispObject
 	stringp            lispObject
+	channelp           lispObject
 	numberOrMarkerp    lispObject
 	charOrStringp      lispObject
 	integerp           lispObject
