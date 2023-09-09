@@ -4,14 +4,14 @@ import (
 	"time"
 )
 
-func (ec *execContext) makeGoroutine(function, name lispObject) (lispObject, error) {
-	newEc := ec.copyExecContext()
+func (parentEc *execContext) makeGoroutine(function, name lispObject) (lispObject, error) {
+	newEc := parentEc.copyExecContext()
 
 	go func() {
-		if err := ec.stackPushLet(ec.gl.lexicalBinding.sym, ec.t); err != nil {
+		if err := newEc.stackPushLet(newEc.gl.lexicalBinding.sym, newEc.t); err != nil {
 			newEc.terminate("error in goroutine: '%+v'", err)
 		}
-		if err := ec.setupInternalInterpreterEnv(); err != nil {
+		if err := newEc.setupInternalInterpreterEnv(); err != nil {
 			newEc.terminate("error in goroutine: '%+v'", err)
 		}
 
@@ -21,7 +21,7 @@ func (ec *execContext) makeGoroutine(function, name lispObject) (lispObject, err
 		}
 	}()
 
-	return ec.nil_, nil
+	return parentEc.nil_, nil
 }
 
 func (ec *execContext) sleep(ms lispObject) (lispObject, error) {
