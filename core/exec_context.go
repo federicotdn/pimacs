@@ -77,7 +77,6 @@ type execContext struct {
 }
 
 type emacsStubs struct {
-	ec *execContext
 }
 
 type stackEntryLet struct {
@@ -763,10 +762,6 @@ func (ec *execContext) true_() (lispObject, error) {
 
 func (ec *execContext) false_() (lispObject, error) {
 	return ec.nil_, nil
-}
-
-func (es *emacsStubs) stub(name string) (lispObject, error) {
-	return es.ec.stub(name)
 }
 
 func (ec *execContext) stub(name string) (lispObject, error) {

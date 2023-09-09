@@ -94,5 +94,5 @@ loop:
 }
 
 func (ec *execContext) symbolsOfKeyboard() {
-	ec.defSubr0(&ec.s.recursiveEdit, "recursive-edit", ec.recursiveEdit)
+	ec.defSubr0(&ec.s.recursiveEdit, "recursive-edit", (*execContext).recursiveEdit)
 }

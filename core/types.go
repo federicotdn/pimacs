@@ -28,16 +28,16 @@ const (
 	symbolFwdTypeBool
 )
 
-type lispFn0 func() (lispObject, error)
-type lispFn1 func(lispObject) (lispObject, error)
-type lispFn2 func(lispObject, lispObject) (lispObject, error)
-type lispFn3 func(lispObject, lispObject, lispObject) (lispObject, error)
-type lispFn4 func(lispObject, lispObject, lispObject, lispObject) (lispObject, error)
-type lispFn5 func(lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
-type lispFn6 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
-type lispFn7 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
-type lispFn8 func(lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
-type lispFnM func(...lispObject) (lispObject, error)
+type lispFn0 func(*execContext) (lispObject, error)
+type lispFn1 func(*execContext, lispObject) (lispObject, error)
+type lispFn2 func(*execContext, lispObject, lispObject) (lispObject, error)
+type lispFn3 func(*execContext, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn4 func(*execContext, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn5 func(*execContext, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn6 func(*execContext, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn7 func(*execContext, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFn8 func(*execContext, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject, lispObject) (lispObject, error)
+type lispFnM func(*execContext, ...lispObject) (lispObject, error)
 type lispFn interface{}
 
 type lispObject interface {

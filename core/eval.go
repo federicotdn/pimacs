@@ -35,7 +35,7 @@ func (ec *execContext) applySubroutine(fn, originalArgs lispObject) (lispObject,
 		result, err = ec.funcallSubroutine(fn, args...)
 	} else {
 		// Handle case: maxArgs == argsUnevalled
-		result, err = sub.callabe.(lispFn1)(originalArgs)
+		result, err = sub.callabe.(lispFn1)(ec, originalArgs)
 	}
 
 	if result == nil && err == nil {
@@ -71,25 +71,25 @@ func (ec *execContext) funcallSubroutine(fn lispObject, args ...lispObject) (lis
 
 	switch sub.maxArgs {
 	case 0:
-		result, err = sub.callabe.(lispFn0)()
+		result, err = sub.callabe.(lispFn0)(ec)
 	case 1:
-		result, err = sub.callabe.(lispFn1)(args[0])
+		result, err = sub.callabe.(lispFn1)(ec, args[0])
 	case 2:
-		result, err = sub.callabe.(lispFn2)(args[0], args[1])
+		result, err = sub.callabe.(lispFn2)(ec, args[0], args[1])
 	case 3:
-		result, err = sub.callabe.(lispFn3)(args[0], args[1], args[2])
+		result, err = sub.callabe.(lispFn3)(ec, args[0], args[1], args[2])
 	case 4:
-		result, err = sub.callabe.(lispFn4)(args[0], args[1], args[2], args[3])
+		result, err = sub.callabe.(lispFn4)(ec, args[0], args[1], args[2], args[3])
 	case 5:
-		result, err = sub.callabe.(lispFn5)(args[0], args[1], args[2], args[3], args[4])
+		result, err = sub.callabe.(lispFn5)(ec, args[0], args[1], args[2], args[3], args[4])
 	case 6:
-		result, err = sub.callabe.(lispFn6)(args[0], args[1], args[2], args[3], args[4], args[5])
+		result, err = sub.callabe.(lispFn6)(ec, args[0], args[1], args[2], args[3], args[4], args[5])
 	case 7:
-		result, err = sub.callabe.(lispFn7)(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+		result, err = sub.callabe.(lispFn7)(ec, args[0], args[1], args[2], args[3], args[4], args[5], args[6])
 	case 8:
-		result, err = sub.callabe.(lispFn8)(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+		result, err = sub.callabe.(lispFn8)(ec, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
 	case argsMany:
-		result, err = sub.callabe.(lispFnM)(args...)
+		result, err = sub.callabe.(lispFnM)(ec, args...)
 	default:
 		ec.terminate("unknown subroutine maxargs value")
 	}
@@ -954,25 +954,25 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSym(&ec.s.andRest, "&rest")
 	ec.defSym(&ec.s.andOptional, "&optional")
 
-	ec.defSubr2(&ec.s.eval, "eval", ec.eval, 1)
-	ec.defSubrM(nil, "funcall", ec.funcall, 1)
-	ec.defSubrM(nil, "apply", ec.apply, 1)
-	ec.defSubrU(nil, "progn", ec.progn, 0)
-	ec.defSubrU(nil, "prog1", ec.prog1, 1)
-	ec.defSubrU(nil, "cond", ec.cond, 0)
-	ec.defSubrU(&ec.s.setq, "setq", ec.setq, 0)
-	ec.defSubrU(nil, "and", ec.and, 0)
-	ec.defSubrU(nil, "or", ec.or, 0)
-	ec.defSubrU(nil, "if", ec.if_, 2)
-	ec.defSubrU(nil, "while", ec.while, 1)
-	ec.defSubrU(&ec.s.quote, "quote", ec.quote, 1)
-	ec.defSubrU(&ec.s.function, "function", ec.function, 1)
-	ec.defSubrU(nil, "defconst", ec.defconst, 2)
-	ec.defSubrU(nil, "let", ec.let, 1)
-	ec.defSubrU(nil, "let*", ec.letX, 1)
-	ec.defSubrU(nil, "catch", ec.catch, 1)
-	ec.defSubrU(nil, "unwind-protect", ec.unwindProtect, 1)
-	ec.defSubrU(nil, "condition-case", ec.conditionCase, 2)
-	ec.defSubr2(nil, "throw", ec.throw, 2).setAttrs(true)
-	ec.defSubr2(nil, "signal", ec.signal, 2).setAttrs(true)
+	ec.defSubr2(&ec.s.eval, "eval", (*execContext).eval, 1)
+	ec.defSubrM(nil, "funcall", (*execContext).funcall, 1)
+	ec.defSubrM(nil, "apply", (*execContext).apply, 1)
+	ec.defSubrU(nil, "progn", (*execContext).progn, 0)
+	ec.defSubrU(nil, "prog1", (*execContext).prog1, 1)
+	ec.defSubrU(nil, "cond", (*execContext).cond, 0)
+	ec.defSubrU(&ec.s.setq, "setq", (*execContext).setq, 0)
+	ec.defSubrU(nil, "and", (*execContext).and, 0)
+	ec.defSubrU(nil, "or", (*execContext).or, 0)
+	ec.defSubrU(nil, "if", (*execContext).if_, 2)
+	ec.defSubrU(nil, "while", (*execContext).while, 1)
+	ec.defSubrU(&ec.s.quote, "quote", (*execContext).quote, 1)
+	ec.defSubrU(&ec.s.function, "function", (*execContext).function, 1)
+	ec.defSubrU(nil, "defconst", (*execContext).defconst, 2)
+	ec.defSubrU(nil, "let", (*execContext).let, 1)
+	ec.defSubrU(nil, "let*", (*execContext).letX, 1)
+	ec.defSubrU(nil, "catch", (*execContext).catch, 1)
+	ec.defSubrU(nil, "unwind-protect", (*execContext).unwindProtect, 1)
+	ec.defSubrU(nil, "condition-case", (*execContext).conditionCase, 2)
+	ec.defSubr2(nil, "throw", (*execContext).throw, 2).setAttrs(true)
+	ec.defSubr2(nil, "signal", (*execContext).signal, 2).setAttrs(true)
 }

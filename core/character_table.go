@@ -203,9 +203,9 @@ func (ec *execContext) setCharTableParent(table, parent lispObject) (lispObject,
 func (ec *execContext) symbolsOfCharacterTable() {
 	ec.defSym(&ec.s.charTableExtraSlots, "char-table-extra-slots")
 
-	ec.defSubr2(nil, "make-char-table", ec.makeCharTable, 1)
-	ec.defSubr2(nil, "char-table-range", ec.charTableRange, 2)
-	ec.defSubr3(nil, "set-char-table-range", ec.setCharTableRange, 3)
-	ec.defSubr1(nil, "char-table-parent", ec.charTableParent, 1)
-	ec.defSubr2(nil, "set-char-table-parent", ec.setCharTableParent, 2)
+	ec.defSubr2(nil, "make-char-table", (*execContext).makeCharTable, 1)
+	ec.defSubr2(nil, "char-table-range", (*execContext).charTableRange, 2)
+	ec.defSubr3(nil, "set-char-table-range", (*execContext).setCharTableRange, 3)
+	ec.defSubr1(nil, "char-table-parent", (*execContext).charTableParent, 1)
+	ec.defSubr2(nil, "set-char-table-parent", (*execContext).setCharTableParent, 2)
 }

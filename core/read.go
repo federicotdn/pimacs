@@ -841,9 +841,9 @@ func (ec *execContext) symbolsOfRead() {
 	ec.defSym(&ec.s.comma, ",")
 	ec.defSym(&ec.s.commaAt, "@,")
 
-	ec.defSubr2(nil, "intern", ec.intern, 1)
-	ec.defSubr2(nil, "unintern", ec.unintern, 1)
-	ec.defSubr3(nil, "read-from-string", ec.readFromString, 1)
-	ec.defSubr1(&ec.s.read, "read", ec.read, 0)
-	ec.defSubr5(nil, "load", ec.load, 1)
+	ec.defSubr2(nil, "intern", (*execContext).intern, 1)
+	ec.defSubr2(nil, "unintern", (*execContext).unintern, 1)
+	ec.defSubr3(nil, "read-from-string", (*execContext).readFromString, 1)
+	ec.defSubr1(&ec.s.read, "read", (*execContext).read, 0)
+	ec.defSubr5(nil, "load", (*execContext).load, 1)
 }

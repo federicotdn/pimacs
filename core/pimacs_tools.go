@@ -38,6 +38,6 @@ func (ec *execContext) symbolsOfPimacsTools() {
 		newString("https://github.com/federicotdn/pimacs"),
 	)
 
-	ec.defSubr1(nil, "pimacs--symbol-debug", ec.pimacsSymbolDebug, 1)
-	ec.defSubr0(nil, "pimacs--impl-stats", ec.pimacsImplementationStats)
+	ec.defSubr1(nil, "pimacs--symbol-debug", (*execContext).pimacsSymbolDebug, 1)
+	ec.defSubr0(nil, "pimacs--impl-stats", (*execContext).pimacsImplementationStats)
 }

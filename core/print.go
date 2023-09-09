@@ -209,8 +209,8 @@ func (ec *execContext) princ(obj, printCharFn lispObject) (lispObject, error) {
 func (ec *execContext) symbolsOfPrint() {
 	ec.defVarLisp(&ec.v.standardOutput, "standard-output", ec.t)
 
-	ec.defSubr2(&ec.s.prin1, "prin1", ec.prin1, 1)
-	ec.defSubr2(nil, "print", ec.print_, 1)
-	ec.defSubr2(nil, "princ", ec.princ, 1)
-	ec.defSubr2(nil, "prin1-to-string", ec.prin1ToString, 1)
+	ec.defSubr2(&ec.s.prin1, "prin1", (*execContext).prin1, 1)
+	ec.defSubr2(nil, "print", (*execContext).print_, 1)
+	ec.defSubr2(nil, "princ", (*execContext).princ, 1)
+	ec.defSubr2(nil, "prin1-to-string", (*execContext).prin1ToString, 1)
 }

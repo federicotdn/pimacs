@@ -262,19 +262,19 @@ def generate_go_file(
         s += "\n"
 
     for defun in go_defuns:
-        s += f"func (es *emacsStubs) {defun.fnname}("
+        s += f"func (es *emacsStubs) {defun.fnname}(ec *execContext"
         if defun.subr_fn == "defSubrM":
-            s += "args ...lispObject"
+            s += ", args ...lispObject"
         elif defun.subr_fn != "defSubr0":
-            s += ", ".join(defun.args) + " lispObject"
+            s += ", " + ", ".join(defun.args) + " lispObject"
         s += ") (lispObject, error) {\n"
-        s += f'\treturn es.stub("{defun.lname}") // Source file: {defun.path}'
+        s += f'\treturn ec.stub("{defun.lname}") // Source file: {defun.path}'
         if defun.attributes:
             s += f", attributes: {defun.attributes}"
         s += "\n}\n\n"
 
     s += f"func (ec *execContext) symbolsOfEmacs{AUTOGEN_SUFFIX}() {{\n"
-    s += "\tes := &emacsStubs{ec: ec}\n"
+    s += "\tes := &emacsStubs{}\n"
     s += "\tec.stubs = es\n"
 
     for defun in go_defuns:

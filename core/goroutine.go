@@ -29,6 +29,6 @@ func (ec *execContext) sleep(ms lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfGoroutine() {
-	ec.defSubr2(nil, "pimacs-go", ec.makeGoroutine, 1)
-	ec.defSubr1(nil, "pimacs-sleep", ec.sleep, 1)
+	ec.defSubr2(nil, "pimacs-go", (*execContext).makeGoroutine, 1)
+	ec.defSubr1(nil, "pimacs-sleep", (*execContext).sleep, 1)
 }

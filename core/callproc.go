@@ -18,5 +18,5 @@ func (ec *execContext) getenvInternal(variable, env lispObject) (lispObject, err
 }
 
 func (ec *execContext) symbolsOfCallProc() {
-	ec.defSubr2(nil, "getenv-internal", ec.getenvInternal, 1)
+	ec.defSubr2(nil, "getenv-internal", (*execContext).getenvInternal, 1)
 }

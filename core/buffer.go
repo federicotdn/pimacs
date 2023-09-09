@@ -136,14 +136,14 @@ func (ec *execContext) bufferList(frame lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) symbolsOfBuffer() {
-	ec.defSubr0(nil, "buffer-string", ec.bufferString)
-	ec.defSubrM(nil, "insert", ec.insert, 0)
-	ec.defSubr0(nil, "current-buffer", ec.currentBuffer)
-	ec.defSubr1(nil, "set-buffer", ec.setBuffer, 1)
-	ec.defSubr1(nil, "get-buffer", ec.getBuffer, 1)
-	ec.defSubr1(nil, "buffer-name", ec.bufferName, 0)
-	ec.defSubr1(nil, "buffer-list", ec.bufferList, 0)
-	ec.defSubr2(nil, "get-buffer-create", ec.getBufferCreate, 1)
+	ec.defSubr0(nil, "buffer-string", (*execContext).bufferString)
+	ec.defSubrM(nil, "insert", (*execContext).insert, 0)
+	ec.defSubr0(nil, "current-buffer", (*execContext).currentBuffer)
+	ec.defSubr1(nil, "set-buffer", (*execContext).setBuffer, 1)
+	ec.defSubr1(nil, "get-buffer", (*execContext).getBuffer, 1)
+	ec.defSubr1(nil, "buffer-name", (*execContext).bufferName, 0)
+	ec.defSubr1(nil, "buffer-list", (*execContext).bufferList, 0)
+	ec.defSubr2(nil, "get-buffer-create", (*execContext).getBufferCreate, 1)
 }
 
 func (ec *execContext) initBuffer() {
