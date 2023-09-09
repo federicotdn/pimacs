@@ -56,27 +56,6 @@ func (ec *execContext) setBuffer(bufferOrName lispObject) (lispObject, error) {
 	return obj, nil
 }
 
-func (ec *execContext) getBuffer(bufferOrName lispObject) (lispObject, error) {
-	if bufferp(bufferOrName) {
-		return bufferOrName, nil
-	}
-
-	if !stringp(bufferOrName) {
-		return ec.wrongTypeArgument(ec.s.stringp, bufferOrName)
-	}
-
-	elem, err := ec.assoc(bufferOrName, ec.buffers, ec.nil_)
-	if err != nil {
-		return nil, err
-	}
-
-	if elem == ec.nil_ {
-		return ec.nil_, nil
-	}
-
-	return xCdr(elem), nil
-}
-
 func (ec *execContext) makeBuffer(name string) *lispBuffer {
 	return &lispBuffer{
 		name: name,
@@ -84,27 +63,42 @@ func (ec *execContext) makeBuffer(name string) *lispBuffer {
 	}
 }
 
+func (ec *execContext) loadOrStoreBuffer(name string, buf *lispBuffer) (*lispBuffer, bool) {
+	ec.buffersLock.Lock()
+	defer ec.buffersLock.Unlock()
+
+	prev, existed := ec.buffers[name]
+	if existed {
+		return prev, true
+	}
+
+	if buf != nil {
+		ec.buffers[name] = buf
+	}
+	return buf, false
+}
+
+func (ec *execContext) getBuffer(bufferOrName lispObject) (lispObject, error) {
+	if bufferp(bufferOrName) {
+		return bufferOrName, nil
+	} else if !stringp(bufferOrName) {
+		return ec.wrongTypeArgument(ec.s.stringp, bufferOrName)
+	}
+
+	buf, existed := ec.loadOrStoreBuffer(xStringValue(bufferOrName), nil)
+	if !existed {
+		return ec.nil_, nil
+	}
+	return buf, nil
+}
+
 func (ec *execContext) getBufferCreate(bufferOrName, inhibitBufferHooks lispObject) (lispObject, error) {
-	obj, err := ec.getBuffer(bufferOrName)
-	if err != nil {
-		return nil, err
-	}
-
-	if obj != ec.nil_ {
-		return obj, nil
-	}
-
 	if xStringChars(bufferOrName) == 0 {
 		return ec.signalError("Empty string for buffer name is not allowed")
 	}
 
 	buf := ec.makeBuffer(xStringValue(bufferOrName))
-	newList, err := ec.nconc(ec.buffers, ec.makeList(newCons(bufferOrName, buf)))
-	if err != nil {
-		return nil, err
-	}
-
-	ec.buffers = newList
+	buf, _ = ec.loadOrStoreBuffer(buf.name, buf)
 
 	return buf, nil
 }
@@ -125,11 +119,12 @@ func (ec *execContext) bufferName(obj lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) bufferList(frame lispObject) (lispObject, error) {
-	buffers := []lispObject{}
+	ec.buffersLock.RLock()
+	defer ec.buffersLock.RUnlock()
 
-	for tail := ec.buffers; consp(tail); tail = xCdr(tail) {
-		elem := xCar(tail)
-		buffers = append(buffers, xCdr(elem))
+	buffers := make([]lispObject, 0, len(ec.buffers))
+	for _, buf := range ec.buffers {
+		buffers = append(buffers, buf)
 	}
 
 	return ec.makeList(buffers...), nil
@@ -144,10 +139,6 @@ func (ec *execContext) symbolsOfBuffer() {
 	ec.defSubr1(nil, "buffer-name", (*execContext).bufferName, 0)
 	ec.defSubr1(nil, "buffer-list", (*execContext).bufferList, 0)
 	ec.defSubr2(nil, "get-buffer-create", (*execContext).getBufferCreate, 1)
-}
-
-func (ec *execContext) initBuffer() {
-	ec.buffers = ec.makeList()
 }
 
 func (ec *execContext) initBufferGoroutineLocals() {

@@ -107,7 +107,7 @@ func (ec *execContext) initSymbols() {
 	nil_.setAttributes(nil_, nil_, nil_)
 	// NOTE: This should be the only access to the obarray not done
 	// via ec.internInternal().
-	ec.obarray.values["nil"] = nil_
+	ec.obarray["nil"] = nil_
 
 	// nil and unbound are now complete
 

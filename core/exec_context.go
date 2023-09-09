@@ -33,11 +33,6 @@ type stackJumpSignal struct {
 	ec          *execContext
 }
 
-type obarrayType struct {
-	values map[string]*lispSymbol
-	lock   *sync.Mutex
-}
-
 type goroutineLocals struct {
 	stack                  []stackEntry
 	currentBuf             *lispBuffer
@@ -53,9 +48,11 @@ type execContext struct {
 	s    *symbols
 	v    *vars
 
-	obarray obarrayType
-	// TODO: allow concurrent access to `buffers`
-	buffers lispObject
+	obarray     map[string]*lispSymbol
+	obarrayLock *sync.Mutex
+
+	buffers     map[string]*lispBuffer
+	buffersLock *sync.RWMutex
 
 	stubs *emacsStubs
 
@@ -456,44 +453,33 @@ func (ec *execContext) internInternal(name string) (*lispSymbol, bool) {
 }
 
 func (ec *execContext) internInstanceInternal(sym *lispSymbol) (*lispSymbol, bool) {
-	ec.obarray.lock.Lock()
-	defer ec.obarray.lock.Unlock()
+	ec.obarrayLock.Lock()
+	defer ec.obarrayLock.Unlock()
 
-	prev, existed := ec.obarray.values[sym.name]
+	prev, existed := ec.obarray[sym.name]
 	if existed {
-		return prev, existed
+		return prev, true
 	}
 
-	ec.obarray.values[sym.name] = sym
+	ec.obarray[sym.name] = sym
 	return sym, false
 }
 
 func (ec *execContext) uninternInternal(name string) bool {
-	ec.obarray.lock.Lock()
-	defer ec.obarray.lock.Unlock()
+	ec.obarrayLock.Lock()
+	defer ec.obarrayLock.Unlock()
 
-	_, existed := ec.obarray.values[name]
+	_, existed := ec.obarray[name]
 	if !existed {
 		return false
 	}
 
-	delete(ec.obarray.values, name)
+	delete(ec.obarray, name)
 	return true
 }
 
-func newObarray() obarrayType {
-	return obarrayType{
-		values: make(map[string]*lispSymbol),
-		lock:   &sync.Mutex{},
-	}
-}
-
-func (ec *execContext) initGoroutineLocals(lexicalBinding bool) {
-	lexical := ec.nil_
-	if lexicalBinding {
-		lexical = ec.t
-	}
-	ec.defVarLisp(&ec.gl.lexicalBinding, "lexical-binding", lexical)
+func (ec *execContext) initGoroutineLocals() {
+	ec.defVarLisp(&ec.gl.lexicalBinding, "lexical-binding", ec.nil_)
 	ec.defVarLisp(&ec.gl.internalInterpreterEnv, "internal-interpreter-environment", ec.nil_)
 	ec.uninternInternal("internal-interpreter-environment")
 
@@ -502,10 +488,13 @@ func (ec *execContext) initGoroutineLocals(lexicalBinding bool) {
 
 func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec := execContext{
-		gl:      &goroutineLocals{},
-		s:       &symbols{},
-		v:       &vars{},
-		obarray: newObarray(),
+		gl:          &goroutineLocals{},
+		s:           &symbols{},
+		v:           &vars{},
+		obarray:     make(map[string]*lispSymbol),
+		obarrayLock: &sync.Mutex{},
+		buffers:     make(map[string]*lispBuffer),
+		buffersLock: &sync.RWMutex{},
 		// TODO: Move '10' to config value
 		events: make(chan proto.InputEvent, 10),
 		ops:    make(chan proto.DrawOp, 10),
@@ -532,11 +521,8 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec.symbolsOfGoroutine()      // goroutine.go
 	ec.symbolsOfPimacsTools()    // pimacs_tools.go
 
-	// Other initializations, e.g. creating buffers list
-	ec.initBuffer() // buffer.go
-
 	// Goroutine-specific initialization
-	ec.initGoroutineLocals(false)
+	ec.initGoroutineLocals()
 
 	// Load Emacs stubs at the end, without erroring out
 	// on repeated defuns or defvars
@@ -557,8 +543,7 @@ func (ec *execContext) symbolsOfExecContext() {
 func (ec *execContext) copyExecContext() *execContext {
 	copy := *ec
 	copy.gl = &goroutineLocals{}
-	// Make new execContexts in new goroutine use lexical binding
-	copy.initGoroutineLocals(true)
+	copy.initGoroutineLocals()
 	return &copy
 }
 

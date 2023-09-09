@@ -127,6 +127,8 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		}
 
 		return ec.printStringE("]", printCharFn, err)
+	case lispTypeBuffer:
+		s = fmt.Sprintf("#<buffer %v>", xBuffer(obj).name)
 	case lispTypeChannel:
 		s = "#<channel>"
 	default:
@@ -163,8 +165,8 @@ func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, new
 		printCharFn = ec.t
 	}
 
+	defer ec.unwind()()
 	if bufferp(printCharFn) {
-		defer ec.unwind()()
 		ec.stackPushCurrentBuffer()
 		_, err := ec.setBuffer(printCharFn)
 		if err != nil {
