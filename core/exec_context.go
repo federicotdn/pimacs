@@ -418,7 +418,7 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 		*symbol = sym
 	}
 
-	_, existed := ec.internInstanceInternal(sym)
+	_, existed := ec.loadOrStoreSymbol(sym)
 	if existed && ec.init.errorOnVarRedefine {
 		ec.terminate("symbol already initialized: '%+v'", *symbol)
 	}
@@ -447,12 +447,7 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 	sym.redirect = fwd
 }
 
-func (ec *execContext) internInternal(name string) (*lispSymbol, bool) {
-	sym := ec.makeSymbol(name, true)
-	return ec.internInstanceInternal(sym)
-}
-
-func (ec *execContext) internInstanceInternal(sym *lispSymbol) (*lispSymbol, bool) {
+func (ec *execContext) loadOrStoreSymbol(sym *lispSymbol) (*lispSymbol, bool) {
 	ec.obarrayLock.Lock()
 	defer ec.obarrayLock.Unlock()
 

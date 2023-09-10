@@ -577,7 +577,8 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	}
 
 	name := xStringValue(str)
-	sym, existed := ec.internInternal(name)
+	sym := ec.makeSymbol(name, true)
+	sym, existed := ec.loadOrStoreSymbol(sym)
 
 	if !existed && strings.HasPrefix(name, ":") {
 		_, err := ec.set(sym, sym)
