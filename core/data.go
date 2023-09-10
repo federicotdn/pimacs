@@ -309,7 +309,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr2(nil, "fset", (*execContext).fset, 2)
 	ec.defSubr1(nil, "symbol-value", (*execContext).symbolValue, 1)
 	ec.defSubr1(nil, "symbol-function", (*execContext).symbolFunction, 1)
-	ec.defSubr2(nil, "eq", (*execContext).eq, 2)
+	ec.defSubr2(&ec.s.eq, "eq", (*execContext).eq, 2)
 	ec.defSubr3(nil, "defalias", (*execContext).defalias, 2)
 	ec.defSubrM(nil, "+", (*execContext).plusSign, 0)
 	ec.defSubrM(nil, "<", (*execContext).lessThanSign, 1)

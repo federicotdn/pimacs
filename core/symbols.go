@@ -41,6 +41,7 @@ type symbols struct {
 	reverse            lispObject
 	mapCar             lispObject
 	eql                lispObject
+	eq                 lispObject
 
 	// Errors
 	error_                 lispObject

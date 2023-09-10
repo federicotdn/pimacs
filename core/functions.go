@@ -442,6 +442,22 @@ func (ec *execContext) mapCar(function, sequence lispObject) (lispObject, error)
 	return ec.makeList(result...), nil
 }
 
+func (ec *execContext) sxHashEq(obj lispObject) (lispObject, error) {
+	return ec.nil_, nil
+}
+
+func (ec *execContext) sxHashEql(obj lispObject) (lispObject, error) {
+	return ec.nil_, nil
+}
+
+func (ec *execContext) sxHashEqual(obj lispObject) (lispObject, error) {
+	return ec.nil_, nil
+}
+
+func (ec *execContext) sxHashEqualIncludingProperties(obj lispObject) (lispObject, error) {
+	return ec.nil_, nil
+}
+
 func (ec *execContext) getKeyArg(key lispObject, args ...lispObject) (lispObject, bool) {
 	for i, arg := range args {
 		if arg == key && i+1 < len(args) {
@@ -493,8 +509,24 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(nil, "nth", (*execContext).nth, 2)
 	ec.defSubr2(&ec.s.mapCar, "mapcar", (*execContext).mapCar, 2)
 	ec.defSubrM(nil, "make-hash-table", (*execContext).makeHashTable, 0)
-}
+	ec.defSubr1(nil, "sxhash-eq", (*execContext).sxHashEq, 1)
+	ec.defSubr1(nil, "sxhash-eql", (*execContext).sxHashEql, 1)
+	ec.defSubr1(nil, "sxhash-equal", (*execContext).sxHashEqual, 1)
+	ec.defSubr1(nil, "sxhash-equal-including-properties", (*execContext).sxHashEqualIncludingProperties, 1)
 
-func (ec *execContext) initFunctions() {
-
+	ec.hashTestEq = &lispHashTableTest{
+		name:         ec.s.eq,
+		hashFunction: (*execContext).sxHashEq,
+		compFunction: (*execContext).eq,
+	}
+	ec.hashTestEql = &lispHashTableTest{
+		name:         ec.s.eql,
+		hashFunction: (*execContext).sxHashEql,
+		compFunction: (*execContext).eql,
+	}
+	ec.hashTestEqual = &lispHashTableTest{
+		name:         ec.s.equal,
+		hashFunction: (*execContext).sxHashEqual,
+		compFunction: (*execContext).equal,
+	}
 }

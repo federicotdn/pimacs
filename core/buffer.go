@@ -142,6 +142,8 @@ func (ec *execContext) symbolsOfBuffer() {
 }
 
 func (ec *execContext) initBufferGoroutineLocals() {
+	// TODO: Use another buffer in new goroutines?
+	// TODO: What to do on error?
 	buf := xEnsure(ec.getBufferCreate(newString("*scratch*"), ec.nil_))
 	ec.gl.currentBuf = xBuffer(buf)
 }

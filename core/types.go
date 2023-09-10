@@ -123,11 +123,9 @@ type lispCharTable struct {
 }
 
 type lispHashTableTest struct {
-	name             lispObject
-	userHashFunction lispObject
-	userCompFunction lispObject
-	hashFunction     func(lispObject) lispObject
-	compFunction     func(lispObject, lispObject) lispObject
+	name         lispObject
+	hashFunction lispFn1
+	compFunction lispFn2
 }
 
 type lispHashTable struct {

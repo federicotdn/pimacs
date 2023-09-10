@@ -56,9 +56,9 @@ type execContext struct {
 
 	stubs *emacsStubs
 
-	hashTestEq     *lispHashTableTest
-	hashTestEql    *lispHashTableTest
-	hashTableEqual *lispHashTableTest
+	hashTestEq    *lispHashTableTest
+	hashTestEql   *lispHashTableTest
+	hashTestEqual *lispHashTableTest
 
 	events chan proto.InputEvent
 	ops    chan proto.DrawOp
