@@ -131,6 +131,10 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		s = fmt.Sprintf("#<buffer %v>", xBuffer(obj).name)
 	case lispTypeChannel:
 		s = "#<channel>"
+	case lispTypeHashTable:
+		table := xHashTable(obj)
+		size := len(table.val)
+		s = fmt.Sprintf("#<hash-table %v %v/%v %p>", xSymbolName(table.test.name), size, size, &table.val)
 	default:
 		s = fmt.Sprintf("#<unknown datatype '%+v'>", obj)
 	}

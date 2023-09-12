@@ -458,22 +458,48 @@ func (ec *execContext) sxHashEqualIncludingProperties(obj lispObject) (lispObjec
 	return ec.nil_, nil
 }
 
-func (ec *execContext) getKeyArg(key lispObject, args ...lispObject) (lispObject, bool) {
-	for i, arg := range args {
-		if arg == key && i+1 < len(args) {
-			return args[i+1], true
+func (ec *execContext) makeHashTable(args ...lispObject) (lispObject, error) {
+	test := ec.hashTestEql
+	kwArgs, err := ec.kwPlistToMap(ec.makeList(args...))
+	if err != nil {
+		return nil, err
+	}
+	key := xSymbolName(ec.s.cTest)
+	testSym := getDefault(kwArgs, key, ec.s.eql)
+	delete(kwArgs, key)
+
+	switch testSym {
+	case ec.s.eql:
+		// Use default value
+	case ec.s.eq:
+		test = ec.hashTestEq
+	case ec.s.equal:
+		test = ec.hashTestEqual
+	default:
+		prop, err := ec.get(testSym, ec.s.hashTableTest)
+		if err != nil {
+			return nil, err
+		}
+
+		if !consp(prop) || !consp(xCdr(prop)) {
+			return ec.signalError("Invalid hash table test: '%+v'", prop)
+		}
+
+		test = &lispHashTableTest{
+			name:         testSym,
+			compFunction: xCar(prop),
+			hashFunction: xCar(xCdr(prop)),
 		}
 	}
 
-	return nil, false
-}
-
-func (ec *execContext) makeHashTable(args ...lispObject) (lispObject, error) {
-	test, found := ec.getKeyArg(ec.s.cTest)
-	if !found {
-		test = ec.s.eql
+	if len(kwArgs) > 0 {
+		return ec.signalError("Invalid arguments list: '%+v'", args)
 	}
-	return test, nil
+
+	return &lispHashTable{
+		val:  make(map[lispInt]lispObject, 1),
+		test: test,
+	}, nil
 }
 
 func (ec *execContext) symbolsOfFunctions() {
@@ -509,24 +535,29 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(nil, "nth", (*execContext).nth, 2)
 	ec.defSubr2(&ec.s.mapCar, "mapcar", (*execContext).mapCar, 2)
 	ec.defSubrM(nil, "make-hash-table", (*execContext).makeHashTable, 0)
-	ec.defSubr1(nil, "sxhash-eq", (*execContext).sxHashEq, 1)
-	ec.defSubr1(nil, "sxhash-eql", (*execContext).sxHashEql, 1)
-	ec.defSubr1(nil, "sxhash-equal", (*execContext).sxHashEqual, 1)
-	ec.defSubr1(nil, "sxhash-equal-including-properties", (*execContext).sxHashEqualIncludingProperties, 1)
+	ec.defSubr1(&ec.s.sxHashEq, "sxhash-eq", (*execContext).sxHashEq, 1)
+	ec.defSubr1(&ec.s.sxHashEql, "sxhash-eql", (*execContext).sxHashEql, 1)
+	ec.defSubr1(&ec.s.sxHashEqual, "sxhash-equal", (*execContext).sxHashEqual, 1)
+	ec.defSubr1(
+		&ec.s.sxHashEqualIncludingProperties,
+		"sxhash-equal-including-properties",
+		(*execContext).sxHashEqualIncludingProperties,
+		1,
+	)
 
 	ec.hashTestEq = &lispHashTableTest{
 		name:         ec.s.eq,
-		hashFunction: (*execContext).sxHashEq,
-		compFunction: (*execContext).eq,
+		hashFunction: ec.s.sxHashEq,
+		compFunction: ec.s.eq,
 	}
 	ec.hashTestEql = &lispHashTableTest{
 		name:         ec.s.eql,
-		hashFunction: (*execContext).sxHashEql,
-		compFunction: (*execContext).eql,
+		hashFunction: ec.s.sxHashEql,
+		compFunction: ec.s.eql,
 	}
 	ec.hashTestEqual = &lispHashTableTest{
 		name:         ec.s.equal,
-		hashFunction: (*execContext).sxHashEqual,
-		compFunction: (*execContext).equal,
+		hashFunction: ec.s.sxHashEqual,
+		compFunction: ec.s.equal,
 	}
 }

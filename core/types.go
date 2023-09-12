@@ -124,11 +124,13 @@ type lispCharTable struct {
 
 type lispHashTableTest struct {
 	name         lispObject
-	hashFunction lispFn1
-	compFunction lispFn2
+	hashFunction lispObject
+	compFunction lispObject
 }
 
 type lispHashTable struct {
+	val  map[lispInt]lispObject
+	test *lispHashTableTest
 }
 
 type lispChannel struct {

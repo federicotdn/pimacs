@@ -12,7 +12,7 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 		redirect = sym.redirect.value(ec)
 	}
 
-	return ec.makePlist(map[string]lispObject{
+	return ec.makeKwPlist(map[string]lispObject{
 		"value":    val,
 		"function": sym.function,
 		"name":     newString(sym.name),
@@ -28,7 +28,7 @@ func (ec *execContext) pimacsImplementationStats() (lispObject, error) {
 		"stubs":       newInteger(lispInt(ec.init.stubs)),
 		"completion":  newFloat(lispFp(100.0 * float32(ec.init.subrs) / float32(ec.init.stubs))),
 	}
-	return ec.makePlist(data)
+	return ec.makeKwPlist(data)
 }
 
 func (ec *execContext) symbolsOfPimacsTools() {

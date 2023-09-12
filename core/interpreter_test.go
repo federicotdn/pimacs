@@ -332,6 +332,10 @@ func TestReadEvalPrintSpecificErr(t *testing.T) {
 		{"(signal 1 2)", "", xErrOnly(ec.wrongTypeArgument(ec.s.symbolp, sentinel)), inp},
 		{"(plist-put '(:b) :a 1)", "", xErrOnly(ec.wrongTypeArgument(ec.s.plistp, sentinel)), inp},
 		{"(plist-put '(1 2 3 . 4) :a 1)", "", xErrOnly(ec.wrongTypeArgument(ec.s.plistp, sentinel)), inp},
+		{"(make-hash-table :test)", "", xErrOnly(ec.wrongTypeArgument(ec.s.plistp, sentinel)), inp},
+		{"(make-hash-table :test 'eq :foo)", "", xErrOnly(ec.wrongTypeArgument(ec.s.plistp, sentinel)), inp},
+		{"(make-hash-table :test 'eq :foo 123)", "", xErrOnly(ec.signalError("")), inp},
+		{"(make-hash-table :test 'foo)", "", xErrOnly(ec.signalError("")), inp},
 	}
 
 	testStringToString(t, readEvalPrin1, cases)

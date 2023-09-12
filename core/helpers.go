@@ -202,6 +202,16 @@ func xChannel(obj lispObject) *lispChannel {
 	return xCast[*lispChannel](obj, "channel")
 }
 
+// Hash table helpers //
+
+func hashtablep(obj lispObject) bool {
+	return obj.getType() == lispTypeHashTable
+}
+
+func xHashTable(obj lispObject) *lispHashTable {
+	return xCast[*lispHashTable](obj, "hash table")
+}
+
 // Cross-type helpers //
 
 func numberp(obj lispObject) bool {
@@ -222,6 +232,16 @@ func arrayp(obj lispObject) bool {
 
 func naturalp(obj lispObject) bool {
 	return integerp(obj) && xIntegerValue(obj) >= 0
+}
+
+// Misc utilities //
+
+func getDefault[K comparable, V any](m map[K]V, key K, default_ V) V {
+	val, ok := m[key]
+	if !ok {
+		return default_
+	}
+	return val
 }
 
 // Debug utilities //

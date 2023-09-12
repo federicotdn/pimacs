@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"github.com/federicotdn/pimacs/proto"
+	"strings"
 	"sync"
 )
 
@@ -249,7 +250,7 @@ func (ec *execContext) makeList(objs ...lispObject) lispObject {
 	return val
 }
 
-func (ec *execContext) makePlist(objs map[string]lispObject) (lispObject, error) {
+func (ec *execContext) makeKwPlist(objs map[string]lispObject) (lispObject, error) {
 	if len(objs) == 0 {
 		return ec.nil_, nil
 	}
@@ -344,20 +345,19 @@ func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name strin
 		ec.init.stubs++
 	}
 
-	if symbol != nil && *symbol != nil {
-		if ec.init.errorOnVarRedefine {
-			ec.terminate("subroutine value already set: '%+v'", *symbol)
-		}
-		return sub
-	}
-
 	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
 		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", name)
 	}
 
-	sym := ec.defSym(symbol, sub.name) // Create a variable with value = unbound
-	sym.function = sub
+	sym := ec.defSym(symbol, sub.name)
+	if sym.function != ec.s.nil_ {
+		if ec.init.errorOnVarRedefine {
+			ec.terminate("subroutine value already set: '%+v'", name)
+		}
+		return sub
+	}
 
+	sym.function = sub
 	if symbol != nil {
 		*symbol = sym
 	}
@@ -410,19 +410,26 @@ func (ec *execContext) defSubrU(symbol *lispObject, name string, fn lispFn1, min
 
 func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 	if symbol != nil && *symbol != nil {
+		// Maybe this pointer is already pointing at an initialized
+		// symbol
 		ec.terminate("symbol already initialized: '%+v'", *symbol)
 	}
 
-	sym := ec.makeSymbol(name, true)
-	if symbol != nil {
-		*symbol = sym
-	}
-
-	_, existed := ec.loadOrStoreSymbol(sym)
+	existed := ec.containsSymbol(name)
 	if existed && ec.init.errorOnVarRedefine {
-		ec.terminate("symbol already initialized: '%+v'", *symbol)
+		ec.terminate("symbol already initialized: '%+v'", name)
 	}
-	return sym
+
+	obj, err := ec.intern(newString(name), ec.nil_)
+	if symbol != nil {
+		*symbol = obj
+	}
+
+	if err != nil {
+		ec.terminate("error interning symbol: '%+v'", err)
+	}
+
+	return xSymbol(obj)
 }
 
 func (ec *execContext) defVarLisp(fwd *forwardLispObj, name string, value lispObject) {
@@ -460,7 +467,7 @@ func (ec *execContext) loadOrStoreSymbol(sym *lispSymbol) (*lispSymbol, bool) {
 	return sym, false
 }
 
-func (ec *execContext) uninternInternal(name string) bool {
+func (ec *execContext) removeSymbol(name string) bool {
 	ec.obarrayLock.Lock()
 	defer ec.obarrayLock.Unlock()
 
@@ -473,10 +480,18 @@ func (ec *execContext) uninternInternal(name string) bool {
 	return true
 }
 
+func (ec *execContext) containsSymbol(name string) bool {
+	ec.obarrayLock.Lock()
+	defer ec.obarrayLock.Unlock()
+
+	_, existed := ec.obarray[name]
+	return existed
+}
+
 func (ec *execContext) initGoroutineLocals() {
 	ec.defVarLisp(&ec.gl.lexicalBinding, "lexical-binding", ec.nil_)
 	ec.defVarLisp(&ec.gl.internalInterpreterEnv, "internal-interpreter-environment", ec.nil_)
-	ec.uninternInternal("internal-interpreter-environment")
+	ec.removeSymbol("internal-interpreter-environment")
 
 	ec.initBufferGoroutineLocals() // buffer.go
 }
@@ -565,6 +580,42 @@ func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
 	iter := ec.iterate(list)
 	for ; iter.hasNext(); list = iter.nextCons() {
 		result = append(result, xCar(list))
+	}
+
+	if iter.hasError() {
+		return nil, xErrOnly(iter.error())
+	}
+
+	return result, nil
+}
+
+func (ec *execContext) kwPlistToMap(plist lispObject) (map[string]lispObject, error) {
+	result := make(map[string]lispObject)
+	var lastKey *lispSymbol
+
+	iter := ec.iterate(plist).withPredicate(ec.s.plistp)
+	for ; iter.hasNext(); plist = iter.nextCons() {
+		elem := xCar(plist)
+
+		if lastKey == nil {
+			if symbolp(elem) && strings.HasPrefix(xSymbolName(elem), ":") {
+				lastKey = xSymbol(elem)
+			} else {
+				_, err := ec.signalError("Invalid plist key: '%+v'", elem)
+				return nil, err
+			}
+		} else {
+			_, ok := result[lastKey.name]
+			if !ok {
+				result[lastKey.name] = elem
+			}
+			lastKey = nil
+		}
+	}
+
+	if lastKey != nil {
+		// Last element was a key
+		return nil, xErrOnly(ec.wrongTypeArgument(ec.s.plistp, plist))
 	}
 
 	if iter.hasError() {

@@ -576,11 +576,10 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.s.stringp, str)
 	}
 
-	name := xStringValue(str)
-	sym := ec.makeSymbol(name, true)
+	sym := ec.makeSymbol(xStringValue(str), true)
 	sym, existed := ec.loadOrStoreSymbol(sym)
 
-	if !existed && strings.HasPrefix(name, ":") {
+	if !existed && strings.HasPrefix(sym.name, ":") {
 		_, err := ec.set(sym, sym)
 		if err != nil {
 			return nil, err
@@ -601,7 +600,7 @@ func (ec *execContext) unintern(name, _ lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.s.stringp, name)
 	}
 
-	return ec.bool(ec.uninternInternal(nameStr))
+	return ec.bool(ec.removeSymbol(nameStr))
 }
 
 func (ec *execContext) lexicallyBoundp(ctx readContext) bool {
