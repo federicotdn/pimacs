@@ -740,48 +740,6 @@ func (ec *execContext) stackPopTo(target int) {
 	}
 }
 
-func (ec *execContext) printLispStack() string {
-	lispStack := ""
-	for i := len(ec.gl.stack) - 1; i >= 0; i-- {
-
-		switch elem := ec.gl.stack[i].(type) {
-		case *stackEntryBacktrace:
-			functionName := "<unknown function>"
-			if symbolp(elem.function) {
-				functionName = xSymbolName(elem.function)
-			}
-
-			lispStack += fmt.Sprintf("  - bt: %v(", functionName)
-
-			for j, arg := range elem.args {
-				printed := debugRepr(arg)
-				if len(printed) > 30 {
-					printed = printed[:30] + "[...]"
-				}
-				lispStack += printed
-
-				if j < len(elem.args)-1 {
-					lispStack += " "
-				}
-			}
-
-			lispStack += ")"
-		case *stackEntryLet:
-			lispStack += fmt.Sprintf("  - let: %v = %v", debugRepr(elem.symbol), debugRepr(elem.oldVal))
-		case *stackEntryLetForwarded:
-			lispStack += fmt.Sprintf("  - letfwd: %v = %v", debugRepr(elem.symbol), debugRepr(elem.oldVal))
-		default:
-			lispStack += "  - other"
-		}
-
-		if i > 0 {
-			lispStack += "\n"
-		}
-
-	}
-	return lispStack
-}
-
 func (ec *execContext) boolVal(b bool) lispObject {
 	if b {
 		return ec.t
@@ -808,7 +766,7 @@ func (ec *execContext) stub(name string) (lispObject, error) {
 
 func (ec *execContext) terminate(format string, v ...interface{}) {
 	if !ec.testing {
-		stack := ec.printLispStack()
+		stack := debugReprLispStack(ec.gl.stack)
 		fmt.Println("backtrace:")
 		fmt.Println(stack)
 	}

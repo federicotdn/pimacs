@@ -453,7 +453,7 @@ func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) 
 		errorSymbol = ec.s.error_
 	}
 
-	lispStack := ec.printLispStack()
+	lispStack := debugReprLispStack(ec.gl.stack)
 
 	return nil, &stackJumpSignal{
 		errorSymbol: errorSymbol,

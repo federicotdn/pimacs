@@ -246,8 +246,13 @@ func getDefault[K comparable, V any](m map[K]V, key K, default_ V) V {
 
 // Debug utilities //
 
+const (
+	debugReprMaxDepth            = 20
+	debugReprLispStackMaxLineLen = 30
+)
+
 func debugRepr(obj lispObject) string {
-	return debugReprInternal(obj, 20)
+	return debugReprInternal(obj, debugReprMaxDepth)
 }
 
 func debugReprInternal(obj lispObject, depth int) string {
@@ -297,11 +302,53 @@ func debugReprInternal(obj lispObject, depth int) string {
 		s := "hashtable{"
 		for k, v := range table.val {
 			repr := debugReprInternal(v, depth)
-			s += fmt.Sprintf("%v: %v,", k, repr)
+			s += fmt.Sprintf("%v: %v, ", k, repr)
 		}
 
 		return s + "}"
 	default:
 		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
 	}
+}
+
+func debugReprLispStack(stack []stackEntry) string {
+	lispStack := ""
+	for i := len(stack) - 1; i >= 0; i-- {
+
+		switch elem := stack[i].(type) {
+		case *stackEntryBacktrace:
+			functionName := "<unknown function>"
+			if symbolp(elem.function) {
+				functionName = xSymbolName(elem.function)
+			}
+
+			lispStack += fmt.Sprintf("  - bt: %v(", functionName)
+
+			for j, arg := range elem.args {
+				printed := debugRepr(arg)
+				if len(printed) > debugReprLispStackMaxLineLen {
+					printed = printed[:debugReprLispStackMaxLineLen] + "[...]"
+				}
+				lispStack += printed
+
+				if j < len(elem.args)-1 {
+					lispStack += " "
+				}
+			}
+
+			lispStack += ")"
+		case *stackEntryLet:
+			lispStack += fmt.Sprintf("  - let: %v = %v", debugRepr(elem.symbol), debugRepr(elem.oldVal))
+		case *stackEntryLetForwarded:
+			lispStack += fmt.Sprintf("  - letfwd: %v = %v", debugRepr(elem.symbol), debugRepr(elem.oldVal))
+		default:
+			lispStack += "  - other"
+		}
+
+		if i > 0 {
+			lispStack += "\n"
+		}
+
+	}
+	return lispStack
 }
