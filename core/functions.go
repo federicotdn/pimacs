@@ -492,6 +492,9 @@ func (ec *execContext) makeHashTable(args ...lispObject) (lispObject, error) {
 		}
 	}
 
+	key = xSymbolName(ec.s.cWeakness)
+	delete(kwArgs, key)
+
 	if len(kwArgs) > 0 {
 		return ec.signalError("Invalid arguments list: '%+v'", args)
 	}

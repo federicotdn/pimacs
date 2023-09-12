@@ -292,6 +292,15 @@ func debugReprInternal(obj lispObject, depth int) string {
 		return fmt.Sprintf("chartab(subtype=%v)", xCharTable(obj).subtype)
 	case lispTypeChannel:
 		return fmt.Sprintf("channel(%v)", xChannel(obj).val)
+	case lispTypeHashTable:
+		table := xHashTable(obj)
+		s := "hashtable{"
+		for k, v := range table.val {
+			repr := debugReprInternal(v, depth)
+			s += fmt.Sprintf("%v: %v,", k, repr)
+		}
+
+		return s + "}"
 	default:
 		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
 	}

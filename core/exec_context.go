@@ -755,8 +755,8 @@ func (ec *execContext) printLispStack() string {
 
 			for j, arg := range elem.args {
 				printed := debugRepr(arg)
-				if len(printed) > 10 {
-					printed = printed[:10] + "[...]"
+				if len(printed) > 30 {
+					printed = printed[:30] + "[...]"
 				}
 				lispStack += printed
 
