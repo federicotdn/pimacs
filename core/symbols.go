@@ -6,10 +6,9 @@ import (
 
 type symbols struct {
 	// Essential runtime objects
-	nil_        lispObject
-	t           lispObject
-	unbound     lispObject
-	emptySymbol lispObject
+	nil_    lispObject
+	t       lispObject
+	unbound lispObject
 
 	// Subroutine symbols
 	sequencep                      lispObject
@@ -105,32 +104,30 @@ func (ec *execContext) initSymbols() {
 	s := ec.s
 
 	// Set up nil and unbound first so that we can use
-	// ec.makeSymbol()
+	// ec.defSym() and other symbol-related functions
 	unbound := ec.makeSymbol("unbound", false)
 	nil_ := ec.makeSymbol("nil", false)
 
 	// Set the attributes and intern nil
-	unbound.setAttributes(unbound, nil_, nil_)
-	nil_.setAttributes(nil_, nil_, nil_)
+	unbound.setAttributes(unbound, nil_, nil_, false)
+	nil_.setAttributes(nil_, nil_, nil_, true)
 	// NOTE: This should be the only access to the obarray not done
 	// via ec.intern()/ec.loadOrStoreSymbol().
 	ec.obarray["nil"] = nil_
 
 	// nil and unbound are now complete
 
-	// Set them in globals
+	// Set them in execContext.symbols
 	s.unbound = unbound
 	s.nil_ = nil_
-	ec.nil_ = s.nil_ // Convenience accessor
+	ec.nil_ = s.nil_ // Convenience accessor in execContext
 
 	// Create t
 	t := ec.defSym(&s.t, "t")
 	t.val = t
+	t.special = true
 	s.t = t
-	ec.t = ec.s.t // Convenience accessor
-
-	// Set up other essential symbols
-	ec.defSym(&ec.s.emptySymbol, "")
+	ec.t = ec.s.t // Convenience accessor in execContext
 }
 
 func (ec *execContext) checkSymbolValues() {

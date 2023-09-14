@@ -155,10 +155,11 @@ func (ls *lispSymbol) getType() lispType {
 	return lispTypeSymbol
 }
 
-func (ls *lispSymbol) setAttributes(value, function, plist lispObject) {
+func (ls *lispSymbol) setAttributes(value, function, plist lispObject, special bool) {
 	ls.val = value
 	ls.function = function
 	ls.plist = plist
+	ls.special = special
 }
 
 func (fb *forwardBool) value(ec *execContext) lispObject {

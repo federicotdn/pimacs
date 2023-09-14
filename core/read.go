@@ -388,7 +388,11 @@ read_obj:
 
 		switch {
 		case c == '#':
-			obj = ec.s.emptySymbol
+			var err error
+			obj, err = ec.intern(newString(""), ec.nil_)
+			if err != nil {
+				return nil, err
+			}
 		case c == '\'':
 			stack.push(readStackElem{
 				elementType: readStackSpecial,
