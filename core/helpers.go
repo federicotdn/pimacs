@@ -55,12 +55,29 @@ func xCons(obj lispObject) *lispCons {
 	return xCast[*lispCons](obj, "cons")
 }
 
+func xCarCdr(obj lispObject) (lispObject, lispObject) {
+	cons := xCons(obj)
+	return cons.car, cons.cdr
+}
+
 func xCar(obj lispObject) lispObject {
 	return xCons(obj).car
 }
 
 func xCdr(obj lispObject) lispObject {
 	return xCons(obj).cdr
+}
+
+func xCadr(obj lispObject) lispObject {
+	return xCar(xCdr(obj))
+}
+
+func xCddr(obj lispObject) lispObject {
+	return xCdr(xCdr(obj))
+}
+
+func xCdddr(obj lispObject) lispObject {
+	return xCdr(xCdr(xCdr(obj)))
 }
 
 func xSetCar(cell, newCar lispObject) lispObject {
@@ -276,10 +293,13 @@ func debugReprInternal(obj lispObject, depth int) string {
 			return sym.name
 		}
 
-		if sym.redirect == nil {
+		switch sym.redirect {
+		case symbolRedirectPlain:
 			return fmt.Sprintf("sym(%v, v=%v, f=%v)", sym.name, debugReprInternal(sym.val, depth), debugReprInternal(sym.function, depth))
-		} else {
+		case symbolRedirectFwd:
 			return fmt.Sprintf("sym(%v, v=FWD, f=%v)", sym.name, debugReprInternal(sym.function, depth))
+		default:
+			return fmt.Sprintf("sym(%v, v=<unknown>, f=%v)", sym.name, debugReprInternal(sym.function, depth))
 		}
 	case lispTypeVector:
 		s := "["
@@ -307,7 +327,7 @@ func debugReprInternal(obj lispObject, depth int) string {
 
 		return s + "}"
 	default:
-		panic(fmt.Sprintf("unknown object type: %v", obj.getType()))
+		return "<unknown object>"
 	}
 }
 

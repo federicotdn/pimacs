@@ -35,3 +35,21 @@
     (lt--should (equal 'a 'a) "a equal a")
     (lt--should (equal 1 1) "1 equal 1")
     (lt--should (equal "hello" "hello") "hello equal hello")))
+
+(lt--deftest test-delq ()
+  ;; progn to prevent Emacs from using default indentation
+  (progn
+    (lt--should (equal '(1 2 3 4 5)
+		       (delq 'a '(1 2 3 a 4 5)))
+		"list equal after delq (1)")
+    (lt--should (equal '(1 2 3 4 5)
+		       (delq 'a '(a 1 2 3 a 4 5)))
+		"list equal after delq (2)")
+    (lt--should (equal '(1 2 3 4 5)
+		       (delq 'a '(a 1 2 3 a 4 5 a a)))
+		"list equal after delq (3)")
+    (lt--should (equal '()
+		       (delq 'a '(a a a)))
+		"list equal after delq (4)")
+    (lt--should (equal nil (delq 'a nil))
+		"list equal after delq (6)")))

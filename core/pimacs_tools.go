@@ -7,9 +7,9 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 
 	sym := xSymbol(symbol)
 	val := xEnsure(ec.findSymbolValue(symbol))
-	redirect := ec.nil_
-	if sym.redirect != nil {
-		redirect = sym.redirect.value(ec)
+	fwd := ec.nil_
+	if sym.fwd != nil {
+		fwd = sym.fwd.value(ec)
 	}
 
 	return ec.makeKwPlist(map[string]lispObject{
@@ -18,7 +18,8 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 		"name":     newString(sym.name),
 		"special":  xEnsure(ec.bool(sym.special)),
 		"plist":    sym.plist,
-		"redirect": redirect,
+		"redirect": newInteger(lispInt(sym.redirect)),
+		"fwd":      fwd,
 	})
 }
 

@@ -687,18 +687,117 @@ func (ec *execContext) function(args lispObject) (lispObject, error) {
 	return quoted, nil
 }
 
-func (ec *execContext) defconst(args lispObject) (lispObject, error) {
+func (ec *execContext) internalDefineUninitializedVariable(symbol, doc lispObject) (lispObject, error) {
+	// TODO: Some parts missing
+	xSymbol(symbol).special = true
+	if doc != ec.nil_ {
+		if _, err := ec.put(symbol, ec.s.variableDocumentation, doc); err != nil {
+			return nil, err
+		}
+	}
+	return ec.nil_, nil
+}
+
+func (ec *execContext) defvarInternal(sym, init, doc lispObject, eval bool) (lispObject, error) {
+	if !symbolp(sym) {
+		return ec.wrongTypeArgument(ec.s.symbolp, sym)
+	}
+
+	_, err := ec.internalDefineUninitializedVariable(sym, doc)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Set up default value correctly, a call to Fdefault_boundp
+	// is still missing here
+	if eval {
+		init, err = ec.evalSub(init)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = ec.setDefault(sym, init)
+	if err != nil {
+		return nil, err
+	}
+
+	return sym, nil
+}
+
+func (ec *execContext) defvar1(sym, init, doc lispObject) (lispObject, error) {
+	return ec.defvarInternal(sym, init, doc, false)
+}
+
+func (ec *execContext) defvar(args lispObject) (lispObject, error) {
 	// TOOD: Incomplete, shares common code with defvar too?
+	sym, tail := xCarCdr(args)
+	if !symbolp(sym) {
+		return ec.wrongTypeArgument(ec.s.symbolp, sym)
+	}
+
+	if tail != ec.nil_ {
+		if xCdr(tail) != ec.nil_ && xCddr(tail) != ec.nil_ {
+			return ec.signalError("Too many arguments")
+		}
+		exp, tail := xCarCdr(tail)
+		tail, err := ec.car(tail)
+		if err != nil {
+			return nil, err
+		}
+
+		return ec.defvarInternal(sym, exp, tail, true)
+	} else if ec.gl.internalInterpreterEnv.val != ec.nil_ && !xSymbol(sym).special {
+		ec.gl.internalInterpreterEnv.val = newCons(
+			sym, ec.gl.internalInterpreterEnv.val,
+		)
+	}
+
+	return sym, nil
+}
+
+func (ec *execContext) defconst(args lispObject) (lispObject, error) {
 	sym := xCar(args)
 	if !symbolp(sym) {
 		return ec.wrongTypeArgument(ec.s.symbolp, sym)
 	}
-	xSymbol(sym).special = true
-	val, err := ec.evalSub(xCar(xCdr(args)))
+	doc := ec.nil_
+
+	if xCddr(args) != ec.nil_ {
+		if xCdddr(args) != ec.nil_ {
+			return ec.signalError("Too many arguments")
+		}
+		doc = xCar(xCddr(args))
+	}
+
+	tem, err := ec.evalSub(xCadr(args))
 	if err != nil {
 		return nil, err
 	}
-	return sym, ec.setInternal(sym, val)
+	return ec.defconst1(sym, tem, doc)
+}
+
+func (ec *execContext) defconst1(sym, init, doc lispObject) (lispObject, error) {
+	if !symbolp(sym) {
+		return ec.wrongTypeArgument(ec.s.symbolp, sym)
+	}
+
+	_, err := ec.internalDefineUninitializedVariable(sym, doc)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = ec.setDefault(sym, init)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = ec.put(sym, ec.s.riskyLocalVariable, ec.t)
+	if err != nil {
+		return nil, err
+	}
+
+	return sym, nil
 }
 
 func (ec *execContext) let(args lispObject) (lispObject, error) {
@@ -885,8 +984,7 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		return form, nil
 	}
 
-	originalFn := xCar(form)
-	originalArgs := xCdr(form)
+	originalFn, originalArgs := xCarCdr(form)
 	if !consp(originalArgs) && originalArgs != ec.nil_ {
 		return ec.wrongTypeArgument(ec.s.listp, originalArgs)
 	}
@@ -965,6 +1063,10 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubrU(&ec.s.quote, "quote", (*execContext).quote, 1)
 	ec.defSubrU(&ec.s.function, "function", (*execContext).function, 1)
 	ec.defSubrU(nil, "defconst", (*execContext).defconst, 2)
+	ec.defSubr3(nil, "defconst-1", (*execContext).defconst1, 2)
+	ec.defSubrU(nil, "defvar", (*execContext).defvar, 1)
+	ec.defSubr3(nil, "defvar-1", (*execContext).defvar1, 2)
+	ec.defSubr2(nil, "internal--define-uninitialized-variable", (*execContext).internalDefineUninitializedVariable, 1)
 	ec.defSubrU(nil, "let", (*execContext).let, 1)
 	ec.defSubrU(nil, "let*", (*execContext).letX, 1)
 	ec.defSubrU(nil, "catch", (*execContext).catch, 1)

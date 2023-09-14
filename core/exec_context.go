@@ -440,7 +440,9 @@ func (ec *execContext) defVarLisp(fwd *forwardLispObj, name string, value lispOb
 	sym.special = true
 	fwd.sym = sym
 	fwd.val = value
-	sym.redirect = fwd
+
+	sym.redirect = symbolRedirectFwd
+	sym.fwd = fwd
 }
 
 func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
@@ -451,7 +453,9 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 	sym.special = true
 	fwd.sym = sym
 	fwd.val = value
-	sym.redirect = fwd
+
+	sym.redirect = symbolRedirectFwd
+	sym.fwd = fwd
 }
 
 func (ec *execContext) loadOrStoreSymbol(sym *lispSymbol) (*lispSymbol, bool) {
@@ -548,6 +552,7 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 
 func (ec *execContext) symbolsOfExecContext() {
 	ec.defVarBool(&ec.v.nonInteractive, "noninteractive", true)
+	ec.defSym(&ec.s.riskyLocalVariable, "risky-local-variable")
 }
 
 func (ec *execContext) copyExecContext() *execContext {
@@ -567,11 +572,7 @@ func (ec *execContext) loadElisp(loadPathPrepend []string) error {
 	ec.v.loadPath.val = ec.makeList(loadPath...)
 
 	_, err := ec.load(newString("loadup-pimacs.el"), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
@@ -628,23 +629,26 @@ func (ec *execContext) kwPlistToMap(plist lispObject) (map[string]lispObject, er
 func (ec *execContext) stackPushLet(symbol lispObject, value lispObject) error {
 	sym := xSymbol(symbol)
 
-	if sym.redirect == nil {
+	switch sym.redirect {
+	case symbolRedirectPlain:
 		ec.gl.stack = append(ec.gl.stack, &stackEntryLet{
 			symbol: sym,
 			oldVal: sym.val,
 		})
 		sym.val = value
-	} else {
+	case symbolRedirectFwd:
 		entry := &stackEntryLetForwarded{
 			symbol: sym,
-			oldVal: sym.redirect.value(ec),
+			oldVal: sym.fwd.value(ec),
 		}
 
-		err := sym.redirect.setValue(ec, value)
+		err := sym.fwd.setValue(ec, value)
 		if err != nil {
 			return err
 		}
 		ec.gl.stack = append(ec.gl.stack, entry)
+	default:
+		ec.terminate("unknown symbol redirect type: '%+v'", sym.redirect)
 	}
 
 	return nil
@@ -723,7 +727,7 @@ func (ec *execContext) stackPopTo(target int) {
 		case entryLetForwarded:
 			let := current.(*stackEntryLetForwarded)
 			// Should not fail as we're just setting the old value back
-			err := let.symbol.redirect.setValue(ec, let.oldVal)
+			err := let.symbol.fwd.setValue(ec, let.oldVal)
 			if err != nil {
 				ec.terminate("could not restore forwarded symbol value: '%+v'", let)
 			}

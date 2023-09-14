@@ -442,6 +442,31 @@ func (ec *execContext) mapCar(function, sequence lispObject) (lispObject, error)
 	return ec.makeList(result...), nil
 }
 
+func (ec *execContext) delq(element, list lispObject) (lispObject, error) {
+	tail := list
+	prev := ec.nil_
+
+	iter := ec.iterate(tail)
+	for ; iter.hasNext(); tail = iter.nextCons() {
+		tem := xCar(tail)
+		if element == tem {
+			if prev == ec.nil_ {
+				list = xCdr(tail)
+			} else if _, err := ec.setCdr(prev, xCdr(tail)); err != nil {
+				return nil, err
+			}
+		} else {
+			prev = tail
+		}
+	}
+
+	if iter.hasError() {
+		return iter.error()
+	}
+
+	return list, nil
+}
+
 func (ec *execContext) sxHashEq(obj lispObject) (lispObject, error) {
 	return ec.nil_, nil
 }
@@ -547,6 +572,7 @@ func (ec *execContext) symbolsOfFunctions() {
 		(*execContext).sxHashEqualIncludingProperties,
 		1,
 	)
+	ec.defSubr2(nil, "delq", (*execContext).delq, 2)
 
 	ec.hashTestEq = &lispHashTableTest{
 		name:         ec.s.eq,

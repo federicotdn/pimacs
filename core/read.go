@@ -845,6 +845,7 @@ func (ec *execContext) symbolsOfRead() {
 	ec.defSym(&ec.s.backquote, "`")
 	ec.defSym(&ec.s.comma, ",")
 	ec.defSym(&ec.s.commaAt, "@,")
+	ec.defSym(&ec.s.variableDocumentation, "variable-documentation")
 
 	ec.defSubr2(nil, "intern", (*execContext).intern, 1)
 	ec.defSubr2(nil, "unintern", (*execContext).unintern, 1)

@@ -1,8 +1,10 @@
 package core
 
-type lispType int
-type vectorLikeType int
-type symbolFwdType int
+type enum int
+type lispType enum
+type vectorLikeType enum
+type symbolRedirectType enum
+type symbolFwdType enum
 
 type lispInt int32
 type lispFp float32
@@ -21,6 +23,13 @@ const (
 	lispTypeChannel
 	argsMany      = -1
 	argsUnevalled = -2
+)
+
+const (
+	symbolRedirectPlain symbolRedirectType = iota
+	symbolRedirectAlias
+	symbolRedirectLocal
+	symbolRedirectFwd
 )
 
 const (
@@ -51,7 +60,8 @@ type lispSymbol struct {
 	function lispObject
 	plist    lispObject
 	special  bool
-	redirect forward
+	redirect symbolRedirectType
+	fwd      forward
 }
 
 type forward interface {

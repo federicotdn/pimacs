@@ -67,27 +67,29 @@ type symbols struct {
 	fileMissing            lispObject
 
 	// Misc. symbols
-	errorConditions     lispObject
-	errorMessage        lispObject
-	lambda              lispObject
-	closure             lispObject
-	macro               lispObject
-	andRest             lispObject
-	andOptional         lispObject
-	readChar            lispObject
-	charTableExtraSlots lispObject
-	wholeNump           lispObject
-	cTest               lispObject
-	cSize               lispObject
-	cPureCopy           lispObject
-	cRehashSize         lispObject
-	cRehashThreshold    lispObject
-	cWeakness           lispObject
-	key                 lispObject
-	value               lispObject
-	hashTableTest       lispObject
-	keyOrValue          lispObject
-	keyAndValue         lispObject
+	errorConditions       lispObject
+	errorMessage          lispObject
+	lambda                lispObject
+	closure               lispObject
+	macro                 lispObject
+	andRest               lispObject
+	andOptional           lispObject
+	readChar              lispObject
+	charTableExtraSlots   lispObject
+	wholeNump             lispObject
+	cTest                 lispObject
+	cSize                 lispObject
+	cPureCopy             lispObject
+	cRehashSize           lispObject
+	cRehashThreshold      lispObject
+	cWeakness             lispObject
+	key                   lispObject
+	value                 lispObject
+	hashTableTest         lispObject
+	keyOrValue            lispObject
+	keyAndValue           lispObject
+	variableDocumentation lispObject
+	riskyLocalVariable    lispObject
 }
 
 type vars struct {
@@ -100,7 +102,7 @@ type vars struct {
 }
 
 func (ec *execContext) initSymbols() {
-	g := ec.s
+	s := ec.s
 
 	// Set up nil and unbound first so that we can use
 	// ec.makeSymbol()
@@ -111,20 +113,20 @@ func (ec *execContext) initSymbols() {
 	unbound.setAttributes(unbound, nil_, nil_)
 	nil_.setAttributes(nil_, nil_, nil_)
 	// NOTE: This should be the only access to the obarray not done
-	// via ec.internInternal().
+	// via ec.intern()/ec.loadOrStoreSymbol().
 	ec.obarray["nil"] = nil_
 
 	// nil and unbound are now complete
 
 	// Set them in globals
-	g.unbound = unbound
-	g.nil_ = nil_
-	ec.nil_ = g.nil_ // Convenience accessor
+	s.unbound = unbound
+	s.nil_ = nil_
+	ec.nil_ = s.nil_ // Convenience accessor
 
 	// Create t
-	t := ec.defSym(&g.t, "t")
+	t := ec.defSym(&s.t, "t")
 	t.val = t
-	g.t = t
+	s.t = t
 	ec.t = ec.s.t // Convenience accessor
 
 	// Set up other essential symbols

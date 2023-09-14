@@ -147,18 +147,43 @@ func (ec *execContext) setCdr(obj, newCdr lispObject) (lispObject, error) {
 	return newCdr, nil
 }
 
+func (ec *execContext) setDefaultInternal(symbol, val lispObject) error {
+	if !symbolp(symbol) {
+		return xErrOnly(ec.wrongTypeArgument(ec.s.symbolp, symbol))
+	}
+
+	sym := xSymbol(symbol)
+
+	switch sym.redirect {
+	case symbolRedirectPlain:
+		return ec.setInternal(symbol, val)
+	default:
+		ec.terminate("unknown symbol redirect type: '%+v'", sym.redirect)
+		return nil
+	}
+}
+
+func (ec *execContext) setDefault(symbol, val lispObject) (lispObject, error) {
+	return val, ec.setDefaultInternal(symbol, val)
+}
+
 func (ec *execContext) setInternal(symbol, newVal lispObject) error {
 	if !symbolp(symbol) {
 		return xErrOnly(ec.wrongTypeArgument(ec.s.symbolp, symbol))
 	}
 
 	sym := xSymbol(symbol)
-	if sym.redirect == nil {
+
+	switch sym.redirect {
+	case symbolRedirectPlain:
 		sym.val = newVal
 		return nil
+	case symbolRedirectFwd:
+		return sym.fwd.setValue(ec, newVal)
+	default:
+		ec.terminate("unknown symbol redirect type: '%+v'", sym.redirect)
+		return nil
 	}
-
-	return sym.redirect.setValue(ec, newVal)
 }
 
 func (ec *execContext) set(symbol, newVal lispObject) (lispObject, error) {
@@ -189,10 +214,14 @@ func (ec *execContext) findSymbolValue(symbol lispObject) (lispObject, error) {
 
 	sym := xSymbol(symbol)
 	var val lispObject
-	if sym.redirect != nil {
-		val = sym.redirect.value(ec)
-	} else {
+
+	switch sym.redirect {
+	case symbolRedirectPlain:
 		val = sym.val
+	case symbolRedirectFwd:
+		val = sym.fwd.value(ec)
+	default:
+		ec.terminate("unknown symbol redirect type: '%+v'", sym.redirect)
 	}
 
 	return val, nil
@@ -306,6 +335,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(nil, "symbol-plist", (*execContext).symbolPlist, 1)
 	ec.defSubr1(nil, "symbol-name", (*execContext).symbolName, 1)
 	ec.defSubr2(nil, "set", (*execContext).set, 2)
+	ec.defSubr2(nil, "set-default", (*execContext).setDefault, 2)
 	ec.defSubr2(nil, "fset", (*execContext).fset, 2)
 	ec.defSubr1(nil, "symbol-value", (*execContext).symbolValue, 1)
 	ec.defSubr1(nil, "symbol-function", (*execContext).symbolFunction, 1)
