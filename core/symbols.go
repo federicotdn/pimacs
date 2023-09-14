@@ -103,31 +103,32 @@ type vars struct {
 func (ec *execContext) initSymbols() {
 	s := ec.s
 
-	// Set up nil and unbound first so that we can use
-	// ec.defSym() and other symbol-related functions
+	// Set up nil and unbound first so that we can use ec.defSym()
+	// and other symbol-related functions
 	unbound := ec.makeSymbol("unbound", false)
 	nil_ := ec.makeSymbol("nil", false)
 
-	// Set the attributes and intern nil
+	// Set their attributes
 	unbound.setAttributes(unbound, nil_, nil_, false)
 	nil_.setAttributes(nil_, nil_, nil_, true)
-	// NOTE: This should be the only access to the obarray not done
-	// via ec.intern()/ec.loadOrStoreSymbol().
-	ec.obarray["nil"] = nil_
 
-	// nil and unbound are now complete
+	// Intern nil
+	ec.loadOrStoreSymbol(nil_)
 
-	// Set them in execContext.symbols
+	// nil and unbound are now complete, next up set them in
+	// execContext.symbols
 	s.unbound = unbound
 	s.nil_ = nil_
-	ec.nil_ = s.nil_ // Convenience accessor in execContext
 
 	// Create t
 	t := ec.defSym(&s.t, "t")
 	t.val = t
 	t.special = true
 	s.t = t
-	ec.t = ec.s.t // Convenience accessor in execContext
+
+	// Set up convenience accessors in execContext
+	ec.t = s.t
+	ec.nil_ = s.nil_
 }
 
 func (ec *execContext) checkSymbolValues() {
