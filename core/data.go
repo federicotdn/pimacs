@@ -147,6 +147,17 @@ func (ec *execContext) setCdr(obj, newCdr lispObject) (lispObject, error) {
 	return newCdr, nil
 }
 
+func (ec *execContext) indirectFunctionInternal(obj lispObject) lispObject {
+	for symbolp(obj) && obj != ec.nil_ {
+		obj = xSymbol(obj).function
+	}
+	return obj
+}
+
+func (ec *execContext) indirectFunction(obj, _ lispObject) (lispObject, error) {
+	return ec.indirectFunctionInternal(obj), nil
+}
+
 func (ec *execContext) setDefaultInternal(symbol, val lispObject) error {
 	if !symbolp(symbol) {
 		return xErrOnly(ec.wrongTypeArgument(ec.s.symbolp, symbol))
@@ -326,6 +337,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(nil, "fboundp", (*execContext).fboundp, 1)
 	ec.defSubr1(nil, "makunbound", (*execContext).makunbound, 1)
 	ec.defSubr1(nil, "fmakunbound", (*execContext).fmakunbound, 1)
+	ec.defSubr2(nil, "indirect-function", (*execContext).indirectFunction, 1)
 	ec.defSubr1(nil, "car", (*execContext).car, 1)
 	ec.defSubr1(nil, "cdr", (*execContext).cdr, 1)
 	ec.defSubr1(nil, "car-safe", (*execContext).carSafe, 1)

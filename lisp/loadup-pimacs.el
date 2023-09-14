@@ -4,7 +4,7 @@
 
 (load "emacs-lisp/debug-early.el")
 (load "emacs-lisp/byte-run.el")
-;; (load "emacs-lisp/backquote.el")
+(load "emacs-lisp/backquote.el")
 ;; (load "subr.el")
 
 ;;; pimacs.el ends here
