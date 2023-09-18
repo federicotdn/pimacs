@@ -1,10 +1,13 @@
 package core
 
 import (
-	"reflect"
+	"hash/fnv"
+	"math"
 	"slices"
 	"unicode/utf8"
 )
+
+const sxHashMaxDepth = 3
 
 type lispHashTableLookupResult struct {
 	entries []lispHashTableEntry
@@ -476,12 +479,31 @@ func (ec *execContext) delq(element, list lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) sxHashObj(obj lispObject, depth int) lispInt {
-	return 0
+	if depth > sxHashMaxDepth {
+		return 0
+	}
+
+	switch obj.getType() {
+	case lispTypeInteger:
+		return xIntegerValue(obj)
+	case lispTypeSymbol:
+		return objAddr(obj)
+	case lispTypeString:
+		// TODO: Revise this - good enough?
+		h := fnv.New64a()
+		h.Write([]byte(xStringValue(obj)))
+		return lispInt(h.Sum64())
+	case lispTypeFloat:
+		f := float64(xFloatValue(obj))
+		return lispInt(math.Float64bits(f))
+	default:
+		ec.warning("sxhash implementation missing for object type '%+v'", obj.getType())
+		return 0
+	}
 }
 
 func (ec *execContext) sxHashEq(obj lispObject) (lispObject, error) {
-	u := reflect.ValueOf(obj).Pointer()
-	return newInteger(lispInt(u)), nil
+	return newInteger(objAddr(obj)), nil
 }
 
 func (ec *execContext) sxHashEql(obj lispObject) (lispObject, error) {

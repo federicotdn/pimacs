@@ -15,6 +15,7 @@ type stringToStringTC struct {
 }
 
 var anyError = fmt.Errorf("anyError")
+var globalInp = newTestingInterpreter()
 
 func testStringToString(t *testing.T, fn func(string, *Interpreter) (string, error), cases []stringToStringTC) {
 	for _, tc := range cases {
@@ -49,21 +50,17 @@ func testStringToString(t *testing.T, fn func(string, *Interpreter) (string, err
 }
 
 func readPrin1(input string, inp *Interpreter) (string, error) {
-	if inp == nil {
-		inp = newTestingInterpreter()
-	}
-	return inp.ReadPrin1(input)
+	return globalInp.ReadPrin1(input)
 }
 
 func readEvalPrin1(input string, inp *Interpreter) (string, error) {
 	if inp == nil {
-		inp = newTestingInterpreter()
+		inp = globalInp
 	}
 	return inp.ReadEvalPrin1(input)
 }
 
 func TestReadPrint(t *testing.T) {
-	t.Parallel()
 	testStringToString(t, readPrin1, []stringToStringTC{
 		{"1", "1", nil, nil},
 		{"-1", "-1", nil, nil},
@@ -170,7 +167,6 @@ func TestReadPrint(t *testing.T) {
 }
 
 func TestReadEvalPrint(t *testing.T) {
-	t.Parallel()
 	testStringToString(t, readEvalPrin1, []stringToStringTC{
 		{"1", "1", nil, nil},
 		{"\"hello\"", "\"hello\"", nil, nil},
@@ -304,7 +300,7 @@ func TestReadEvalPrint(t *testing.T) {
 		{"(let ((a nil)) a)", "nil", nil, nil},
 		{"(let ((a nil) (b 2)) b)", "2", nil, nil},
 		{"(let ((a nil) (b 2) c) c)", "nil", nil, nil},
-		{"(progn (let (a)) a)", "", anyError, nil},
+		{"(progn (let (abc321)) abc321)", "", anyError, nil},
 		{"noninteractive", "t", nil, nil},
 		{"(cons (let ((noninteractive nil)) noninteractive) noninteractive)", "(nil . t)", nil, nil},
 		{`(progn (setq pimacs--repo "hello") pimacs--repo)`, `"hello"`, nil, nil},
@@ -323,7 +319,7 @@ func TestReadEvalPrintSpecificErr(t *testing.T) {
 	ec := inp.ec
 	sentinel := newString("sentinel")
 
-	// Note: all these will be run with the same interpreter
+	// Note: all these will be run with the interpreter `inp`, not the global one
 	cases := []stringToStringTC{
 		{"(1 . 2)", "", xErrOnly(ec.wrongTypeArgument(ec.s.listp, sentinel)), inp},
 		{"(foo 1 2 3)", "", xErrOnly(ec.signalN(ec.s.voidFunction)), inp},

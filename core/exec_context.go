@@ -710,6 +710,10 @@ func (ec *execContext) false_() (lispObject, error) {
 	return ec.bool(false)
 }
 
+func (ec *execContext) warning(format string, v ...interface{}) {
+	fmt.Printf(format, v...)
+}
+
 func (ec *execContext) terminate(format string, v ...interface{}) {
 	if !ec.testing {
 		stack := debugReprLispStack(ec.gl.stack)

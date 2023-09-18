@@ -46,12 +46,15 @@
 
 (lt--deftest test-hash-table-eq ()
   (setq ht (make-hash-table :test 'eq))
+  (setq key "key")
   (puthash 'a 123 ht)
   (puthash 100 "hello" ht)
+  (puthash key "v" ht)
 
   (lt--should-not (gethash 'b ht))
   (lt--should-not (gethash 100 ht))
   (lt--should (eql (gethash 'a ht) 123) "eql 123")
   (lt--should (eql (gethash 'b ht 123) 123) "eql 123 default")
+  (lt--should (equal (gethash key ht) "v"))
   (clrhash ht)
   (lt--should-not (gethash 'a ht)))

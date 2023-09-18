@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"reflect"
 )
 
 // General helpers //
@@ -251,7 +252,7 @@ func naturalp(obj lispObject) bool {
 	return integerp(obj) && xIntegerValue(obj) >= 0
 }
 
-// Misc utilities //
+// Misc. utilities //
 
 func getDefault[K comparable, V any](m map[K]V, key K, default_ V) V {
 	val, ok := m[key]
@@ -259,6 +260,11 @@ func getDefault[K comparable, V any](m map[K]V, key K, default_ V) V {
 		return default_
 	}
 	return val
+}
+
+func objAddr(obj lispObject) lispInt {
+	u := reflect.ValueOf(obj).Pointer()
+	return lispInt(u)
 }
 
 // Debug utilities //
