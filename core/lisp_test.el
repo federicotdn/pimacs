@@ -7,6 +7,7 @@
 (setq lt--dbg-count 0)
 
 (defmacro lt--deftest (name arglist &rest body)
+  (declare (indent 2))
   (if (memq name lt--tests-to-run)
       (signal 'test-duplicated (symbol-name name)))
   (setq lt--tests-to-run (cons name lt--tests-to-run))
