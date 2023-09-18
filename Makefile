@@ -4,10 +4,12 @@ GOLANGCI_LINT_CACHE = ~/.cache/golangci-lint/latest
 build:
 	go build
 
-clean:
-	rm -rf pimacs
+clean-test:
 	go clean -testcache
-	rm -rf $(GOLANGCI_LINT_CACHE)
+
+clean: clean-test
+	rm -rf pimacs
+	sudo rm -rf $(GOLANGCI_LINT_CACHE)
 
 fmt:
 	gofmt -s -w -l .

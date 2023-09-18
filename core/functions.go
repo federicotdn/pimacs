@@ -1,9 +1,17 @@
 package core
 
 import (
+	"reflect"
 	"slices"
 	"unicode/utf8"
 )
+
+type lispHashTableLookupResult struct {
+	entries []lispHashTableEntry
+	i       int
+	code    lispInt
+	err     error
+}
 
 func (ec *execContext) listLength(obj lispObject) (int, error) {
 	num := 0
@@ -467,16 +475,24 @@ func (ec *execContext) delq(element, list lispObject) (lispObject, error) {
 	return list, nil
 }
 
+func (ec *execContext) sxHashObj(obj lispObject, depth int) lispInt {
+	return 0
+}
+
 func (ec *execContext) sxHashEq(obj lispObject) (lispObject, error) {
-	return ec.nil_, nil
+	u := reflect.ValueOf(obj).Pointer()
+	return newInteger(lispInt(u)), nil
 }
 
 func (ec *execContext) sxHashEql(obj lispObject) (lispObject, error) {
-	return ec.nil_, nil
+	if numberp(obj) {
+		return ec.sxHashEqual(obj)
+	}
+	return ec.sxHashEq(obj)
 }
 
 func (ec *execContext) sxHashEqual(obj lispObject) (lispObject, error) {
-	return ec.nil_, nil
+	return newInteger(ec.sxHashObj(obj, 0)), nil
 }
 
 func (ec *execContext) sxHashEqualIncludingProperties(obj lispObject) (lispObject, error) {
@@ -525,9 +541,104 @@ func (ec *execContext) makeHashTable(args ...lispObject) (lispObject, error) {
 	}
 
 	return &lispHashTable{
-		val:  make(map[lispInt]lispObject, 1),
+		val:  make(map[lispInt][]lispHashTableEntry),
 		test: test,
 	}, nil
+}
+
+func (ec *execContext) putHash(key, value, table lispObject) (lispObject, error) {
+	if !hashtablep(table) {
+		return ec.wrongTypeArgument(ec.s.hashTablep, table)
+	}
+
+	ht := xHashTable(table)
+	result := ec.hashLookup(key, ht)
+	if result.err != nil {
+		return nil, result.err
+	}
+
+	entry := lispHashTableEntry{key: key, val: value, code: result.code}
+
+	if result.entries == nil {
+		ht.val[result.code] = []lispHashTableEntry{entry}
+	} else if result.i < 0 {
+		ht.val[result.code] = append(result.entries, entry)
+	} else {
+		result.entries[result.i] = entry
+	}
+
+	return value, nil
+}
+
+func (ec *execContext) hashLookup(key lispObject, ht *lispHashTable) lispHashTableLookupResult {
+	codeObj, err := ec.funcall(ht.test.hashFunction, key)
+	result := lispHashTableLookupResult{i: -1}
+
+	if err != nil {
+		result.err = err
+		return result
+	} else if !integerp(codeObj) {
+		result.err = xErrOnly(ec.signalError("Invalid hash code type"))
+		return result
+	}
+
+	code := xIntegerValue(codeObj)
+	entries := ht.val[code]
+
+	result.code = code
+	result.entries = entries
+
+	for i, entry := range entries {
+		if entry.key == key {
+			result.i = i
+			break
+		} else if ht.test.compFunction != nil &&
+			ht.test.compFunction != ec.nil_ &&
+			entry.code == code {
+			cmp, err := ec.funcall(ht.test.compFunction, key, entry.key)
+			if err != nil {
+				result.err = err
+				break
+			}
+
+			if cmp != ec.nil_ {
+				result.i = i
+				break
+			}
+		}
+	}
+
+	return result
+}
+
+func (ec *execContext) getHash(key, table, default_ lispObject) (lispObject, error) {
+	if !hashtablep(table) {
+		return ec.wrongTypeArgument(ec.s.hashTablep, table)
+	}
+
+	result := ec.hashLookup(key, xHashTable(table))
+	if result.err != nil {
+		return nil, result.err
+	}
+
+	if result.entries == nil || result.i < 0 {
+		return default_, nil
+	}
+
+	return result.entries[result.i].val, nil
+}
+
+func (ec *execContext) remHash(key, table lispObject) (lispObject, error) {
+	return ec.nil_, nil
+}
+
+func (ec *execContext) clearHash(table lispObject) (lispObject, error) {
+	if !hashtablep(table) {
+		return ec.wrongTypeArgument(ec.s.hashTablep, table)
+	}
+
+	clear(xHashTable(table).val)
+	return table, nil
 }
 
 func (ec *execContext) symbolsOfFunctions() {
@@ -563,6 +674,9 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(nil, "nth", (*execContext).nth, 2)
 	ec.defSubr2(&ec.s.mapCar, "mapcar", (*execContext).mapCar, 2)
 	ec.defSubrM(nil, "make-hash-table", (*execContext).makeHashTable, 0)
+	ec.defSubr3(nil, "puthash", (*execContext).putHash, 3)
+	ec.defSubr3(nil, "gethash", (*execContext).getHash, 2)
+	ec.defSubr1(nil, "clrhash", (*execContext).clearHash, 1)
 	ec.defSubr1(&ec.s.sxHashEq, "sxhash-eq", (*execContext).sxHashEq, 1)
 	ec.defSubr1(&ec.s.sxHashEql, "sxhash-eql", (*execContext).sxHashEql, 1)
 	ec.defSubr1(&ec.s.sxHashEqual, "sxhash-equal", (*execContext).sxHashEqual, 1)

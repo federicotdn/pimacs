@@ -16,6 +16,10 @@ func (ec *execContext) listp(object lispObject) (lispObject, error) {
 	return ec.bool(object == ec.nil_ || consp(object))
 }
 
+func (ec *execContext) atom(object lispObject) (lispObject, error) {
+	return ec.bool(!consp(object))
+}
+
 func (ec *execContext) symbolp(object lispObject) (lispObject, error) {
 	return ec.bool(symbolp(object))
 }
@@ -58,6 +62,10 @@ func (ec *execContext) charTablep(object lispObject) (lispObject, error) {
 
 func (ec *execContext) channelp(object lispObject) (lispObject, error) {
 	return ec.bool(channelp(object))
+}
+
+func (ec *execContext) hashTablep(object lispObject) (lispObject, error) {
+	return ec.bool(hashtablep(object))
 }
 
 func (ec *execContext) boundp(symbol lispObject) (lispObject, error) {
@@ -322,6 +330,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.s.sequencep, "sequencep", (*execContext).sequencep, 1)
 	ec.defSubr1(&ec.s.consp, "consp", (*execContext).consp, 1)
 	ec.defSubr1(&ec.s.listp, "listp", (*execContext).listp, 1)
+	ec.defSubr1(nil, "atom", (*execContext).atom, 1)
 	ec.defSubr1(&ec.s.symbolp, "symbolp", (*execContext).symbolp, 1)
 	ec.defSubr1(&ec.s.stringp, "stringp", (*execContext).stringp, 1)
 	ec.defSubr1(&ec.s.numberOrMarkerp, "number-or-marker-p", (*execContext).numberOrMarkerp, 1)
@@ -333,6 +342,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.s.charTablep, "char-table-p", (*execContext).charTablep, 1)
 	ec.defSubr1(&ec.s.channelp, "channelp", (*execContext).channelp, 1)
 	ec.defSubr1(nil, "vectorp", (*execContext).vectorp, 1)
+	ec.defSubr1(&ec.s.hashTablep, "hashtablep", (*execContext).hashTablep, 1)
 	ec.defSubr1(nil, "boundp", (*execContext).boundp, 1)
 	ec.defSubr1(nil, "fboundp", (*execContext).fboundp, 1)
 	ec.defSubr1(nil, "makunbound", (*execContext).makunbound, 1)

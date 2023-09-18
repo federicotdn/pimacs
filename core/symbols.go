@@ -20,6 +20,7 @@ type symbols struct {
 	channelp                       lispObject
 	numberOrMarkerp                lispObject
 	charOrStringp                  lispObject
+	hashTablep                     lispObject
 	integerp                       lispObject
 	bufferp                        lispObject
 	characterp                     lispObject
@@ -113,7 +114,7 @@ func (ec *execContext) initSymbols() {
 	nil_.setAttributes(nil_, nil_, nil_, true)
 
 	// Intern nil
-	ec.loadOrStoreSymbol(nil_)
+	ec.obarray.loadOrStoreSymbol(nil_)
 
 	// nil and unbound are now complete, next up set them in
 	// execContext.symbols

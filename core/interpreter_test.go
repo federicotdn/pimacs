@@ -340,15 +340,3 @@ func TestReadEvalPrintSpecificErr(t *testing.T) {
 
 	testStringToString(t, readEvalPrin1, cases)
 }
-
-func TestStubPanic(t *testing.T) {
-	t.Parallel()
-	defer func() {
-		if r := recover(); r == nil {
-			t.Fail()
-		}
-	}()
-
-	inp := newTestingInterpreter()
-	inp.ReadEvalPrin1("(comp-libgccjit-version)") //nolint:errcheck
-}

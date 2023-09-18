@@ -3,7 +3,8 @@ import json
 import subprocess
 from pathlib import Path
 
-import stubs, copy_files
+import copy_files
+import subroutines
 
 PIMACS_REPO_PATH = (Path(__file__) / "../../..").resolve()
 CONFIG_FILE = "config.json"
@@ -11,10 +12,12 @@ CONFIG_FILE = "config.json"
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--emacs-repo-path', required=True)
+    parser.add_argument("--emacs-repo-path", required=True)
     subparsers = parser.add_subparsers(required=True, dest="subparser")
 
-    subparsers.add_parser("gen-stubs", help="Generate Emacs subroutine/var stubs")
+    subparsers.add_parser(
+        "subrs", help="Generate Emacs subroutine JSON description file"
+    )
     subparsers.add_parser("copy", help="Copy selected Emacs files")
 
     args = parser.parse_args()
@@ -26,7 +29,10 @@ def main() -> None:
         "git rev-parse HEAD", text=True, shell=True, cwd=Path(args.emacs_repo_path)
     ).strip()
     emacs_branch = subprocess.check_output(
-        "git branch --show-current", text=True, shell=True, cwd=Path(args.emacs_repo_path)
+        "git branch --show-current",
+        text=True,
+        shell=True,
+        cwd=Path(args.emacs_repo_path),
     ).strip()
 
     if config["emacs_commit"] != emacs_commit:
@@ -41,13 +47,17 @@ def main() -> None:
         )
 
     match args.subparser:
-        case "gen-stubs":
-            stubs.gen_stubs(
+        case "subrs":
+            subroutines.extract_subroutines(
                 PIMACS_REPO_PATH, Path(args.emacs_repo_path), emacs_commit, emacs_branch
             )
         case "copy":
             copy_files.copy_files(
-                config, PIMACS_REPO_PATH, Path(args.emacs_repo_path), emacs_commit, emacs_branch
+                config,
+                PIMACS_REPO_PATH,
+                Path(args.emacs_repo_path),
+                emacs_commit,
+                emacs_branch,
             )
         case _:
             raise Exception("Unknown command")

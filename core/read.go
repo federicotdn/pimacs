@@ -580,8 +580,16 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.s.stringp, str)
 	}
 
+	if ec.gl.obarray.containsSymbol(xStringValue(str)) {
+		return ec.internInternal(str, &ec.gl.obarray)
+	}
+
+	return ec.internInternal(str, &ec.obarray)
+}
+
+func (ec *execContext) internInternal(str lispObject, obarray *obarrayType) (lispObject, error) {
 	sym := ec.makeSymbol(xStringValue(str), true)
-	sym, existed := ec.loadOrStoreSymbol(sym)
+	sym, existed := obarray.loadOrStoreSymbol(sym)
 
 	if !existed && strings.HasPrefix(sym.name, ":") {
 		_, err := ec.set(sym, sym)
@@ -604,7 +612,7 @@ func (ec *execContext) unintern(name, _ lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.s.stringp, name)
 	}
 
-	return ec.bool(ec.removeSymbol(nameStr))
+	return ec.bool(ec.obarray.removeSymbol(nameStr))
 }
 
 func (ec *execContext) lexicallyBoundp(ctx readContext) bool {

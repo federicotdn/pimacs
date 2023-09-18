@@ -6,8 +6,8 @@ type vectorLikeType enum
 type symbolRedirectType enum
 type symbolFwdType enum
 
-type lispInt int32
-type lispFp float32
+type lispInt int64
+type lispFp float64
 
 const (
 	lispTypeSymbol lispType = iota + 1
@@ -138,8 +138,14 @@ type lispHashTableTest struct {
 	compFunction lispObject
 }
 
+type lispHashTableEntry struct {
+	key  lispObject
+	val  lispObject
+	code lispInt
+}
+
 type lispHashTable struct {
-	val  map[lispInt]lispObject
+	val  map[lispInt][]lispHashTableEntry
 	test *lispHashTableTest
 }
 

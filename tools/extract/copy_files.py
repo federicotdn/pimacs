@@ -3,7 +3,11 @@ import shutil
 
 
 def copy_files(
-    config: dict, pimacs_base: Path, emacs_base: Path, emacs_commit: str, emacs_branch: str
+    config: dict,
+    pimacs_base: Path,
+    emacs_base: Path,
+    emacs_commit: str,
+    emacs_branch: str,
 ) -> None:
     lisp_files = config["copy_lisp_files"]
     for path in lisp_files:

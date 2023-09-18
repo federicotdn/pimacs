@@ -321,8 +321,7 @@ func debugReprInternal(obj lispObject, depth int) string {
 		table := xHashTable(obj)
 		s := "hashtable{"
 		for k, v := range table.val {
-			repr := debugReprInternal(v, depth)
-			s += fmt.Sprintf("%v: %v, ", k, repr)
+			s += fmt.Sprintf("%v: %v, ", k, v)
 		}
 
 		return s + "}"

@@ -35,8 +35,10 @@ type stackJumpSignal struct {
 }
 
 type goroutineLocals struct {
-	stack                  []stackEntry
-	currentBuf             *lispBuffer
+	stack      []stackEntry
+	currentBuf *lispBuffer
+	obarray    obarrayType
+
 	internalInterpreterEnv forwardLispObj
 	lexicalBinding         forwardLispObj
 }
@@ -49,13 +51,10 @@ type execContext struct {
 	s    *symbols
 	v    *vars
 
-	obarray     map[string]*lispSymbol
-	obarrayLock *sync.Mutex
+	obarray obarrayType
 
 	buffers     map[string]*lispBuffer
 	buffersLock *sync.RWMutex
-
-	stubs *emacsStubs
 
 	hashTestEq    *lispHashTableTest
 	hashTestEql   *lispHashTableTest
@@ -66,15 +65,7 @@ type execContext struct {
 	done   chan bool
 
 	testing bool
-
-	init struct {
-		errorOnVarRedefine bool
-		subrs              int
-		stubs              int
-	}
-}
-
-type emacsStubs struct {
+	running bool
 }
 
 type stackEntryLet struct {
@@ -339,22 +330,13 @@ func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name strin
 		maxArgs: maxArgs,
 	}
 
-	if ec.init.errorOnVarRedefine {
-		ec.init.subrs++
-	} else {
-		ec.init.stubs++
-	}
-
 	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
 		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", name)
 	}
 
 	sym := ec.defSym(symbol, sub.name)
 	if sym.function != ec.s.nil_ {
-		if ec.init.errorOnVarRedefine {
-			ec.terminate("subroutine value already set: '%+v'", name)
-		}
-		return sub
+		ec.terminate("subroutine value already set: '%+v'", name)
 	}
 
 	sym.function = sub
@@ -415,12 +397,11 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 		ec.terminate("symbol already initialized: '%+v'", *symbol)
 	}
 
-	existed := ec.containsSymbol(name)
-	if existed && ec.init.errorOnVarRedefine {
-		ec.terminate("symbol already initialized: '%+v'", name)
+	obarray := &ec.obarray
+	if ec.running {
+		obarray = &ec.gl.obarray
 	}
-
-	obj, err := ec.intern(newString(name), ec.nil_)
+	obj, err := ec.internInternal(newString(name), obarray)
 	if symbol != nil {
 		*symbol = obj
 	}
@@ -458,55 +439,26 @@ func (ec *execContext) defVarBool(fwd *forwardBool, name string, value bool) {
 	sym.fwd = fwd
 }
 
-func (ec *execContext) loadOrStoreSymbol(sym *lispSymbol) (*lispSymbol, bool) {
-	ec.obarrayLock.Lock()
-	defer ec.obarrayLock.Unlock()
-
-	prev, existed := ec.obarray[sym.name]
-	if existed {
-		return prev, true
-	}
-
-	ec.obarray[sym.name] = sym
-	return sym, false
-}
-
-func (ec *execContext) removeSymbol(name string) bool {
-	ec.obarrayLock.Lock()
-	defer ec.obarrayLock.Unlock()
-
-	_, existed := ec.obarray[name]
-	if !existed {
-		return false
-	}
-
-	delete(ec.obarray, name)
-	return true
-}
-
-func (ec *execContext) containsSymbol(name string) bool {
-	ec.obarrayLock.Lock()
-	defer ec.obarrayLock.Unlock()
-
-	_, existed := ec.obarray[name]
-	return existed
-}
-
 func (ec *execContext) initGoroutineLocals() {
 	ec.defVarLisp(&ec.gl.lexicalBinding, "lexical-binding", ec.nil_)
 	ec.defVarLisp(&ec.gl.internalInterpreterEnv, "internal-interpreter-environment", ec.nil_)
-	ec.removeSymbol("internal-interpreter-environment")
+	ec.gl.obarray.removeSymbol("internal-interpreter-environment")
 
 	ec.initBufferGoroutineLocals() // buffer.go
 }
 
+func newGoroutineLocals() *goroutineLocals {
+	return &goroutineLocals{
+		obarray: newObarray(false),
+	}
+}
+
 func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec := execContext{
-		gl:          &goroutineLocals{},
+		gl:          newGoroutineLocals(),
 		s:           &symbols{},
 		v:           &vars{},
-		obarray:     make(map[string]*lispSymbol),
-		obarrayLock: &sync.Mutex{},
+		obarray:     newObarray(true),
 		buffers:     make(map[string]*lispBuffer),
 		buffersLock: &sync.RWMutex{},
 		// TODO: Move '10' to config value
@@ -514,8 +466,6 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 		ops:    make(chan proto.DrawOp, 10),
 		done:   make(chan bool),
 	}
-
-	ec.init.errorOnVarRedefine = true
 
 	// Symbol and vars basic initialization
 	ec.initSymbols()             // symbols.go
@@ -538,13 +488,10 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	// Goroutine-specific initialization
 	ec.initGoroutineLocals()
 
-	// Load Emacs stubs at the end, without erroring out
-	// on repeated defuns or defvars
-	ec.init.errorOnVarRedefine = false
-	ec.symbolsOfEmacs_autogen()
-
 	ec.checkSymbolValues()
 	ec.checkVarValues()
+
+	ec.running = true
 
 	// We are now ready to evaluate Elisp code
 	return &ec, ec.loadElisp(loadPathPrepend)
@@ -557,7 +504,7 @@ func (ec *execContext) symbolsOfExecContext() {
 
 func (ec *execContext) copyExecContext() *execContext {
 	copy := *ec
-	copy.gl = &goroutineLocals{}
+	copy.gl = newGoroutineLocals()
 	copy.initGoroutineLocals()
 	return &copy
 }
@@ -761,11 +708,6 @@ func (ec *execContext) true_() (lispObject, error) {
 
 func (ec *execContext) false_() (lispObject, error) {
 	return ec.bool(false)
-}
-
-func (ec *execContext) stub(name string) (lispObject, error) {
-	ec.terminate("stub invoked: '%v'", name)
-	return ec.nil_, nil
 }
 
 func (ec *execContext) terminate(format string, v ...interface{}) {
