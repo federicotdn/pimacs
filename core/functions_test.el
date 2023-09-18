@@ -84,3 +84,12 @@
   (lt--should (equal (gethash key ht) "v"))
   (lt--should (equal (gethash "key" ht) "v"))
   (lt--should-not (gethash "kEy" ht)))
+
+(lt--deftest test-hash-table-remhash ()
+  (setq ht (make-hash-table :test 'eql))
+  (puthash 123 "hello" ht)
+  (puthash 124 "hello" ht)
+  (lt--should (equal (gethash 123 ht) "hello"))
+  (remhash 123 ht)
+  (lt--should-not (gethash 123 ht))
+  (lt--should (equal (gethash 124 ht) "hello")))

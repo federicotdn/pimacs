@@ -270,8 +270,9 @@ func objAddr(obj lispObject) lispInt {
 // Debug utilities //
 
 const (
-	debugReprMaxDepth            = 20
-	debugReprLispStackMaxLineLen = 30
+	debugReprMaxDepth            = 3
+	debugReprLispStackMaxLineLen = 80
+	debugReprLongStringLen       = 25
 )
 
 func debugRepr(obj lispObject) string {
@@ -280,7 +281,7 @@ func debugRepr(obj lispObject) string {
 
 func debugReprInternal(obj lispObject, depth int) string {
 	if depth <= 0 {
-		return "(...)"
+		return "?"
 	}
 	depth--
 
@@ -290,7 +291,11 @@ func debugReprInternal(obj lispObject, depth int) string {
 	case lispTypeFloat:
 		return fmt.Sprintf("%vf", xFloatValue(obj))
 	case lispTypeString:
-		return fmt.Sprintf("\"%v\"", xStringValue(obj))
+		val := xStringValue(obj)
+		if len(val) > debugReprLongStringLen {
+			val = val[:debugReprLongStringLen] + "..."
+		}
+		return fmt.Sprintf("\"%v\"", val)
 	case lispTypeInteger:
 		return fmt.Sprintf("int(%v)", xIntegerValue(obj))
 	case lispTypeSymbol:

@@ -1,5 +1,7 @@
 package core
 
+type arithmeticCmp func(lispInt, lispInt) bool
+
 func (ec *execContext) null(object lispObject) (lispObject, error) {
 	return ec.bool(object == ec.nil_)
 }
@@ -302,7 +304,7 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 	return newInteger(total), nil
 }
 
-func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
+func (ec *execContext) arithmetricCompare(cmp arithmeticCmp, objs ...lispObject) (lispObject, error) {
 	for i := 1; i < len(objs); i++ {
 		if !numberp(objs[i-1]) {
 			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, objs[i-1])
@@ -310,12 +312,37 @@ func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
 			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, objs[i])
 		}
 
-		if xIntegerValue(objs[i-1]) >= xIntegerValue(objs[i]) {
+		if !cmp(xIntegerValue(objs[i-1]), xIntegerValue(objs[i])) {
 			return ec.false_()
 		}
 	}
 
 	return ec.true_()
+}
+
+func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
+	cmp := func(a, b lispInt) bool { return a < b }
+	return ec.arithmetricCompare(cmp, objs...)
+}
+
+func (ec *execContext) greaterThanSign(objs ...lispObject) (lispObject, error) {
+	cmp := func(a, b lispInt) bool { return a > b }
+	return ec.arithmetricCompare(cmp, objs...)
+}
+
+func (ec *execContext) equalsSign(objs ...lispObject) (lispObject, error) {
+	cmp := func(a, b lispInt) bool { return a == b }
+	return ec.arithmetricCompare(cmp, objs...)
+}
+
+func (ec *execContext) notEqualsSign(obj1, obj2 lispObject) (lispObject, error) {
+	cmp := func(a, b lispInt) bool { return a != b }
+	return ec.arithmetricCompare(cmp, obj1, obj2)
+}
+
+func (ec *execContext) lessThanEqualsSign(objs ...lispObject) (lispObject, error) {
+	cmp := func(a, b lispInt) bool { return a <= b }
+	return ec.arithmetricCompare(cmp, objs...)
 }
 
 func (ec *execContext) bareSymbol(sym lispObject) (lispObject, error) {
@@ -365,5 +392,9 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr3(nil, "defalias", (*execContext).defalias, 2)
 	ec.defSubrM(nil, "+", (*execContext).plusSign, 0)
 	ec.defSubrM(nil, "<", (*execContext).lessThanSign, 1)
+	ec.defSubrM(nil, ">", (*execContext).greaterThanSign, 1)
+	ec.defSubrM(nil, "=", (*execContext).equalsSign, 1)
+	ec.defSubr2(nil, "/=", (*execContext).notEqualsSign, 2)
+	ec.defSubrM(nil, "<=", (*execContext).lessThanEqualsSign, 1)
 	ec.defSubr1(nil, "bare-symbol", (*execContext).bareSymbol, 1)
 }

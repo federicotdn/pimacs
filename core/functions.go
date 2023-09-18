@@ -651,6 +651,20 @@ func (ec *execContext) getHash(key, table, default_ lispObject) (lispObject, err
 }
 
 func (ec *execContext) remHash(key, table lispObject) (lispObject, error) {
+	if !hashtablep(table) {
+		return ec.wrongTypeArgument(ec.s.hashTablep, table)
+	}
+
+	ht := xHashTable(table)
+	result := ec.hashLookup(key, xHashTable(table))
+	if result.err != nil {
+		return nil, result.err
+	}
+
+	if result.entries != nil && result.i >= 0 {
+		ht.val[result.code] = slices.Delete(result.entries, result.i, result.i+1)
+	}
+
 	return ec.nil_, nil
 }
 
@@ -698,6 +712,7 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubrM(nil, "make-hash-table", (*execContext).makeHashTable, 0)
 	ec.defSubr3(nil, "puthash", (*execContext).putHash, 3)
 	ec.defSubr3(nil, "gethash", (*execContext).getHash, 2)
+	ec.defSubr2(nil, "remhash", (*execContext).remHash, 2)
 	ec.defSubr1(nil, "clrhash", (*execContext).clearHash, 1)
 	ec.defSubr1(&ec.s.sxHashEq, "sxhash-eq", (*execContext).sxHashEq, 1)
 	ec.defSubr1(&ec.s.sxHashEql, "sxhash-eql", (*execContext).sxHashEql, 1)

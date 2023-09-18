@@ -1002,8 +1002,11 @@ func (ec *execContext) evalSub(form lispObject) (lispObject, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else {
+	} else if fn != ec.nil_ {
 		fn = xSymbol(fn).function
+		if symbolp(fn) {
+			fn = ec.indirectFunctionInternal(fn)
+		}
 	}
 
 	if subroutinep(fn) {
