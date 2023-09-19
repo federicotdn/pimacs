@@ -1,4 +1,4 @@
-;;; eval_test.el --- Tests for eval.go  -*- lexical-binding: t; -*-
+;;; eval-tests.el --- Tests for eval.go  -*- lexical-binding: t; -*-
 
 (lt--deftest test-let-closure ()
   (setq cl nil)

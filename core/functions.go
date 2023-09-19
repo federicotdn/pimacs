@@ -347,7 +347,19 @@ func (ec *execContext) append_(args ...lispObject) (lispObject, error) {
 			}
 			last = prev
 		case arg == ec.nil_:
-		case vectorp(arg) || stringp(arg):
+		case vectorp(arg):
+			vec := xVector(arg)
+
+			for _, elem := range vec.val {
+				node := newCons(elem, ec.nil_)
+				if result == ec.nil_ {
+					result = node
+				} else {
+					xSetCdr(last, node)
+				}
+				last = node
+			}
+		case stringp(arg):
 			fallthrough
 		default:
 			return ec.wrongTypeArgument(ec.s.sequencep, arg)

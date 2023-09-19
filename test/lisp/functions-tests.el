@@ -1,4 +1,4 @@
-;;; functions_test.el --- Tests for functions.go  -*- lexical-binding: t; -*-
+;;; functions-tests.el --- Tests for functions.go  -*- lexical-binding: t; -*-
 
 (lt--deftest test-reverse ()
   (lt--should (equal (reverse '(1 2 3 4))

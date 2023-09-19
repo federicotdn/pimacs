@@ -1,4 +1,4 @@
-;;; read_test.el --- Tests for read.go  -*- lexical-binding: t; -*-
+;;; read-tests.el --- Tests for read.go  -*- lexical-binding: t; -*-
 
 (lt--deftest test-unintern ()
   (lt--should (intern "hello") "intern a symbol ok")

@@ -1,4 +1,4 @@
-;;; character_table_test.el --- Tests for character_table.go  -*- lexical-binding: t; -*-
+;;; character-table-tests.el --- Tests for character_table.go  -*- lexical-binding: t; -*-
 
 (lt--deftest test-char-table-parent ()
   (let ((child (make-char-table nil))

@@ -1,4 +1,4 @@
-;;; goroutine_test.el --- Tests for goroutine.go  -*- lexical-binding: t; -*-
+;;; goroutine-tests.el --- Tests for goroutine.go  -*- lexical-binding: t; -*-
 
 (lt--deftest test-pimacs-go-simple ()
   (defconst global nil)

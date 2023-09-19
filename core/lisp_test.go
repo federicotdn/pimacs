@@ -1,7 +1,6 @@
 package core
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -10,8 +9,8 @@ var filenames = []string{
 	"eval-tests.el",
 	"functions-tests.el",
 	"goroutine-tests.el",
-	"lisp-tests.el",
 	"read-tests.el",
+	"backquote-tests.el",
 }
 
 func TestLisp(t *testing.T) {
@@ -29,16 +28,17 @@ func TestLisp(t *testing.T) {
 			t.Logf("failed to load '%v': %+v", filename, err)
 			t.FailNow()
 		}
-		_, err = inp.ReadEvalPrin1("(lt--run-all-tests)")
-		if err != nil {
-			t.Logf("test(s) failure in '%v': %+v", filename, strings.Split(err.Error(), "\n")[0])
-			info, err2 := inp.ReadEvalPrin1("lt--failure-info")
-			if err2 != nil {
-				t.Logf("failed to retrieve failure info: %+v", err2)
-			} else {
-				t.Logf("test(s) failure info: %+v", info)
-			}
-			t.Fail()
+	}
+
+	_, err = inp.ReadEvalPrin1("(lt--run-all-tests)")
+	if err != nil {
+		t.Logf("test(s) failure: %+v", err.Error())
+		info, err2 := inp.ReadEvalPrin1("lt--failure-info")
+		if err2 != nil {
+			t.Logf("failed to retrieve failure info: %+v", err2)
+		} else {
+			t.Logf("test(s) failure info: %+v", info)
 		}
+		t.Fail()
 	}
 }

@@ -18,7 +18,7 @@
 
 (defun lt--should (val &optional msg)
   (if (null val)
-    (signal 'assertion-failure (if msg msg "(no details)"))))
+    (signal 'assertion-failure (or msg "(no details)"))))
 
 (defun lt--should-not (val &optional msg)
   (lt--should (null val) msg))
