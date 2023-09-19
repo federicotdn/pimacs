@@ -20,6 +20,7 @@ checkfmt:
 run: build
 	./pimacs
 
+.PHONY: test
 test:
 	go test -v ./...
 

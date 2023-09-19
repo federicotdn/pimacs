@@ -33,7 +33,7 @@ func NewInterpreter(config InterpreterConfig) (*Interpreter, error) {
 func newTestingInterpreter() *Interpreter {
 	// When running tests, Go sets the CWD to the package's
 	// directory
-	ec, err := newExecContext([]string{"../core", "../lisp", "../lisp/emacs"})
+	ec, err := newExecContext([]string{"../lisp", "../lisp/emacs", "../test/lisp"})
 	if err != nil {
 		panic(err)
 	}

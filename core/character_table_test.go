@@ -216,8 +216,3 @@ func TestCharTableLookup(t *testing.T) {
 		}
 	}
 }
-
-func TestCharTableLisp(t *testing.T) {
-	t.Parallel()
-	testLisp(t, "character_table_test.el")
-}
