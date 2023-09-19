@@ -32,6 +32,8 @@ type stackJumpSignal struct {
 	goStack     string
 	lispStack   string
 	ec          *execContext
+
+	location []string
 }
 
 type goroutineLocals struct {
@@ -137,6 +139,14 @@ func (jmp *stackJumpSignal) Is(target error) bool {
 func (jmp *stackJumpSignal) Error() string {
 	message := "stack jump: signal:"
 	ending := "\nbacktrace:\n" + jmp.lispStack
+
+	if jmp.location != nil {
+		ending += "\nlocation:"
+		for _, loc := range jmp.location {
+			ending += fmt.Sprintf("\n  - %v", loc)
+
+		}
+	}
 
 	if !symbolp(jmp.errorSymbol) {
 		message += fmt.Sprintf(" '%+v' '<unknown>'", jmp.errorSymbol)
@@ -484,6 +494,7 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec.symbolsOfCharacterTable() // character_table.go
 	ec.symbolsOfGoroutine()      // goroutine.go
 	ec.symbolsOfPimacsTools()    // pimacs_tools.go
+	ec.symbolsOfEditFunctions()  // edit_functions.go
 
 	// Goroutine-specific initialization
 	ec.initGoroutineLocals()

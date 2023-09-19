@@ -2,6 +2,7 @@ package core
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -35,6 +36,8 @@ type readContextFile struct {
 	reader      *bufio.Reader
 	unreadRunes []rune
 	i           int
+	line        int
+	path        string
 }
 
 type readStackElem struct {
@@ -75,20 +78,34 @@ func (ctx *readContextString) position() int {
 	return ctx.i
 }
 
+func newReadContextFile(f *os.File) readContextFile {
+	return readContextFile{
+		reader: bufio.NewReader(f),
+		path:   f.Name(),
+		line:   1,
+	}
+}
+
 func (ctx *readContextFile) read() rune {
+	var r rune
 	if len(ctx.unreadRunes) > 0 {
-		r := ctx.unreadRunes[len(ctx.unreadRunes)-1]
+		r = ctx.unreadRunes[len(ctx.unreadRunes)-1]
 		ctx.unreadRunes = ctx.unreadRunes[:len(ctx.unreadRunes)-1]
 		ctx.i++
-		return r
+	} else {
+		var err error
+		r, _, err = ctx.reader.ReadRune()
+		if err != nil {
+			r = eofRune
+		} else {
+			ctx.i++
+		}
 	}
 
-	r, _, err := ctx.reader.ReadRune()
-	if err != nil {
-		return eofRune
+	if r == '\n' {
+		ctx.line++
 	}
 
-	ctx.i++
 	return r
 }
 
@@ -99,6 +116,10 @@ func (ctx *readContextFile) unread(c rune) {
 
 	if ctx.i == 0 {
 		terminate("unbalanced read/unread call with rune: '%v'", c)
+	}
+
+	if c == '\n' {
+		ctx.line--
 	}
 
 	ctx.unreadRunes = append(ctx.unreadRunes, c)
@@ -835,7 +856,7 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 		return nil, err
 	}
 
-	ctx := readContextFile{reader: bufio.NewReader(f)}
+	ctx := newReadContextFile(f)
 
 	if ec.lexicallyBoundp(&ctx) {
 		if err := ec.stackPushLet(ec.gl.lexicalBinding.sym, ec.t); err != nil {
@@ -844,6 +865,10 @@ func (ec *execContext) load(file, noError, noMessage, noSuffix, mustSuffix lispO
 	}
 
 	if err := ec.readEvalLoop(&ctx); err != nil {
+		if signal, ok := err.(*stackJumpSignal); ok {
+			signal.location = append(signal.location, fmt.Sprintf("%v:%v", ctx.path, ctx.line))
+		}
+
 		return nil, err
 	}
 

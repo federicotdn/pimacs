@@ -298,6 +298,65 @@ func (ec *execContext) put(symbol, propName, value lispObject) (lispObject, erro
 	return value, nil
 }
 
+func (ec *execContext) concat(args ...lispObject) (lispObject, error) {
+	result := ""
+
+	for _, arg := range args {
+		switch {
+		case stringp(arg):
+			result += xStringValue(arg)
+		case arg == ec.nil_:
+		case consp(arg):
+			fallthrough
+		case vectorp(arg):
+			fallthrough
+		default:
+			return ec.wrongTypeArgument(ec.s.sequencep, arg)
+		}
+	}
+
+	return newString(result), nil
+}
+
+func (ec *execContext) append_(args ...lispObject) (lispObject, error) {
+	result := ec.nil_
+	last := ec.nil_
+
+	for _, arg := range args {
+		switch {
+		case consp(arg):
+			head := newCons(xCar(arg), ec.nil_)
+			prev := head
+			arg = xCdr(arg)
+
+			iter := ec.iterate(arg)
+			for ; iter.hasNext(); arg = iter.nextCons() {
+				next := newCons(xCar(arg), ec.nil_)
+				xSetCdr(prev, next)
+				prev = next
+			}
+
+			if iter.hasError() {
+				return iter.error()
+			}
+
+			if result == ec.nil_ {
+				result = head
+			} else {
+				xSetCdr(last, head)
+			}
+			last = prev
+		case arg == ec.nil_:
+		case vectorp(arg) || stringp(arg):
+			fallthrough
+		default:
+			return ec.wrongTypeArgument(ec.s.sequencep, arg)
+		}
+	}
+
+	return result, nil
+}
+
 func (ec *execContext) nconc(args ...lispObject) (lispObject, error) {
 	val := ec.nil_
 
@@ -702,6 +761,8 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(nil, "plist-get", (*execContext).plistGet, 2)
 	ec.defSubr3(nil, "plist-put", (*execContext).plistPut, 3)
 	ec.defSubrM(nil, "nconc", (*execContext).nconc, 0)
+	ec.defSubrM(nil, "append", (*execContext).append_, 0)
+	ec.defSubrM(nil, "concat", (*execContext).concat, 0)
 	ec.defSubr2(&ec.s.provide, "provide", (*execContext).provide, 1)
 	ec.defSubr1(nil, "nreverse", (*execContext).nreverse, 1)
 	ec.defSubr1(&ec.s.reverse, "reverse", (*execContext).reverse, 1)
