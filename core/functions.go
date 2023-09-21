@@ -437,6 +437,37 @@ func (ec *execContext) nconc(args ...lispObject) (lispObject, error) {
 	return val, nil
 }
 
+func (ec *execContext) copySequence(arg lispObject) (lispObject, error) {
+	switch {
+	case vectorp(arg):
+		vec := xVector(arg)
+		return newVector(slices.Clone(vec.val)), nil
+	case arg == ec.nil_:
+		return arg, nil
+	case consp(arg):
+		val := newCons(xCar(arg), ec.nil_)
+		prev := val
+		tail := xCdr(arg)
+
+		iter := ec.iterate(tail)
+		for ; iter.hasNext(); tail = iter.nextCons() {
+			c := newCons(xCar(tail), ec.nil_)
+			xSetCdr(prev, c)
+			prev = c
+		}
+
+		if iter.hasError() {
+			return iter.error()
+		}
+
+		return val, nil
+	case stringp(arg):
+		fallthrough
+	default:
+		return ec.wrongTypeArgument(ec.s.sequencep, arg)
+	}
+}
+
 func (ec *execContext) provide(feature, subfeatures lispObject) (lispObject, error) {
 	return ec.nil_, nil
 }
@@ -799,6 +830,7 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubrM(nil, "append", (*execContext).append_, 0)
 	ec.defSubrM(nil, "concat", (*execContext).concat, 0)
 	ec.defSubrM(nil, "vconcat", (*execContext).vconcat, 0)
+	ec.defSubr1(nil, "copy-sequence", (*execContext).copySequence, 1)
 	ec.defSubr2(&ec.s.provide, "provide", (*execContext).provide, 1)
 	ec.defSubr1(nil, "nreverse", (*execContext).nreverse, 1)
 	ec.defSubr1(&ec.s.reverse, "reverse", (*execContext).reverse, 1)
