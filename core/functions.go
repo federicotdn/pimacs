@@ -318,6 +318,34 @@ func (ec *execContext) concat(args ...lispObject) (lispObject, error) {
 	return newString(result), nil
 }
 
+func (ec *execContext) vconcat(args ...lispObject) (lispObject, error) {
+	result := []lispObject{}
+
+	for _, arg := range args {
+		switch {
+		case vectorp(arg):
+			vec := xVector(arg)
+			result = append(result, vec.val...)
+		case arg == ec.nil_:
+		case consp(arg):
+			iter := ec.iterate(arg)
+			for ; iter.hasNext(); arg = iter.nextCons() {
+				result = append(result, xCar(arg))
+			}
+
+			if iter.hasError() {
+				return iter.error()
+			}
+		case stringp(arg):
+			fallthrough
+		default:
+			return ec.wrongTypeArgument(ec.s.sequencep, arg)
+		}
+	}
+
+	return newVector(result), nil
+}
+
 func (ec *execContext) append_(args ...lispObject) (lispObject, error) {
 	result := ec.nil_
 	last := ec.nil_
@@ -770,6 +798,7 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubrM(nil, "nconc", (*execContext).nconc, 0)
 	ec.defSubrM(nil, "append", (*execContext).append_, 0)
 	ec.defSubrM(nil, "concat", (*execContext).concat, 0)
+	ec.defSubrM(nil, "vconcat", (*execContext).vconcat, 0)
 	ec.defSubr2(&ec.s.provide, "provide", (*execContext).provide, 1)
 	ec.defSubr1(nil, "nreverse", (*execContext).nreverse, 1)
 	ec.defSubr1(&ec.s.reverse, "reverse", (*execContext).reverse, 1)

@@ -26,7 +26,8 @@
 (lt--deftest test-equal ()
   (lt--should (equal 'a 'a) "a equal a")
   (lt--should (equal 1 1) "1 equal 1")
-  (lt--should (equal "hello" "hello") "hello equal hello"))
+  (lt--should (equal "hello" "hello") "hello equal hello")
+  (lt--should-not (equal [] nil)))
 
 (lt--deftest test-delq ()
   (lt--should (equal '(1 2 3 4 5)
@@ -93,3 +94,9 @@
   (remhash 123 ht)
   (lt--should-not (gethash 123 ht))
   (lt--should (equal (gethash 124 ht) "hello")))
+
+(lt--deftest test-vconcat ()
+  (lt--should (equal [1 2 3 4] (vconcat [1 2] [3 4])))
+  (lt--should (equal [1 2 3 4] (vconcat [1 2] '(3 4))))
+  (lt--should (equal [1 2 3 4] (vconcat [1 2] '(3 4) nil)))
+  (lt--should (equal (vconcat nil) [])))
