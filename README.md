@@ -69,6 +69,14 @@ Create a vector of integers:
 t
 ```
 
+Use backquotes:
+```elisp
+> (setq lst '(2 3 4))
+(2 3 4)
+> `(1 ,@lst 5 6)
+(1 2 3 4 5 6)
+```
+
 ## Design and general notes
 In order to read about the design choices for Pimacs, how it works internally, and how it is different from Emacs' Elisp interpreter, see the [design.md](extra/design.md) document.
 
