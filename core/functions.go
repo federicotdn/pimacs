@@ -442,11 +442,6 @@ func (ec *execContext) reverse(seq lispObject) (lispObject, error) {
 	return ec.wrongTypeArgument(ec.s.sequencep, seq)
 }
 
-func (ec *execContext) require(feature, filename, noerror lispObject) (lispObject, error) {
-	// TODO: Implement
-	return ec.nil_, nil
-}
-
 func (ec *execContext) nthCdr(n, list lispObject) (lispObject, error) {
 	if !integerp(n) {
 		return ec.wrongTypeArgument(ec.s.integerp, n)
@@ -778,7 +773,6 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(&ec.s.provide, "provide", (*execContext).provide, 1)
 	ec.defSubr1(nil, "nreverse", (*execContext).nreverse, 1)
 	ec.defSubr1(&ec.s.reverse, "reverse", (*execContext).reverse, 1)
-	ec.defSubr3(nil, "require", (*execContext).require, 1)
 	ec.defSubr2(nil, "nthcdr", (*execContext).nthCdr, 2)
 	ec.defSubr2(nil, "nth", (*execContext).nth, 2)
 	ec.defSubr2(&ec.s.mapCar, "mapcar", (*execContext).mapCar, 2)
