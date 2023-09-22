@@ -831,7 +831,7 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubrM(nil, "concat", (*execContext).concat, 0)
 	ec.defSubrM(nil, "vconcat", (*execContext).vconcat, 0)
 	ec.defSubr1(nil, "copy-sequence", (*execContext).copySequence, 1)
-	ec.defSubr2(&ec.s.provide, "provide", (*execContext).provide, 1)
+	ec.defSubr2(nil, "provide", (*execContext).provide, 1)
 	ec.defSubr1(nil, "nreverse", (*execContext).nreverse, 1)
 	ec.defSubr1(&ec.s.reverse, "reverse", (*execContext).reverse, 1)
 	ec.defSubr2(nil, "nthcdr", (*execContext).nthCdr, 2)

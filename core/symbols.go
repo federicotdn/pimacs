@@ -37,7 +37,6 @@ type symbols struct {
 	readFromMinibuffer             lispObject
 	recursiveEdit                  lispObject
 	charTablep                     lispObject
-	provide                        lispObject
 	reverse                        lispObject
 	mapCar                         lispObject
 	eql                            lispObject
