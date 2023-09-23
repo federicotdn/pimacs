@@ -190,45 +190,84 @@ func (ec *execContext) stringToNumber(s string) (lispObject, error) {
 	return ec.pimacsUnimplemented(ec.s.read, "unknown number format: '%v'", s)
 }
 
-func (ec *execContext) readEscape(ctx readContext, stringp bool) (rune, error) {
-	c := ctx.read()
-	if c == eofRune {
-		return 0, xErrOnly(ec.signalN(ec.s.endOfFile))
-	}
+func (ec *execContext) readEscape(ctx readContext, nextChar rune) (rune, error) {
+	var chr, modifiers rune
+	nControl := 0
+again:
+	c := nextChar
 
 	switch c {
+	case eofRune:
+		return 0, xErrOnly(ec.signalN(ec.s.endOfFile))
 	case 'a':
-		return '\a', nil
+		chr = '\a'
 	case 'b':
-		return '\b', nil
+		chr = '\b'
 	case 'd':
-		return 0177, nil
+		chr = 0177
 	case 'e':
-		return 033, nil
+		chr = 033
 	case 'f':
-		return '\f', nil
+		chr = '\f'
 	case 'n':
-		return '\n', nil
+		chr = '\n'
 	case 'r':
-		return '\r', nil
+		chr = '\r'
 	case 't':
-		return '\t', nil
+		chr = '\t'
 	case 'v':
-		return '\v', nil
+		chr = '\v'
 	case '\n':
-		return -1, nil
-	case ' ':
-		if stringp {
-			return -1, nil
+		return 0, xErrOnly(ec.signalError("Invalid escape char syntax: \\<newline>"))
+	case 'M', 'S', 'H', 'A', 's':
+		var mod rune
+
+		switch c {
+		case 'M':
+			mod = charMeta
+		case 'S':
+			mod = charShift
+		case 'H':
+			mod = charHyper
+		case 'A':
+			mod = charAlt
+		case 's':
+			mod = charSuper
 		}
-		return ' ', nil
-	case 'M':
-	case 'S':
-	case 'H':
-	case 'A':
-	case 's':
+
+		c1 := ctx.read()
+		if c1 != '-' {
+			if c == 's' {
+				ctx.unread(c1)
+				chr = ' '
+				break
+			} else {
+				return 0, xErrOnly(ec.signalError("Invalid escape char syntax: \\%c not followed by -", c))
+			}
+		}
+
+		modifiers |= mod
+		c1 = ctx.read()
+		if c1 == '\\' {
+			nextChar = ctx.read()
+			goto again
+		}
+		chr = c1
 	case 'C':
+		c1 := ctx.read()
+		if c1 != '-' {
+			return 0, xErrOnly(ec.signalError("Invalid escape char syntax: \\%c not followed by -", c))
+		}
+
+		fallthrough
 	case '^':
+		nControl++
+		c1 := ctx.read()
+		if c1 == '\\' {
+			nextChar = ctx.read()
+			goto again
+		}
+		chr = c1
 	case '0', '1', '2', '3', '4', '5', '6', '7':
 		num := c - '0'
 
@@ -248,37 +287,49 @@ func (ec *execContext) readEscape(ctx readContext, stringp bool) (rune, error) {
 			num = byte8toChar(num)
 		}
 
-		return num, nil
+		chr = num
 	case 'x':
 	case 'U':
 	case 'u':
 	case 'N':
 	default:
-		return c, nil
+		chr = c
 	}
 
-	return 0, xErrOnly(ec.pimacsUnimplemented(ec.s.read, "unknown escape code: '\\%v'", c))
+	for nControl > 0 {
+		if (chr >= '@' && chr <= '_') || (chr >= 'a' && chr <= 'z') {
+			chr &= 0x1f
+		} else if chr == '?' {
+			chr = 127
+		} else {
+			modifiers |= charCtrl
+		}
+		nControl--
+	}
+
+	return chr | modifiers, nil
 }
 
 func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 	builder := strings.Builder{}
-	var c rune
+	c := ctx.read()
 
-	for {
-		c = ctx.read()
-		if c == eofRune || c == '"' {
-			break
-		}
-
+	for ; c != eofRune && c != '"'; c = ctx.read() {
 		if c == '\\' {
-			var err error
-			c, err = ec.readEscape(ctx, true)
-			if err != nil {
-				return nil, err
-			}
-
-			if c == -1 {
+			c = ctx.read()
+			switch c {
+			case 's':
+				c = ' '
+			case ' ':
+				fallthrough
+			case '\n':
 				continue
+			default:
+				var err error
+				c, err = ec.readEscape(ctx, c)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 
@@ -304,7 +355,7 @@ func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
 
 	if c == '\\' {
 		var err error
-		c, err = ec.readEscape(ctx, false)
+		c, err = ec.readEscape(ctx, ctx.read())
 		if err != nil {
 			return nil, err
 		}

@@ -89,6 +89,8 @@ type symbols struct {
 	keyAndValue           lispObject
 	variableDocumentation lispObject
 	riskyLocalVariable    lispObject
+	emacs                 lispObject
+	subfeatures           lispObject
 }
 
 type vars struct {
@@ -98,6 +100,7 @@ type vars struct {
 	standardInput  forwardLispObj
 	loadPath       forwardLispObj
 	pimacsRepo     forwardLispObj
+	features       forwardLispObj
 }
 
 func (ec *execContext) initSymbols() {

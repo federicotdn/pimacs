@@ -170,7 +170,7 @@ func (jmp *stackJumpSignal) Error() string {
 	ec := jmp.ec
 
 	switch jmp.errorSymbol {
-	case ec.s.error_, ec.s.pimacsUnimplemented, ec.s.fileMissing:
+	case ec.s.error_, ec.s.pimacsUnimplemented, ec.s.fileMissing, ec.s.invalidReadSyntax:
 		message += fmt.Sprintf(" '%+v'", xStringValue(xCar(data)))
 	case ec.s.voidVariable:
 		message += fmt.Sprintf(" '%+v'", xSymbolName(xCar(data)))
@@ -492,6 +492,7 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec.symbolsOfCallProc()       // callproc.go
 	ec.symbolsOfKeyboard()       // keyboard.go
 	ec.symbolsOfCharacterTable() // character_table.go
+	ec.symbolsOfCharacterSet()   // character_set.go
 	ec.symbolsOfGoroutine()      // goroutine.go
 	ec.symbolsOfPimacsTools()    // pimacs_tools.go
 	ec.symbolsOfEditFunctions()  // edit_functions.go

@@ -469,7 +469,27 @@ func (ec *execContext) copySequence(arg lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) provide(feature, subfeatures lispObject) (lispObject, error) {
-	return ec.nil_, nil
+	if !symbolp(feature) {
+		return ec.wrongTypeArgument(ec.s.symbolp, feature)
+	} else if !ec.listpBool(subfeatures) {
+		return ec.wrongTypeArgument(ec.s.listp, subfeatures)
+	}
+
+	tem, err := ec.memq(feature, ec.v.features.val)
+	if err != nil {
+		return nil, err
+	}
+	if tem == ec.nil_ {
+		ec.v.features.val = newCons(feature, ec.v.features.val)
+	}
+	if subfeatures != ec.nil_ {
+		_, err := ec.put(feature, ec.s.subfeatures, subfeatures)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return feature, nil
 }
 
 func (ec *execContext) nreverse(seq lispObject) (lispObject, error) {
@@ -814,6 +834,8 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSym(&ec.s.hashTableTest, "hash-table-test")
 	ec.defSym(&ec.s.keyOrValue, "key-or-value")
 	ec.defSym(&ec.s.keyAndValue, "key-and-value")
+	ec.defSym(&ec.s.subfeatures, "subfeatures")
+	ec.defVarLisp(&ec.v.features, "features", ec.makeList(ec.s.emacs))
 
 	ec.defSubr1(nil, "length", (*execContext).length, 1)
 	ec.defSubr2(&ec.s.equal, "equal", (*execContext).equal, 2)

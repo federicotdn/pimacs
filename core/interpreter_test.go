@@ -124,7 +124,7 @@ func TestReadPrint(t *testing.T) {
 		{"? ", "32", nil, nil},
 		{"?", "", anyError, nil},
 		{"?\\n", "10", nil, nil},
-		{"?\\\n", "-1", nil, nil},
+		{"?\\\n", "", anyError, nil},
 		{"?\\r", "13", nil, nil},
 		{"?\\ ", "32", nil, nil},
 		{"?\\71", "57", nil, nil},

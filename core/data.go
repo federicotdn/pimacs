@@ -7,15 +7,19 @@ func (ec *execContext) null(object lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) sequencep(object lispObject) (lispObject, error) {
-	return ec.bool(consp(object) || object == ec.nil_ || arrayp(object))
+	return ec.bool(ec.listpBool(object) || arrayp(object))
 }
 
 func (ec *execContext) consp(object lispObject) (lispObject, error) {
 	return ec.bool(consp(object))
 }
 
+func (ec *execContext) listpBool(object lispObject) bool {
+	return (object == ec.nil_ || consp(object))
+}
+
 func (ec *execContext) listp(object lispObject) (lispObject, error) {
-	return ec.bool(object == ec.nil_ || consp(object))
+	return ec.bool(ec.listpBool(object))
 }
 
 func (ec *execContext) atom(object lispObject) (lispObject, error) {
