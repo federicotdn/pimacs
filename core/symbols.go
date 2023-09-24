@@ -23,6 +23,7 @@ type symbols struct {
 	hashTablep                     lispObject
 	integerp                       lispObject
 	bufferp                        lispObject
+	keymapp                        lispObject
 	characterp                     lispObject
 	quote                          lispObject
 	backquote                      lispObject
@@ -91,6 +92,7 @@ type symbols struct {
 	riskyLocalVariable    lispObject
 	emacs                 lispObject
 	subfeatures           lispObject
+	keymap                lispObject
 }
 
 type vars struct {

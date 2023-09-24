@@ -496,6 +496,7 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 	ec.symbolsOfGoroutine()      // goroutine.go
 	ec.symbolsOfPimacsTools()    // pimacs_tools.go
 	ec.symbolsOfEditFunctions()  // edit_functions.go
+	ec.symbolsOfKeymap()         // keymap.go
 
 	// Goroutine-specific initialization
 	ec.initGoroutineLocals()
@@ -723,7 +724,7 @@ func (ec *execContext) false_() (lispObject, error) {
 }
 
 func (ec *execContext) warning(format string, v ...interface{}) {
-	fmt.Printf(format, v...)
+	fmt.Printf(format+"\n", v...)
 }
 
 func (ec *execContext) terminate(format string, v ...interface{}) {

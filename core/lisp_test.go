@@ -11,6 +11,7 @@ var filenames = []string{
 	"goroutine-tests.el",
 	"read-tests.el",
 	"backquote-tests.el",
+	"allocation-tests.el",
 }
 
 func TestLisp(t *testing.T) {

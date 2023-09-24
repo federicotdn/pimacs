@@ -310,6 +310,10 @@ again:
 	return chr | modifiers, nil
 }
 
+func (ec *execContext) readInteger(ctx readContext, radix int) (lispObject, error) {
+	return newInteger(0), nil
+}
+
 func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 	builder := strings.Builder{}
 	c := ctx.read()
@@ -458,19 +462,37 @@ read_obj:
 	case c == '#':
 		c = ctx.read()
 
-		switch {
-		case c == '#':
+		switch c {
+		case '#':
 			var err error
 			obj, err = ec.intern(newString(""), ec.nil_)
 			if err != nil {
 				return nil, err
 			}
-		case c == '\'':
+		case '\'':
 			stack.push(readStackElem{
 				elementType: readStackSpecial,
 				special:     ec.s.function,
 			})
 			goto read_obj
+		case 'o', 'O':
+			var err error
+			obj, err = ec.readInteger(ctx, 8)
+			if err != nil {
+				return nil, err
+			}
+		case 'x', 'X':
+			var err error
+			obj, err = ec.readInteger(ctx, 16)
+			if err != nil {
+				return nil, err
+			}
+		case 'b', 'B':
+			var err error
+			obj, err = ec.readInteger(ctx, 2)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			return ec.pimacsUnimplemented(ec.s.read, "unknown token: '#%c'", c)
 		}
