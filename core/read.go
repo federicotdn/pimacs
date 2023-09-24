@@ -289,9 +289,37 @@ again:
 
 		chr = num
 	case 'x':
-	case 'U':
-	case 'u':
-	case 'N':
+		count := 0
+		var i lispInt
+		for {
+			c = ctx.read()
+			digit := lispInt(ec.digitToNumber(c, 16))
+			if digit < 0 {
+				ctx.unread(c)
+				break
+			}
+
+			i = (i << 4) + digit
+
+			if i > runeToLispInt(charMeta|(charMeta-1)) {
+				return 0, xErrOnly(ec.signalError("Hex character out of range: \\x%x", i))
+			}
+
+			count++
+		}
+
+		if count == 0 {
+			return 0, xErrOnly(ec.signalError("Invalid escape char syntax: \\x not followed by hex digit"))
+		}
+
+		if count < 3 && i >= 0x80 {
+			i = runeToLispInt(byte8toChar(lispIntToRune(i)))
+		}
+
+		modifiers |= lispIntToRune(i) & charModMask
+		chr = lispIntToRune(i) & ^charModMask
+	case 'U', 'u', 'N':
+		return 0, xErrOnly(ec.pimacsUnimplemented(ec.s.read, "unimplemented escape sequence: \\%c", c))
 	default:
 		chr = c
 	}
@@ -490,7 +518,7 @@ read_obj:
 		goto read_obj
 	case c == ')':
 		if stack.isEmpty() {
-			return ec.signalN(ec.s.invalidReadSyntax, newString(")"))
+			return ec.invalidReadSyntax(")")
 		}
 
 		switch stack.peek().elementType {
@@ -500,17 +528,17 @@ read_obj:
 		case readStackList:
 			obj = stack.pop().listHead
 		default:
-			return ec.signalN(ec.s.invalidReadSyntax, newString(")"))
+			return ec.invalidReadSyntax(")")
 		}
 	case c == ']':
 		if stack.isEmpty() {
-			return ec.signalN(ec.s.invalidReadSyntax, newString("]"))
+			return ec.invalidReadSyntax("]")
 		}
 		switch stack.peek().elementType {
 		case readStackVector:
 			obj = newVector(stack.pop().elems)
 		default:
-			return ec.signalN(ec.s.invalidReadSyntax, newString("]"))
+			return ec.invalidReadSyntax("]")
 		}
 	case c == '#':
 		c = ctx.read()
@@ -599,7 +627,7 @@ read_obj:
 				goto read_obj
 			}
 
-			return ec.signalN(ec.s.invalidReadSyntax, newString("."))
+			return ec.invalidReadSyntax(".")
 		}
 
 		obj, err = ec.readSymbol(c, ctx)
@@ -638,14 +666,14 @@ read_obj:
 			}
 			ch := ctx.read()
 			if ch != ')' {
-				return ec.signalN(ec.s.invalidReadSyntax, newString("expected )"))
+				return ec.invalidReadSyntax("expected )")
 			}
 
 			stack.pop()
 
 			if top.listHead == nil {
 				// See Emacs bug #62020
-				return ec.signalN(ec.s.invalidReadSyntax, newString("."))
+				return ec.invalidReadSyntax(".")
 			}
 
 			xSetCdr(top.listTail, obj)

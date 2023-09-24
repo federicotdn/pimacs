@@ -138,7 +138,7 @@ func (jmp *stackJumpSignal) Is(target error) bool {
 
 func (jmp *stackJumpSignal) Error() string {
 	message := "stack jump: signal:"
-	ending := "\nbacktrace:\n" + jmp.lispStack
+	ending := "\nbacktrace:\n" + jmp.lispStack + "\n\nat: " + jmp.goStack
 
 	if jmp.location != nil {
 		ending += "\nlocation:"

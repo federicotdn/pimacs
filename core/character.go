@@ -11,6 +11,7 @@ const (
 	charShift
 	charCtrl
 	charMeta
+	charModMask rune = charAlt | charSuper | charHyper | charShift | charCtrl | charMeta
 )
 
 func runeToLispInt(c rune) lispInt {
