@@ -176,8 +176,8 @@ func (ec *execContext) skipSpaceAndComments(ctx readContext) error {
 	return nil
 }
 
-func (ec *execContext) stringToNumber(s string) (lispObject, error) {
-	nInt, err := strconv.ParseInt(s, 10, 64)
+func (ec *execContext) stringToNumber(s string, radix int) (lispObject, error) {
+	nInt, err := strconv.ParseInt(s, radix, 64)
 	if err == nil {
 		return newInteger(lispInt(nInt)), nil
 	}
@@ -310,8 +310,61 @@ again:
 	return chr | modifiers, nil
 }
 
+func (ec *execContext) digitToNumber(c rune, radix int) int {
+	digit := 0
+
+	if '0' <= c && c <= '9' {
+		digit = int(c - '0')
+	} else if 'a' <= c && c <= 'z' {
+		digit = int(c - 'a' + 10)
+	} else if 'A' <= c && c <= 'Z' {
+		digit = int(c - 'A' + 10)
+	} else {
+		return -2
+	}
+
+	if digit < radix {
+		return digit
+	}
+	return -1
+}
+
 func (ec *execContext) readInteger(ctx readContext, radix int) (lispObject, error) {
-	return newInteger(0), nil
+	valid := -1 // 1 -> valid, 0 -> invalid, -1 -> incomplete
+	p := []rune{}
+
+	c := ctx.read()
+	if c == '-' || c == '+' {
+		p = append(p, c)
+		c = ctx.read()
+	}
+
+	if c == '0' {
+		p = append(p, c)
+		valid = 1
+
+		for ok := true; ok; ok = (c == '0') {
+			c = ctx.read()
+		}
+	}
+
+	digit := ec.digitToNumber(c, radix)
+	for {
+		if digit < -1 {
+			break
+		} else if digit == -1 {
+			valid = 0
+		}
+		if valid < 0 {
+			valid = 1
+		}
+
+		p = append(p, c)
+		c = ctx.read()
+		digit = ec.digitToNumber(c, radix)
+	}
+
+	return ec.stringToNumber(string(p), radix)
 }
 
 func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
@@ -407,7 +460,7 @@ func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
 	s := builder.String()
 
 	if !quoted {
-		num, err := ec.stringToNumber(s)
+		num, err := ec.stringToNumber(s, 10)
 		if err == nil {
 			return num, nil
 		}

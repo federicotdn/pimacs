@@ -6,3 +6,11 @@
   (setq mysym 'someverylongsymbol)
   (lt--should (unintern mysym) "unintern a symbol ok (2)")
   (lt--should-not (unintern "thisdoesnotexist") "not unintern a symbol ok"))
+
+(lt--deftest test-read-integer ()
+  (lt--should (equal #x10 16))
+  (lt--should (equal #x0 0))
+  (lt--should (equal #o10 8))
+  (lt--should (equal #o0 0))
+  (lt--should (equal #b110 6))
+  (lt--should (equal #b0 0)))
