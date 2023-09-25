@@ -392,6 +392,11 @@ func (ec *execContext) readInteger(ctx readContext, radix int) (lispObject, erro
 		digit = ec.digitToNumber(c, radix)
 	}
 
+	ctx.unread(c)
+	if valid != 1 {
+		return ec.invalidReadSyntax("invalid radix %v integer: %v", radix, string(p))
+	}
+
 	return ec.stringToNumber(string(p), radix)
 }
 
@@ -505,11 +510,9 @@ func (ec *execContext) read0(ctx readContext) (lispObject, error) {
 
 read_obj:
 	c = ctx.read()
-	if c == eofRune {
-		return ec.signalN(ec.s.endOfFile)
-	}
-
 	switch {
+	case c == eofRune:
+		return ec.signalN(ec.s.endOfFile)
 	case c == '(':
 		stack.push(readStackElem{elementType: readStackListStart})
 		goto read_obj

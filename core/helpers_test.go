@@ -51,3 +51,18 @@ func TestEnsureFailure(t *testing.T) {
 
 	xEnsure(nil, errors.New("fail"))
 }
+
+func TestObjAddr(t *testing.T) {
+	t.Parallel()
+	s1 := newString("hello")
+	s2 := newString("hello")
+	s3 := s1
+
+	if objAddr(s1) != objAddr(s3) {
+		t.Fail()
+	}
+
+	if objAddr(s1) == objAddr(s2) {
+		t.Fail()
+	}
+}

@@ -1,9 +1,6 @@
 package core
 
-import (
-	"fmt"
-	"reflect"
-)
+import "reflect"
 
 // General helpers //
 
@@ -252,133 +249,9 @@ func naturalp(obj lispObject) bool {
 	return integerp(obj) && xIntegerValue(obj) >= 0
 }
 
-// Misc. utilities //
-
-func getDefault[K comparable, V any](m map[K]V, key K, default_ V) V {
-	val, ok := m[key]
-	if !ok {
-		return default_
-	}
-	return val
-}
+// Misc. Lisp Object utilities //
 
 func objAddr(obj lispObject) lispInt {
 	u := reflect.ValueOf(obj).Pointer()
 	return lispInt(u)
-}
-
-// Debug utilities //
-
-const (
-	debugReprMaxDepth            = 3
-	debugReprLispStackMaxLineLen = 80
-	debugReprLongStringLen       = 25
-)
-
-func debugRepr(obj lispObject) string {
-	return debugReprInternal(obj, debugReprMaxDepth)
-}
-
-func debugReprInternal(obj lispObject, depth int) string {
-	if depth <= 0 {
-		return "?"
-	}
-	depth--
-
-	switch obj.getType() {
-	case lispTypeCons:
-		return fmt.Sprintf("(%v . %v)", debugReprInternal(xCar(obj), depth), debugReprInternal(xCdr(obj), depth))
-	case lispTypeFloat:
-		return fmt.Sprintf("%vf", xFloatValue(obj))
-	case lispTypeString:
-		val := xStringValue(obj)
-		if len(val) > debugReprLongStringLen {
-			val = val[:debugReprLongStringLen] + "..."
-		}
-		return fmt.Sprintf("\"%v\"", val)
-	case lispTypeInteger:
-		return fmt.Sprintf("int(%v)", xIntegerValue(obj))
-	case lispTypeSymbol:
-		sym := xSymbol(obj)
-		if sym.val == sym || sym.function == sym {
-			return sym.name
-		}
-
-		switch sym.redirect {
-		case symbolRedirectPlain:
-			return fmt.Sprintf("sym(%v, v=%v, f=%v)", sym.name, debugReprInternal(sym.val, depth), debugReprInternal(sym.function, depth))
-		case symbolRedirectFwd:
-			return fmt.Sprintf("sym(%v, v=FWD, f=%v)", sym.name, debugReprInternal(sym.function, depth))
-		default:
-			return fmt.Sprintf("sym(%v, v=<unknown>, f=%v)", sym.name, debugReprInternal(sym.function, depth))
-		}
-	case lispTypeVector:
-		s := "["
-		for _, elem := range xVector(obj).val {
-			s += debugReprInternal(elem, depth) + ", "
-		}
-		return s + "]"
-	case lispTypeBuffer:
-		buf := xBuffer(obj)
-		return fmt.Sprintf("buf(name=%v, live=%v)", buf.name, buf.live)
-	case lispTypeSubroutine:
-		subr := xSubroutine(obj)
-		return fmt.Sprintf("subr(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
-	case lispTypeCharTable:
-		return fmt.Sprintf("chartab(subtype=%v)", xCharTable(obj).subtype)
-	case lispTypeChannel:
-		return fmt.Sprintf("channel(%v)", xChannel(obj).val)
-	case lispTypeHashTable:
-		table := xHashTable(obj)
-		s := "hashtable{"
-		for k, v := range table.val {
-			s += fmt.Sprintf("%v: %v, ", k, v)
-		}
-
-		return s + "}"
-	default:
-		return "<unknown object>"
-	}
-}
-
-func debugReprLispStack(stack []stackEntry) string {
-	lispStack := ""
-	for i := len(stack) - 1; i >= 0; i-- {
-
-		switch elem := stack[i].(type) {
-		case *stackEntryBacktrace:
-			functionName := "<unknown function>"
-			if symbolp(elem.function) {
-				functionName = xSymbolName(elem.function)
-			}
-
-			lispStack += fmt.Sprintf("  - bt: %v(", functionName)
-
-			for j, arg := range elem.args {
-				printed := debugRepr(arg)
-				if len(printed) > debugReprLispStackMaxLineLen {
-					printed = printed[:debugReprLispStackMaxLineLen] + "[...]"
-				}
-				lispStack += printed
-
-				if j < len(elem.args)-1 {
-					lispStack += " "
-				}
-			}
-
-			lispStack += ")"
-		case *stackEntryLet:
-			lispStack += fmt.Sprintf("  - let: %v = %v", debugRepr(elem.symbol), debugRepr(elem.oldVal))
-		case *stackEntryLetForwarded:
-			lispStack += fmt.Sprintf("  - letfwd: %v = %v", debugRepr(elem.symbol), debugRepr(elem.oldVal))
-		default:
-			lispStack += "  - other"
-		}
-
-		if i > 0 {
-			lispStack += "\n"
-		}
-
-	}
-	return lispStack
 }
