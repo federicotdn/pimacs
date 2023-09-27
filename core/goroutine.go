@@ -8,6 +8,8 @@ func (parentEc *execContext) makeGoroutine(function, name lispObject) (lispObjec
 	newEc := parentEc.copyExecContext()
 
 	go func() {
+		defer newEc.unwind()()
+
 		// Lexical binding by default
 		if err := newEc.stackPushLet(newEc.gl.lexicalBinding.sym, newEc.t); err != nil {
 			newEc.terminate("error in goroutine: '%+v'", err)

@@ -38,6 +38,11 @@ func (ec *execContext) defineKey(keymap, key, def, remove lispObject) (lispObjec
 	return ec.nil_, nil
 }
 
+func (ec *execContext) useGlobalMap(keymap lispObject) (lispObject, error) {
+	ec.warning("stub invoked: use-global-map")
+	return ec.nil_, nil
+}
+
 func (ec *execContext) symbolsOfKeymap() {
 	ec.defSym(&ec.s.keymap, "keymap")
 
@@ -45,4 +50,5 @@ func (ec *execContext) symbolsOfKeymap() {
 	ec.defSubr1(nil, "make-sparse-keymap", (*execContext).makeSparseKeymap, 0)
 	ec.defSubr4(nil, "define-key", (*execContext).defineKey, 3)
 	ec.defSubr1(&ec.s.keymapp, "keymapp", (*execContext).keymapp, 1)
+	ec.defSubr1(nil, "use-global-map", (*execContext).useGlobalMap, 1)
 }

@@ -12,6 +12,7 @@ var filenames = []string{
 	"read-tests.el",
 	"backquote-tests.el",
 	"allocation-tests.el",
+	"data-tests.el",
 }
 
 func TestLisp(t *testing.T) {

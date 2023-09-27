@@ -9,6 +9,7 @@
 
 (lt--deftest test-read-integer ()
   (lt--should (equal #x10 16))
+  (lt--should (equal #x010 16))
   (lt--should (equal #x0 0))
   (lt--should (equal #o10 8))
   (lt--should (equal #o0 0))
@@ -18,4 +19,6 @@
 (lt--deftest test-read-escape-hex ()
   (lt--should (equal ?\x10 16))
   (lt--should (equal ?\x0 0))
-  (lt--should (equal ?\xA 10)))
+  (lt--should (equal ?\xA 10))
+  (lt--should (equal ?\x0A 10))
+  (lt--should (equal ?\x00A 10)))

@@ -308,7 +308,18 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 	return newInteger(total), nil
 }
 
-func (ec *execContext) arithmetricCompare(cmp arithmeticCmp, objs ...lispObject) (lispObject, error) {
+func (ec *execContext) onePlus(number lispObject) (lispObject, error) {
+	if !numberp(number) {
+		return ec.wrongTypeArgument(ec.s.numberOrMarkerp, number)
+	}
+
+	if integerp(number) {
+		return newInteger(xIntegerValue(number) + 1), nil
+	}
+	return newFloat(xFloatValue(number) + 1.0), nil
+}
+
+func (ec *execContext) arithmeticCompare(cmp arithmeticCmp, objs ...lispObject) (lispObject, error) {
 	for i := 1; i < len(objs); i++ {
 		if !numberp(objs[i-1]) {
 			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, objs[i-1])
@@ -326,32 +337,42 @@ func (ec *execContext) arithmetricCompare(cmp arithmeticCmp, objs ...lispObject)
 
 func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
 	cmp := func(a, b lispInt) bool { return a < b }
-	return ec.arithmetricCompare(cmp, objs...)
+	return ec.arithmeticCompare(cmp, objs...)
 }
 
 func (ec *execContext) greaterThanSign(objs ...lispObject) (lispObject, error) {
 	cmp := func(a, b lispInt) bool { return a > b }
-	return ec.arithmetricCompare(cmp, objs...)
+	return ec.arithmeticCompare(cmp, objs...)
 }
 
 func (ec *execContext) equalsSign(objs ...lispObject) (lispObject, error) {
 	cmp := func(a, b lispInt) bool { return a == b }
-	return ec.arithmetricCompare(cmp, objs...)
+	return ec.arithmeticCompare(cmp, objs...)
 }
 
 func (ec *execContext) notEqualsSign(obj1, obj2 lispObject) (lispObject, error) {
 	cmp := func(a, b lispInt) bool { return a != b }
-	return ec.arithmetricCompare(cmp, obj1, obj2)
+	return ec.arithmeticCompare(cmp, obj1, obj2)
 }
 
 func (ec *execContext) lessThanEqualsSign(objs ...lispObject) (lispObject, error) {
 	cmp := func(a, b lispInt) bool { return a <= b }
-	return ec.arithmetricCompare(cmp, objs...)
+	return ec.arithmeticCompare(cmp, objs...)
 }
 
 func (ec *execContext) bareSymbol(sym lispObject) (lispObject, error) {
 	// TODO: Is this correct?
 	return sym, nil
+}
+
+func (ec *execContext) aref(array, index lispObject) (lispObject, error) {
+	ec.warning("stub invoked: aref")
+	return ec.nil_, nil
+}
+
+func (ec *execContext) aset(array, index, elem lispObject) (lispObject, error) {
+	ec.warning("stub invoked: aset")
+	return ec.nil_, nil
 }
 
 func (ec *execContext) symbolsOfData() {
@@ -401,4 +422,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr2(nil, "/=", (*execContext).notEqualsSign, 2)
 	ec.defSubrM(nil, "<=", (*execContext).lessThanEqualsSign, 1)
 	ec.defSubr1(nil, "bare-symbol", (*execContext).bareSymbol, 1)
+	ec.defSubr2(nil, "aref", (*execContext).aref, 2)
+	ec.defSubr3(nil, "aset", (*execContext).aset, 3)
+	ec.defSubr1(nil, "1+", (*execContext).onePlus, 1)
 }

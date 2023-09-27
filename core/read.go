@@ -765,6 +765,10 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 	return ec.internInternal(str, &ec.obarray)
 }
 
+func (ec *execContext) xIntern(str string) lispObject {
+	return xEnsure(ec.intern(newString(str), ec.nil_))
+}
+
 func (ec *execContext) internInternal(str lispObject, obarray *obarrayType) (lispObject, error) {
 	sym := ec.makeSymbol(xStringValue(str), true)
 	sym, existed := obarray.loadOrStoreSymbol(sym)

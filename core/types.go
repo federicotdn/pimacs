@@ -97,11 +97,22 @@ type lispFloat struct {
 }
 
 type lispString struct {
+	// multibyte utf-8 string
 	val string
+}
+
+type lispBytes struct {
+	// unibyte string
+	val []byte
 }
 
 type lispVector struct {
 	val []lispObject
+}
+
+type lispRecord struct {
+	val   []lispObject
+	type_ lispObject
 }
 
 type lispSubroutine struct {

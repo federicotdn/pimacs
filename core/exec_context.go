@@ -341,7 +341,7 @@ func (ec *execContext) defSubrInternal(symbol *lispObject, fn lispFn, name strin
 	}
 
 	if sub.maxArgs >= 0 && sub.minArgs > sub.maxArgs {
-		ec.terminate("min args must be smaller or equal to max args (subroutine: '%+v')", name)
+		ec.terminate("min args (got: %v) must be smaller or equal to max args (%v) (subroutine: '%+v')", minArgs, maxArgs, name)
 	}
 
 	sym := ec.defSym(symbol, sub.name)
@@ -512,6 +512,20 @@ func newExecContext(loadPathPrepend []string) (*execContext, error) {
 
 func (ec *execContext) symbolsOfExecContext() {
 	ec.defVarBool(&ec.v.nonInteractive, "noninteractive", true)
+
+	val := ec.nil_
+	switch getOS() {
+	case osLinux:
+		val = ec.xIntern("gnu/linux")
+	case osWindows:
+		val = ec.xIntern("windows-nt")
+	case osMacOS:
+		val = ec.xIntern("darwin")
+	case osUnknown:
+		val = ec.xIntern("unknown")
+	}
+
+	ec.defVarLisp(&ec.v.systemType, "system-type", val)
 	ec.defSym(&ec.s.riskyLocalVariable, "risky-local-variable")
 }
 

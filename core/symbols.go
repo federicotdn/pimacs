@@ -103,6 +103,7 @@ type vars struct {
 	loadPath       forwardLispObj
 	pimacsRepo     forwardLispObj
 	features       forwardLispObj
+	systemType     forwardLispObj
 }
 
 func (ec *execContext) initSymbols() {
