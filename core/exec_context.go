@@ -411,13 +411,17 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 	if ec.running {
 		obarray = &ec.gl.obarray
 	}
-	obj, err := ec.internInternal(newString(name), obarray)
-	if symbol != nil {
-		*symbol = obj
+	if obarray.containsSymbol(name) {
+		ec.terminate("symbol already interned: '%+v'", name)
 	}
 
+	obj, err := ec.internInternal(newString(name), obarray)
 	if err != nil {
 		ec.terminate("error interning symbol: '%+v'", err)
+	}
+
+	if symbol != nil {
+		*symbol = obj
 	}
 
 	return xSymbol(obj)
