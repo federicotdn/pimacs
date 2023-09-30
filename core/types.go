@@ -21,6 +21,9 @@ const (
 	lispTypeCharTable
 	lispTypeHashTable
 	lispTypeChannel
+	lispTypeBytes
+	lispTypeRecord
+	lispTypeMarker
 	argsMany      = -1
 	argsUnevalled = -2
 )

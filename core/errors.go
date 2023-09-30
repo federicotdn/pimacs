@@ -57,12 +57,15 @@ func (ec *execContext) symbolsOfErrors() {
 	ec.defSym(&ec.s.fileMissing, "file-missing")
 	ec.defSym(&ec.s.errorConditions, "error-conditions")
 	ec.defSym(&ec.s.errorMessage, "error-message")
+	ec.defSym(&ec.s.arithError, "arith-error")
 
 	errorTail := ec.makeList(ec.s.error_)
 
 	xEnsure(ec.put(ec.s.error_, ec.s.errorConditions, ec.makeList(ec.s.error_)))
 	xEnsure(ec.put(ec.s.error_, ec.s.errorMessage, newString("error")))
 
+	// TODO: Maybe putError should also call defSym?
+	// Change its name to defError or similar
 	ec.putError(ec.s.quit, ec.nil_, "Quit")
 	ec.putError(ec.s.userError, errorTail, "")
 	ec.putError(ec.s.wrongLengthArgument, errorTail, "Wrong length argument")
@@ -79,4 +82,5 @@ func (ec *execContext) symbolsOfErrors() {
 	ec.putError(ec.s.pimacsUnimplemented, errorTail, "Unimplemented feature")
 	ec.putError(ec.s.circularList, errorTail, "List contains a loop")
 	ec.putError(ec.s.fileMissing, errorTail, "No such file or directory")
+	ec.putError(ec.s.arithError, errorTail, "Arithmetic error")
 }

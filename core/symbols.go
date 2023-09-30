@@ -19,6 +19,7 @@ type symbols struct {
 	stringp                        lispObject
 	channelp                       lispObject
 	numberOrMarkerp                lispObject
+	integerOrMarkerp               lispObject
 	charOrStringp                  lispObject
 	hashTablep                     lispObject
 	integerp                       lispObject
@@ -65,6 +66,7 @@ type symbols struct {
 	pimacsUnimplemented    lispObject
 	circularList           lispObject
 	fileMissing            lispObject
+	arithError             lispObject
 
 	// Misc. symbols
 	errorConditions       lispObject

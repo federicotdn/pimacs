@@ -217,6 +217,12 @@ func xChannel(obj lispObject) *lispChannel {
 	return xCast[*lispChannel](obj, "channel")
 }
 
+// Marker helpers //
+
+func markerp(obj lispObject) bool {
+	return obj.getType() == lispTypeMarker
+}
+
 // Hash table helpers //
 
 func hashtablep(obj lispObject) bool {
@@ -247,6 +253,14 @@ func arrayp(obj lispObject) bool {
 
 func naturalp(obj lispObject) bool {
 	return integerp(obj) && xIntegerValue(obj) >= 0
+}
+
+func numberOrMarkerp(obj lispObject) bool {
+	return numberp(obj) || markerp(obj)
+}
+
+func integerOrMarkerp(obj lispObject) bool {
+	return integerp(obj) || markerp(obj)
 }
 
 // Misc. Lisp Object utilities //

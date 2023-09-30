@@ -39,9 +39,37 @@ func debugReprInternal(obj lispObject, depth int) string {
 
 	switch obj.getType() {
 	case lispTypeCons:
-		return fmt.Sprintf("(%v . %v)", debugReprInternal(xCar(obj), depth), debugReprInternal(xCdr(obj), depth))
+		list := true
+		elems := 0
+		tail := obj
+		s := "("
+
+		for ; consp(tail); tail = xCdr(tail) {
+			if tail != obj {
+				s += " "
+			}
+			elems++
+			s += debugReprInternal(xCar(tail), depth)
+		}
+
+		if symbolp(tail) && xSymbolName(tail) == "nil" {
+			s += ")"
+		} else {
+			list = false
+			s += fmt.Sprintf(" . %v)", debugReprInternal(tail, depth))
+		}
+
+		if list && elems == 2 {
+			first := xCar(obj)
+			val := xCar(xCdr(obj))
+			if symbolp(first) && xSymbolName(first) == "quote" {
+				return fmt.Sprintf("'%v", debugReprInternal(val, depth))
+			}
+		}
+
+		return s
 	case lispTypeFloat:
-		return fmt.Sprintf("%vf", xFloatValue(obj))
+		return fmt.Sprintf("%v", xFloatValue(obj))
 	case lispTypeString:
 		val := xStringValue(obj)
 		if len(val) > debugReprLongStringLen {
@@ -49,21 +77,49 @@ func debugReprInternal(obj lispObject, depth int) string {
 		}
 		return fmt.Sprintf("\"%v\"", val)
 	case lispTypeInteger:
-		return fmt.Sprintf("int(%v)", xIntegerValue(obj))
+		return fmt.Sprintf("%v", xIntegerValue(obj))
 	case lispTypeSymbol:
 		sym := xSymbol(obj)
 		if sym.val == sym || sym.function == sym {
 			return sym.name
 		}
 
+		s := fmt.Sprintf("%v", xSymbolName(sym))
+
+		val := "?"
 		switch sym.redirect {
 		case symbolRedirectPlain:
-			return fmt.Sprintf("sym(%v, v=%v, f=%v)", sym.name, debugReprInternal(sym.val, depth), debugReprInternal(sym.function, depth))
+			val = debugReprInternal(sym.val, depth)
 		case symbolRedirectFwd:
-			return fmt.Sprintf("sym(%v, v=FWD, f=%v)", sym.name, debugReprInternal(sym.function, depth))
-		default:
-			return fmt.Sprintf("sym(%v, v=<unknown>, f=%v)", sym.name, debugReprInternal(sym.function, depth))
+			val = "FWD"
 		}
+		if val == "unbound" {
+			val = ""
+		}
+
+		fn := debugReprInternal(sym.function, depth)
+		if fn == "nil" {
+			fn = ""
+		}
+
+		if val != "" || fn != "" {
+			s += "{"
+
+			if val != "" {
+				s += fmt.Sprintf("=%v", val)
+			}
+
+			if fn != "" {
+				if val != "" {
+					s += ","
+				}
+				s += fmt.Sprintf("f=%v", fn)
+			}
+
+			s += "}"
+		}
+
+		return s
 	case lispTypeVector:
 		s := "["
 		val := xVector(obj).val
@@ -79,7 +135,7 @@ func debugReprInternal(obj lispObject, depth int) string {
 		return fmt.Sprintf("buf(name=%v, live=%v)", buf.name, buf.live)
 	case lispTypeSubroutine:
 		subr := xSubroutine(obj)
-		return fmt.Sprintf("subr(min=%v, max=%v)", subr.minArgs, subr.maxArgs)
+		return fmt.Sprintf("subr(%v)", subr.name)
 	case lispTypeCharTable:
 		return fmt.Sprintf("chartab(subtype=%v)", xCharTable(obj).subtype)
 	case lispTypeChannel:
@@ -167,6 +223,10 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 	})
 }
 
+func (ec *execContext) pimacsDebugRepr(objs ...lispObject) (lispObject, error) {
+	return newString(debugRepr(objs...)), nil
+}
+
 func (ec *execContext) symbolsOfPimacsTools() {
 	ec.defVarLisp(
 		&ec.v.pimacsRepo,
@@ -175,4 +235,6 @@ func (ec *execContext) symbolsOfPimacsTools() {
 	)
 
 	ec.defSubr1(nil, "pimacs--symbol-debug", (*execContext).pimacsSymbolDebug, 1)
+	ec.defSubrM(nil, "pimacs--debug-repr", (*execContext).pimacsDebugRepr, 0)
+	ec.defSubrM(nil, "dr", (*execContext).pimacsDebugRepr, 0)
 }

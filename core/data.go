@@ -1,6 +1,26 @@
 package core
 
-type arithmeticCmp func(lispInt, lispInt) bool
+type arithmeticCmp int
+type arithmeticOp int
+
+const (
+	arithmeticCmpEqual arithmeticCmp = iota + 1
+	arithmeticCmpNotEqual
+	arithmeticCmpLess
+	arithmeticCmpGreater
+	arithmeticCmpLessOrEqual
+	arithmeticCmpGreaterOrEqual
+)
+
+const (
+	arithmeticOpAdd arithmeticOp = iota + 1
+	arithmeticOpSub
+	arithmeticOpMul
+	arithmeticOpDiv
+	arithmeticOpAnd
+	arithmeticOpOr
+	arithmeticOpXor
+)
 
 func (ec *execContext) null(object lispObject) (lispObject, error) {
 	return ec.bool(object == ec.nil_)
@@ -35,7 +55,11 @@ func (ec *execContext) stringp(object lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) numberOrMarkerp(object lispObject) (lispObject, error) {
-	return ec.bool(numberp(object))
+	return ec.bool(numberOrMarkerp(object))
+}
+
+func (ec *execContext) integerOrMarkerp(object lispObject) (lispObject, error) {
+	return ec.bool(integerOrMarkerp(object))
 }
 
 func (ec *execContext) charOrStringp(object lispObject) (lispObject, error) {
@@ -297,19 +321,27 @@ func (ec *execContext) symbolName(symbol lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
-	var total lispInt = 0
-	for _, obj := range objs {
-		if !numberp(obj) {
-			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, obj)
-		}
-		total += xIntegerValue(obj)
+	if len(objs) == 0 {
+		return newInteger(0), nil
 	}
+	if !integerOrMarkerp(objs[0]) {
+		return ec.wrongTypeArgument(ec.s.integerOrMarkerp, objs[0])
+	}
+	return ec.arithmeticOperate(arithmeticOpAdd, objs[0], objs[1:]...)
+}
 
-	return newInteger(total), nil
+func (ec *execContext) logiOr(objs ...lispObject) (lispObject, error) {
+	if len(objs) == 0 {
+		return newInteger(0), nil
+	}
+	if !integerOrMarkerp(objs[0]) {
+		return ec.wrongTypeArgument(ec.s.integerOrMarkerp, objs[0])
+	}
+	return ec.arithmeticOperate(arithmeticOpOr, objs[0], objs[1:]...)
 }
 
 func (ec *execContext) onePlus(number lispObject) (lispObject, error) {
-	if !numberp(number) {
+	if !numberOrMarkerp(number) {
 		return ec.wrongTypeArgument(ec.s.numberOrMarkerp, number)
 	}
 
@@ -317,6 +349,55 @@ func (ec *execContext) onePlus(number lispObject) (lispObject, error) {
 		return newInteger(xIntegerValue(number) + 1), nil
 	}
 	return newFloat(xFloatValue(number) + 1.0), nil
+}
+
+func (ec *execContext) arithmeticFloatOperate(op arithmeticOp, val lispObject, objs ...lispObject) (lispObject, error) {
+	return ec.pimacsUnimplemented(ec.nil_, "arithmetic operator for float is unimplemented")
+}
+
+func (ec *execContext) arithmeticOperate(op arithmeticOp, val lispObject, objs ...lispObject) (lispObject, error) {
+	if !numberOrMarkerp(val) {
+		return ec.wrongTypeArgument(ec.s.numberOrMarkerp, val)
+	} else if markerp(val) {
+		return ec.pimacsUnimplemented(ec.nil_, "arithmetic operator for markers is unimplemented")
+	} else if floatp(val) {
+		return ec.arithmeticFloatOperate(op, val, objs...)
+	}
+
+	accum := xIntegerValue(val)
+	for _, obj := range objs {
+		if !numberOrMarkerp(obj) {
+			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, obj)
+		} else if !integerp(obj) {
+			return ec.pimacsUnimplemented(ec.nil_, "arithmetic operator for markers/float is unimplemented")
+		}
+
+		next := xIntegerValue(obj)
+
+		switch op {
+		case arithmeticOpAdd:
+			accum += next
+		case arithmeticOpSub:
+			accum -= next
+		case arithmeticOpMul:
+			accum *= next
+		case arithmeticOpDiv:
+			if next == 0 {
+				return ec.signalN(ec.s.arithError)
+			}
+			accum /= next
+		case arithmeticOpAnd:
+			accum &= next
+		case arithmeticOpOr:
+			accum |= next
+		case arithmeticOpXor:
+			accum ^= next
+		default:
+			return ec.signalError("Unknown arithmetic operator")
+		}
+	}
+
+	return newInteger(accum), nil
 }
 
 func (ec *execContext) arithmeticCompare(cmp arithmeticCmp, objs ...lispObject) (lispObject, error) {
@@ -327,7 +408,32 @@ func (ec *execContext) arithmeticCompare(cmp arithmeticCmp, objs ...lispObject) 
 			return ec.wrongTypeArgument(ec.s.numberOrMarkerp, objs[i])
 		}
 
-		if !cmp(xIntegerValue(objs[i-1]), xIntegerValue(objs[i])) {
+		if !integerp(objs[i-1]) || !integerp(objs[i]) {
+			return ec.pimacsUnimplemented(ec.nil_, "arithmetic comparison for floats is unimplemented")
+		}
+
+		i1 := xIntegerValue(objs[i-1])
+		i2 := xIntegerValue(objs[i])
+		cond := false
+
+		switch cmp {
+		case arithmeticCmpEqual:
+			cond = (i1 == i2)
+		case arithmeticCmpNotEqual:
+			cond = (i1 != i2)
+		case arithmeticCmpLess:
+			cond = (i1 < i2)
+		case arithmeticCmpGreater:
+			cond = (i1 > i2)
+		case arithmeticCmpLessOrEqual:
+			cond = (i1 <= i2)
+		case arithmeticCmpGreaterOrEqual:
+			cond = (i1 >= i2)
+		default:
+			return ec.signalError("Unknown arithmetic comparison operator")
+		}
+
+		if !cond {
 			return ec.false_()
 		}
 	}
@@ -336,28 +442,27 @@ func (ec *execContext) arithmeticCompare(cmp arithmeticCmp, objs ...lispObject) 
 }
 
 func (ec *execContext) lessThanSign(objs ...lispObject) (lispObject, error) {
-	cmp := func(a, b lispInt) bool { return a < b }
-	return ec.arithmeticCompare(cmp, objs...)
+	return ec.arithmeticCompare(arithmeticCmpLess, objs...)
 }
 
 func (ec *execContext) greaterThanSign(objs ...lispObject) (lispObject, error) {
-	cmp := func(a, b lispInt) bool { return a > b }
-	return ec.arithmeticCompare(cmp, objs...)
+	return ec.arithmeticCompare(arithmeticCmpGreater, objs...)
 }
 
 func (ec *execContext) equalsSign(objs ...lispObject) (lispObject, error) {
-	cmp := func(a, b lispInt) bool { return a == b }
-	return ec.arithmeticCompare(cmp, objs...)
+	return ec.arithmeticCompare(arithmeticCmpEqual, objs...)
 }
 
 func (ec *execContext) notEqualsSign(obj1, obj2 lispObject) (lispObject, error) {
-	cmp := func(a, b lispInt) bool { return a != b }
-	return ec.arithmeticCompare(cmp, obj1, obj2)
+	return ec.arithmeticCompare(arithmeticCmpNotEqual, obj1, obj2)
 }
 
 func (ec *execContext) lessThanEqualsSign(objs ...lispObject) (lispObject, error) {
-	cmp := func(a, b lispInt) bool { return a <= b }
-	return ec.arithmeticCompare(cmp, objs...)
+	return ec.arithmeticCompare(arithmeticCmpLessOrEqual, objs...)
+}
+
+func (ec *execContext) greaterThanEqualsSign(objs ...lispObject) (lispObject, error) {
+	return ec.arithmeticCompare(arithmeticCmpGreaterOrEqual, objs...)
 }
 
 func (ec *execContext) bareSymbol(sym lispObject) (lispObject, error) {
@@ -386,6 +491,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.s.symbolp, "symbolp", (*execContext).symbolp, 1)
 	ec.defSubr1(&ec.s.stringp, "stringp", (*execContext).stringp, 1)
 	ec.defSubr1(&ec.s.numberOrMarkerp, "number-or-marker-p", (*execContext).numberOrMarkerp, 1)
+	ec.defSubr1(&ec.s.integerOrMarkerp, "integer-or-marker-p", (*execContext).integerOrMarkerp, 1)
 	ec.defSubr1(&ec.s.charOrStringp, "char-or-string-p", (*execContext).charOrStringp, 1)
 	ec.defSubr1(&ec.s.integerp, "integerp", (*execContext).numberOrMarkerp, 1)
 	ec.defSubr1(nil, "numberp", (*execContext).numberp, 1)
@@ -416,11 +522,13 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr2(&ec.s.eq, "eq", (*execContext).eq, 2)
 	ec.defSubr3(nil, "defalias", (*execContext).defalias, 2)
 	ec.defSubrM(nil, "+", (*execContext).plusSign, 0)
+	ec.defSubrM(nil, "logior", (*execContext).logiOr, 0)
 	ec.defSubrM(nil, "<", (*execContext).lessThanSign, 1)
 	ec.defSubrM(nil, ">", (*execContext).greaterThanSign, 1)
 	ec.defSubrM(nil, "=", (*execContext).equalsSign, 1)
 	ec.defSubr2(nil, "/=", (*execContext).notEqualsSign, 2)
 	ec.defSubrM(nil, "<=", (*execContext).lessThanEqualsSign, 1)
+	ec.defSubrM(nil, ">=", (*execContext).greaterThanEqualsSign, 1)
 	ec.defSubr1(nil, "bare-symbol", (*execContext).bareSymbol, 1)
 	ec.defSubr2(nil, "aref", (*execContext).aref, 2)
 	ec.defSubr3(nil, "aset", (*execContext).aset, 3)
