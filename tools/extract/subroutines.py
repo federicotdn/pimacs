@@ -189,7 +189,7 @@ def extract_subroutines(
 
     all_defuns = resolve_repeated(all_defuns)
 
-    target = pimacs_base / "etc" / "emacs_subroutines.json"
+    target = pimacs_base / "test" / "data" / "emacs_subroutines.json"
     with open(target, "w") as f:
         data = {
             "subroutines": all_defuns,
