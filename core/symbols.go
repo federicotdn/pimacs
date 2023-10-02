@@ -26,6 +26,7 @@ type symbols struct {
 	bufferp                        lispObject
 	keymapp                        lispObject
 	characterp                     lispObject
+	arrayp                         lispObject
 	quote                          lispObject
 	backquote                      lispObject
 	comma                          lispObject
@@ -95,6 +96,7 @@ type symbols struct {
 	emacs                 lispObject
 	subfeatures           lispObject
 	keymap                lispObject
+	autoload              lispObject
 }
 
 type vars struct {

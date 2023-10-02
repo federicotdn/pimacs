@@ -1,6 +1,10 @@
 package core
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+	"unicode/utf8"
+)
 
 // General helpers //
 
@@ -115,6 +119,10 @@ func xVector(obj lispObject) *lispVector {
 	return xCast[*lispVector](obj, "vector")
 }
 
+func xVectorValue(obj lispObject) []lispObject {
+	return xVector(obj).val
+}
+
 func newVector(val []lispObject) *lispVector {
 	return &lispVector{val: val}
 }
@@ -153,14 +161,52 @@ func xStringValue(obj lispObject) string {
 	return xString(obj).val
 }
 
-func xStringChars(obj lispObject) int {
-	return len(xStringValue(obj))
+func xStringEmpty(obj lispObject) bool {
+	return xStringValue(obj) == ""
+}
+
+func xStringLength(obj lispObject) int {
+	// TODO: Probably not correct given EU8 encoding
+	return utf8.RuneCountInString(xString(obj).val)
+}
+
+func xStringAref(obj lispObject, index int) (lispInt, error) {
+	err := errors.New("index out of range")
+	if index < 0 {
+		return 0, err
+	}
+
+	val := xStringValue(obj)
+	for i, r := range val {
+		if i == index {
+			return runeToLispInt(r), nil
+		}
+	}
+	return 0, err
 }
 
 func newString(val string) *lispString {
 	return &lispString{
 		val: val,
 	}
+}
+
+// Bytes helpers //
+
+func bytesp(obj lispObject) bool {
+	return obj.getType() == lispTypeBytes
+}
+
+func xBytes(obj lispObject) *lispBytes {
+	return xCast[*lispBytes](obj, "bytes")
+}
+
+func xBytesValue(obj lispObject) []byte {
+	return xBytes(obj).val
+}
+
+func xBytesLength(obj lispObject) int {
+	return len(xBytesValue(obj))
 }
 
 // Integer helpers //

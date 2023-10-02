@@ -29,7 +29,30 @@ func (ec *execContext) keymapp(object lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) getKeymap(object lispObject, errIfNotKeymap, autoload bool) (lispObject, error) {
-	ec.warning("stub invoked: getKeymap")
+	// TODO: Autoload is currently ignored
+	if object == ec.nil_ {
+		if errIfNotKeymap {
+			return ec.wrongTypeArgument(ec.s.keymapp, object)
+		}
+		return ec.nil_, nil
+	} else if consp(object) && xCar(object) == ec.s.keymap {
+		return object, nil
+	}
+
+	tem := ec.indirectFunctionInternal(object)
+	if consp(tem) {
+		if xCar(tem) == ec.s.keymap {
+			return tem, nil
+		}
+
+		if (autoload || !errIfNotKeymap) && xCar(tem) == ec.s.autoload {
+			return ec.pimacsUnimplemented(ec.s.nil_, "no autoload for keymaps")
+		}
+	}
+
+	if errIfNotKeymap {
+		return ec.wrongTypeArgument(ec.s.keymapp, object)
+	}
 	return ec.nil_, nil
 }
 

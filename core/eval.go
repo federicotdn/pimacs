@@ -1051,6 +1051,7 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSym(&ec.s.macro, "macro")
 	ec.defSym(&ec.s.andRest, "&rest")
 	ec.defSym(&ec.s.andOptional, "&optional")
+	ec.defSym(&ec.s.autoload, "autoload")
 
 	ec.defSubr2(&ec.s.eval, "eval", (*execContext).eval, 1)
 	ec.defSubrM(nil, "funcall", (*execContext).funcall, 1)

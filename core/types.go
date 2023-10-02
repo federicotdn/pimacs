@@ -231,7 +231,7 @@ func (ls *lispSubroutine) getType() lispType {
 	return lispTypeSubroutine
 }
 
-func (ls *lispBuffer) getType() lispType {
+func (lb *lispBuffer) getType() lispType {
 	return lispTypeBuffer
 }
 
@@ -245,6 +245,10 @@ func (ht *lispHashTable) getType() lispType {
 
 func (ch *lispChannel) getType() lispType {
 	return lispTypeChannel
+}
+
+func (by *lispBytes) getType() lispType {
+	return lispTypeBytes
 }
 
 func (e *lispCharTableEntry) contains(c lispInt) bool {

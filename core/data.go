@@ -42,6 +42,10 @@ func (ec *execContext) listp(object lispObject) (lispObject, error) {
 	return ec.bool(ec.listpBool(object))
 }
 
+func (ec *execContext) arrayp(object lispObject) (lispObject, error) {
+	return ec.bool(arrayp(object))
+}
+
 func (ec *execContext) atom(object lispObject) (lispObject, error) {
 	return ec.bool(!consp(object))
 }
@@ -471,8 +475,37 @@ func (ec *execContext) bareSymbol(sym lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) aref(array, index lispObject) (lispObject, error) {
-	ec.warning("stub invoked: aref")
-	return ec.nil_, nil
+	if !integerp(index) {
+		return ec.wrongTypeArgument(ec.s.integerp, index)
+	}
+
+	idx := int(xIntegerValue(index))
+	if idx < 0 {
+		return ec.argsOutOfRange(array, index)
+	}
+
+	switch array.getType() {
+	case lispTypeString:
+		val, err := xStringAref(array, idx)
+		if err != nil {
+			return ec.argsOutOfRange(array, index)
+		}
+		return newInteger(val), nil
+	case lispTypeBytes:
+		val := xBytesValue(array)
+		if idx >= len(val) {
+			return ec.argsOutOfRange(array, index)
+		}
+		return newInteger(lispInt(val[idx])), nil
+	case lispTypeVector:
+		val := xVectorValue(array)
+		if idx >= len(val) {
+			return ec.argsOutOfRange(array, index)
+		}
+		return val[idx], nil
+	default:
+		return ec.pimacsUnimplemented(ec.nil_, "aref unimplemented")
+	}
 }
 
 func (ec *execContext) aset(array, index, elem lispObject) (lispObject, error) {
@@ -487,6 +520,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(&ec.s.sequencep, "sequencep", (*execContext).sequencep, 1)
 	ec.defSubr1(&ec.s.consp, "consp", (*execContext).consp, 1)
 	ec.defSubr1(&ec.s.listp, "listp", (*execContext).listp, 1)
+	ec.defSubr1(&ec.s.arrayp, "arrayp", (*execContext).arrayp, 1)
 	ec.defSubr1(nil, "atom", (*execContext).atom, 1)
 	ec.defSubr1(&ec.s.symbolp, "symbolp", (*execContext).symbolp, 1)
 	ec.defSubr1(&ec.s.stringp, "stringp", (*execContext).stringp, 1)

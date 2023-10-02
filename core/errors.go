@@ -32,6 +32,10 @@ func (ec *execContext) invalidReadSyntax(format string, v ...interface{}) (lispO
 	return ec.signalN(ec.s.invalidReadSyntax, message)
 }
 
+func (ec *execContext) argsOutOfRange(objs ...lispObject) (lispObject, error) {
+	return ec.signalN(ec.s.argsOutOfRange, objs...)
+}
+
 // func (ec *execContext) putError(sym, tail lispObject, msg string) {
 // 	xEnsure(ec.put(sym, ec.s.errorConditions, newCons(sym, tail)))
 // 	xEnsure(ec.put(sym, ec.s.errorMessage, newString(msg)))

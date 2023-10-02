@@ -4,7 +4,6 @@ import (
 	"hash/fnv"
 	"math"
 	"slices"
-	"unicode/utf8"
 )
 
 const sxHashMaxDepth = 3
@@ -36,8 +35,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 	switch obj.getType() {
 	case lispTypeString:
-		// TODO: Probably not correct given EU8 encoding
-		num = utf8.RuneCountInString(xString(obj).val)
+		num = xStringLength(obj)
 	case lispTypeCons:
 		var err error
 		num, err = ec.listLength(obj)
