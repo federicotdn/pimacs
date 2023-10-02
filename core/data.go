@@ -509,8 +509,27 @@ func (ec *execContext) aref(array, index lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) aset(array, index, elem lispObject) (lispObject, error) {
-	ec.warning("stub invoked: aset")
-	return ec.nil_, nil
+	if !integerp(index) {
+		return ec.wrongTypeArgument(ec.s.integerp, index)
+	}
+
+	idx := int(xIntegerValue(index))
+	if idx < 0 {
+		return ec.argsOutOfRange(array, index)
+	}
+
+	switch array.getType() {
+	case lispTypeVector:
+		val := xVectorValue(array)
+		if idx >= len(val) {
+			return ec.argsOutOfRange(array, index)
+		}
+		val[idx] = elem
+	default:
+		return ec.pimacsUnimplemented(ec.nil_, "aset unimplemented")
+	}
+
+	return elem, nil
 }
 
 func (ec *execContext) symbolsOfData() {
