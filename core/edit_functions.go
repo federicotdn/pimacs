@@ -33,7 +33,7 @@ func (ec *execContext) styledFormat(str lispObject, message bool, objects ...lis
 
 			if conversion == 's' || conversion == 'S' {
 				noEscape := ec.boolVal(conversion == 's')
-				out, err := ec.prin1ToString(objects[n], noEscape)
+				out, err := ec.prin1ToString(objects[n], noEscape, ec.nil_)
 				if err != nil {
 					return nil, err
 				}

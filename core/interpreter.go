@@ -70,7 +70,7 @@ func (inp *Interpreter) ReadPrin1(source string) (string, error) {
 		return "", err
 	}
 
-	printed, err := inp.ec.prin1ToString(xCar(result), inp.ec.nil_)
+	printed, err := inp.ec.prin1ToString(xCar(result), inp.ec.nil_, inp.ec.nil_)
 	if err != nil {
 		return "", err
 	}
@@ -90,7 +90,7 @@ func (inp *Interpreter) ReadEvalPrin1(source string) (string, error) {
 		return "", err
 	}
 
-	printed, err := inp.ec.prin1ToString(result, inp.ec.nil_)
+	printed, err := inp.ec.prin1ToString(result, inp.ec.nil_, inp.ec.nil_)
 	if err != nil {
 		return "", err
 	}

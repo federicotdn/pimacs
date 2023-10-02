@@ -2,9 +2,7 @@ package core
 
 type enum int
 type lispType enum
-type vectorLikeType enum
 type symbolRedirectType enum
-type symbolFwdType enum
 
 type lispInt int64
 type lispFp float64
@@ -33,12 +31,6 @@ const (
 	symbolRedirectAlias
 	symbolRedirectLocal
 	symbolRedirectFwd
-)
-
-const (
-	symbolFwdTypeLispObj symbolFwdType = iota + 1
-	symbolFwdTypeInt
-	symbolFwdTypeBool
 )
 
 type lispFn0 func(*execContext) (lispObject, error)

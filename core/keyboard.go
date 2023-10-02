@@ -62,7 +62,7 @@ func (ec *execContext) handleInputEventKey(state *commandLoopState, ev *proto.In
 			return false
 		}
 
-		printed, err := ec.prin1ToString(result, ec.nil_)
+		printed, err := ec.prin1ToString(result, ec.nil_, ec.nil_)
 		if err != nil {
 			ec.ops <- &proto.DrawOpSetText{Text: err.Error()}
 			return false

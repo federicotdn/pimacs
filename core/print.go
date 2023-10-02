@@ -147,12 +147,12 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 	return nil
 }
 
-func (ec *execContext) prin1ToString(obj, noEscape lispObject) (lispObject, error) {
+func (ec *execContext) prin1ToString(obj, noEscape, overrides lispObject) (lispObject, error) {
 	// TODO: Should this buffer be created via get-buffer-create?
 	// Needs to be hidden from buffer list though
 	bufObj := ec.makeBuffer(" prin1")
 
-	_, err := ec.prin1(obj, bufObj)
+	_, err := ec.prin1(obj, bufObj, ec.nil_)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, new
 	return obj, nil
 }
 
-func (ec *execContext) prin1(obj, printCharFn lispObject) (lispObject, error) {
+func (ec *execContext) prin1(obj, printCharFn, overrides lispObject) (lispObject, error) {
 	return ec.printGeneric(obj, printCharFn, true, false)
 }
 
@@ -217,8 +217,8 @@ func (ec *execContext) princ(obj, printCharFn lispObject) (lispObject, error) {
 func (ec *execContext) symbolsOfPrint() {
 	ec.defVarLisp(&ec.v.standardOutput, "standard-output", ec.t)
 
-	ec.defSubr2(&ec.s.prin1, "prin1", (*execContext).prin1, 1)
+	ec.defSubr3(&ec.s.prin1, "prin1", (*execContext).prin1, 1)
 	ec.defSubr2(nil, "print", (*execContext).print_, 1)
 	ec.defSubr2(nil, "princ", (*execContext).princ, 1)
-	ec.defSubr2(nil, "prin1-to-string", (*execContext).prin1ToString, 1)
+	ec.defSubr3(nil, "prin1-to-string", (*execContext).prin1ToString, 1)
 }

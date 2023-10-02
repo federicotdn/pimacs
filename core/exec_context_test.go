@@ -1,6 +1,8 @@
 package core
 
 import (
+	"encoding/json"
+	"os"
 	"testing"
 )
 
@@ -56,6 +58,50 @@ func TestIterationFail(t *testing.T) {
 
 		if !iter.hasError() {
 			t.Fail()
+		}
+	}
+}
+
+type subroutine struct {
+	Lname   string `json:"lname"`
+	MinArgs int    `json:"minargs"`
+	MaxArgs int    `json:"maxargs"`
+}
+
+type subroutineData struct {
+	Subroutines []subroutine `json:"subroutines"`
+}
+
+func TestSubroutineSignatures(t *testing.T) {
+	t.Parallel()
+	ec := newTestingInterpreter().ec
+
+	data, err := os.ReadFile("../test/data/emacs_subroutines.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var sd subroutineData
+	err = json.Unmarshal(data, &sd)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, s := range sd.Subroutines {
+		sym, ok := ec.obarray.val[s.Lname]
+		if !ok || !subroutinep(sym.function) {
+			continue
+		}
+
+		subr := xSubroutine(sym.function)
+
+		if subr.minArgs != s.MinArgs {
+			t.Errorf("minargs mismatch for: '%v'", s.Lname)
+			continue
+		}
+
+		if subr.maxArgs != s.MaxArgs {
+			t.Errorf("maxargs mismatch for: '%v'", s.Lname)
 		}
 	}
 }

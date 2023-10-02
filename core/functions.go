@@ -213,7 +213,7 @@ func (ec *execContext) plistp(object lispObject) (lispObject, error) {
 	return ec.nil_, nil
 }
 
-func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error) {
+func (ec *execContext) plistPut(plist, prop, val, predicate lispObject) (lispObject, error) {
 	prev := ec.nil_
 	tail := plist
 	iter := ec.iterate(tail).withPredicate(ec.s.plistp)
@@ -254,7 +254,7 @@ func (ec *execContext) plistPut(plist, prop, val lispObject) (lispObject, error)
 	}
 }
 
-func (ec *execContext) plistGet(plist, prop lispObject) (lispObject, error) {
+func (ec *execContext) plistGet(plist, prop, predicate lispObject) (lispObject, error) {
 	iter := ec.iterate(plist)
 
 	for ; iter.hasNext(); plist = iter.nextCons() {
@@ -278,7 +278,7 @@ func (ec *execContext) get(symbol, propName lispObject) (lispObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ec.plistGet(plist, propName)
+	return ec.plistGet(plist, propName, ec.nil_)
 }
 
 func (ec *execContext) put(symbol, propName, value lispObject) (lispObject, error) {
@@ -287,7 +287,7 @@ func (ec *execContext) put(symbol, propName, value lispObject) (lispObject, erro
 		return nil, err
 	}
 
-	plist, err = ec.plistPut(plist, propName, value)
+	plist, err = ec.plistPut(plist, propName, value, ec.nil_)
 	if err != nil {
 		return nil, err
 	}
@@ -844,8 +844,8 @@ func (ec *execContext) symbolsOfFunctions() {
 	ec.defSubr2(nil, "get", (*execContext).get, 2)
 	ec.defSubr3(nil, "put", (*execContext).put, 3)
 	ec.defSubr1(&ec.s.plistp, "plistp", (*execContext).plistp, 1)
-	ec.defSubr2(nil, "plist-get", (*execContext).plistGet, 2)
-	ec.defSubr3(nil, "plist-put", (*execContext).plistPut, 3)
+	ec.defSubr3(nil, "plist-get", (*execContext).plistGet, 2)
+	ec.defSubr4(nil, "plist-put", (*execContext).plistPut, 3)
 	ec.defSubrM(nil, "nconc", (*execContext).nconc, 0)
 	ec.defSubrM(nil, "append", (*execContext).append_, 0)
 	ec.defSubrM(nil, "concat", (*execContext).concat, 0)
