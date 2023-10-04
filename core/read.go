@@ -774,10 +774,10 @@ func (ec *execContext) xIntern(str string) lispObject {
 }
 
 func (ec *execContext) internInternal(str lispObject, obarray *obarrayType) (lispObject, error) {
-	sym := ec.makeSymbol(xStringValue(str), true)
+	sym := ec.makeSymbol(str, true)
 	sym, existed := obarray.loadOrStoreSymbol(sym)
 
-	if !existed && strings.HasPrefix(sym.name, ":") {
+	if !existed && strings.HasPrefix(xStringValue(sym.name), ":") {
 		_, err := ec.set(sym, sym)
 		if err != nil {
 			return nil, err

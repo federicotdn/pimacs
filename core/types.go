@@ -49,8 +49,7 @@ type lispObject interface {
 }
 
 type lispSymbol struct {
-	// TODO: Should name be a lispObject?
-	name     string
+	name     lispObject
 	val      lispObject
 	function lispObject
 	plist    lispObject

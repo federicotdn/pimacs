@@ -81,7 +81,7 @@ func debugReprInternal(obj lispObject, depth int) string {
 	case lispTypeSymbol:
 		sym := xSymbol(obj)
 		if sym.val == sym || sym.function == sym {
-			return sym.name
+			return xSymbolName(sym)
 		}
 
 		s := fmt.Sprintf("%v", xSymbolName(sym))
@@ -215,7 +215,7 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 	return ec.makeKwPlist(map[string]lispObject{
 		"value":    val,
 		"function": sym.function,
-		"name":     newString(sym.name, true),
+		"name":     sym.name,
 		"special":  xEnsure(ec.bool(sym.special)),
 		"plist":    sym.plist,
 		"redirect": newInteger(lispInt(sym.redirect)),

@@ -224,7 +224,7 @@ func (se *stackEntryBacktrace) tag() stackEntryTag {
 	return entryBacktrace
 }
 
-func (ec *execContext) makeSymbol(name string, init bool) *lispSymbol {
+func (ec *execContext) makeSymbol(name lispObject, init bool) *lispSymbol {
 	sym := &lispSymbol{name: name}
 	if init {
 		sym.val = ec.s.unbound
@@ -570,29 +570,29 @@ func (ec *execContext) listToSlice(list lispObject) ([]lispObject, error) {
 
 func (ec *execContext) kwPlistToMap(plist lispObject) (map[string]lispObject, error) {
 	result := make(map[string]lispObject)
-	var lastKey *lispSymbol
+	lastKey := ""
 
 	iter := ec.iterate(plist).withPredicate(ec.s.plistp)
 	for ; iter.hasNext(); plist = iter.nextCons() {
 		elem := xCar(plist)
 
-		if lastKey == nil {
+		if lastKey == "" {
 			if symbolp(elem) && strings.HasPrefix(xSymbolName(elem), ":") {
-				lastKey = xSymbol(elem)
+				lastKey = xSymbolName(elem)
 			} else {
 				_, err := ec.signalError("Invalid plist key: '%+v'", elem)
 				return nil, err
 			}
 		} else {
-			_, ok := result[lastKey.name]
+			_, ok := result[lastKey]
 			if !ok {
-				result[lastKey.name] = elem
+				result[lastKey] = elem
 			}
-			lastKey = nil
+			lastKey = ""
 		}
 	}
 
-	if lastKey != nil {
+	if lastKey != "" {
 		// Last element was a key
 		return nil, xErrOnly(ec.wrongTypeArgument(ec.s.plistp, plist))
 	}

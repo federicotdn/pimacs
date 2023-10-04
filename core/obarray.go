@@ -22,12 +22,13 @@ func (ob *obarrayType) loadOrStoreSymbol(sym *lispSymbol) (*lispSymbol, bool) {
 		defer ob.lock.Unlock()
 	}
 
-	prev, existed := ob.val[sym.name]
+	name := xSymbolName(sym)
+	prev, existed := ob.val[name]
 	if existed {
 		return prev, true
 	}
 
-	ob.val[sym.name] = sym
+	ob.val[name] = sym
 	return sym, false
 }
 

@@ -8,7 +8,7 @@ import (
 func TestHelpersBasic(t *testing.T) {
 	t.Parallel()
 
-	sym := &lispSymbol{name: "foo"}
+	sym := &lispSymbol{name: newString("foo", false)}
 
 	if !symbolp(sym) {
 		t.Fail()
@@ -30,7 +30,7 @@ func TestCastFailure(t *testing.T) {
 		}
 	}()
 
-	sym := &lispSymbol{name: "foo"}
+	sym := &lispSymbol{name: newString("foo", false)}
 	var obj lispObject = sym
 	xInteger(obj)
 }

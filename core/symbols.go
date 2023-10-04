@@ -115,8 +115,8 @@ func (ec *execContext) initSymbols() {
 
 	// Set up nil and unbound first so that we can use ec.defSym()
 	// and other symbol-related functions
-	unbound := ec.makeSymbol("unbound", false)
-	nil_ := ec.makeSymbol("nil", false)
+	unbound := ec.makeSymbol(newString("unbound", false), false)
+	nil_ := ec.makeSymbol(newString("nil", false), false)
 
 	// Set their attributes
 	unbound.setAttributes(unbound, nil_, nil_, false)

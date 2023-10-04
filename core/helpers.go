@@ -43,7 +43,7 @@ func xSymbol(obj lispObject) *lispSymbol {
 }
 
 func xSymbolName(obj lispObject) string {
-	return xSymbol(obj).name
+	return xStringValue(xSymbol(obj).name)
 }
 
 // Cons helpers //

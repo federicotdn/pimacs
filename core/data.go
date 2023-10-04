@@ -325,7 +325,7 @@ func (ec *execContext) symbolName(symbol lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
-	return newUniOrMultibyteString(xSymbolName(symbol)), nil
+	return xSymbol(symbol).name, nil
 }
 
 func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
