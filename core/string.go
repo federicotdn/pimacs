@@ -54,20 +54,33 @@ func (ls *lispString) multibytep() bool {
 }
 
 func (ls *lispString) aref(i int) (lispInt, error) {
-	if i < 0 || i >= ls.size() {
+	if i < 0 {
 		return 0, indexErr
 	}
 	if ls.multibytep() {
 		if ls.valMut == nil {
+			// We are multibyte - size check is only cheap
+			// if we are immutable
+			if i >= ls.size() {
+				return 0, indexErr
+			}
+
 			for j, c := range ls.val {
 				if j == i {
 					return runeToLispInt(c), nil
 				}
 			}
+
+			// We should never get here
 			return 0, indexErr
 		}
 
 		return 0, errors.New("string aref unimplemented")
+	}
+
+	// We are unibyte, so size check is cheap
+	if i >= ls.size() {
+		return 0, indexErr
 	}
 
 	if ls.valMut == nil {
