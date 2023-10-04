@@ -260,7 +260,7 @@ func (ec *execContext) makeKwPlist(objs map[string]lispObject) (lispObject, erro
 
 	for key, obj := range objs {
 		val = newCons(obj, val)
-		sym, err := ec.intern(newString(":"+key), ec.nil_)
+		sym, err := ec.intern(newString(":"+key, true), ec.nil_)
 		if err != nil {
 			return nil, err
 		}
@@ -415,7 +415,7 @@ func (ec *execContext) defSym(symbol *lispObject, name string) *lispSymbol {
 		ec.terminate("symbol already interned: '%+v'", name)
 	}
 
-	obj, err := ec.internInternal(newString(name), obarray)
+	obj, err := ec.internInternal(newString(name, true), obarray)
 	if err != nil {
 		ec.terminate("error interning symbol: '%+v'", err)
 	}
@@ -543,13 +543,13 @@ func (ec *execContext) copyExecContext() *execContext {
 func (ec *execContext) loadElisp(loadPathPrepend []string) error {
 	loadPath := []lispObject{}
 	for _, elem := range loadPathPrepend {
-		loadPath = append(loadPath, newString(elem))
+		loadPath = append(loadPath, newString(elem, true))
 	}
-	loadPath = append(loadPath, newString("lisp"), newString("lisp/emacs"))
+	loadPath = append(loadPath, newString("lisp", false), newString("lisp/emacs", false))
 
 	ec.v.loadPath.val = ec.makeList(loadPath...)
 
-	_, err := ec.load(newString("loadup-pimacs.el"), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
+	_, err := ec.load(newString("loadup-pimacs.el", false), ec.nil_, ec.nil_, ec.nil_, ec.nil_)
 	return err
 }
 

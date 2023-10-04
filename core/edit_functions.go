@@ -7,6 +7,7 @@ func (ec *execContext) styledFormat(str lispObject, message bool, objects ...lis
 
 	format := []rune(xStringValue(str))
 	result := []rune{}
+	multibyte := false
 	i := 0
 	n := 0
 
@@ -45,10 +46,11 @@ func (ec *execContext) styledFormat(str lispObject, message bool, objects ...lis
 			continue
 		}
 
+		multibyte = multibyte || !asciiCharp(c)
 		result = append(result, c)
 	}
 
-	return newString(string(result)), nil
+	return newString(string(result), multibyte), nil
 }
 
 func (ec *execContext) formatMessage(args ...lispObject) (lispObject, error) {

@@ -3,7 +3,6 @@ package core
 import (
 	"errors"
 	"reflect"
-	"unicode/utf8"
 )
 
 // General helpers //
@@ -137,6 +136,10 @@ func xBuffer(obj lispObject) *lispBuffer {
 	return xCast[*lispBuffer](obj, "buffer")
 }
 
+func newBuffer(name lispObject) *lispBuffer {
+	return &lispBuffer{name: name, live: true}
+}
+
 // Char Table helpers //
 
 func chartablep(obj lispObject) bool {
@@ -157,17 +160,20 @@ func xString(obj lispObject) *lispString {
 	return xCast[*lispString](obj, "string")
 }
 
+func xStringMultibytep(obj lispObject) bool {
+	return xString(obj).multibyte
+}
+
 func xStringValue(obj lispObject) string {
-	return xString(obj).val
+	return xString(obj).str()
 }
 
 func xStringEmpty(obj lispObject) bool {
 	return xStringValue(obj) == ""
 }
 
-func xStringLength(obj lispObject) int {
-	// TODO: Probably not correct given EU8 encoding
-	return utf8.RuneCountInString(xString(obj).val)
+func xStringSize(obj lispObject) int {
+	return xString(obj).size()
 }
 
 func xStringAref(obj lispObject, index int) (lispInt, error) {
@@ -183,10 +189,6 @@ func xStringAref(obj lispObject, index int) (lispInt, error) {
 		}
 	}
 	return 0, err
-}
-
-func newString(val string) *lispString {
-	return &lispString{val: val}
 }
 
 // Integer helpers //

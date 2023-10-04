@@ -402,6 +402,7 @@ func (ec *execContext) readInteger(ctx readContext, radix int) (lispObject, erro
 
 func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 	builder := strings.Builder{}
+	multibyte := false
 	c := ctx.read()
 
 	for ; c != eofRune && c != '"'; c = ctx.read() {
@@ -423,6 +424,7 @@ func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 			}
 		}
 
+		multibyte = multibyte || !asciiCharp(c)
 		builder.WriteRune(c)
 	}
 
@@ -430,7 +432,7 @@ func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 		return ec.signalN(ec.s.endOfFile)
 	}
 
-	return newString(builder.String()), nil
+	return newString(builder.String(), multibyte), nil
 }
 
 func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
@@ -469,6 +471,7 @@ func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
 func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
 	quoted := false
 	builder := strings.Builder{}
+	multibyte := false
 
 	for {
 		if c == '\\' {
@@ -480,6 +483,7 @@ func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
 			quoted = true
 		}
 
+		multibyte = multibyte || !asciiCharp(c)
 		builder.WriteRune(c)
 		c = ctx.read()
 
@@ -499,7 +503,7 @@ func (ec *execContext) readSymbol(c rune, ctx readContext) (lispObject, error) {
 		}
 	}
 
-	return ec.intern(newString(s), ec.nil_)
+	return ec.intern(newString(s, multibyte), ec.nil_)
 }
 
 func (ec *execContext) read0(ctx readContext) (lispObject, error) {
@@ -549,7 +553,7 @@ read_obj:
 		switch c {
 		case '#':
 			var err error
-			obj, err = ec.intern(newString(""), ec.nil_)
+			obj, err = ec.intern(newString("", false), ec.nil_)
 			if err != nil {
 				return nil, err
 			}
@@ -688,7 +692,7 @@ read_obj:
 			stack.pop()
 			obj = ec.makeList(top.special, obj)
 		default:
-			return ec.signalN(ec.s.read, newString("unknown read stack entry type"))
+			return ec.signalN(ec.s.read, newString("unknown read stack entry type", false))
 		}
 	}
 
@@ -766,7 +770,7 @@ func (ec *execContext) intern(str, _ lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) xIntern(str string) lispObject {
-	return xEnsure(ec.intern(newString(str), ec.nil_))
+	return xEnsure(ec.intern(newString(str, true), ec.nil_))
 }
 
 func (ec *execContext) internInternal(str lispObject, obarray *obarrayType) (lispObject, error) {
@@ -943,7 +947,7 @@ func (ec *execContext) read(stream lispObject) (lispObject, error) {
 	}
 
 	if stream == ec.s.readChar {
-		return ec.funcall(ec.s.readFromMinibuffer, newString("Lisp expression: "))
+		return ec.funcall(ec.s.readFromMinibuffer, newString("Lisp expression: ", false))
 	}
 
 	ctx, err := ec.streamReadContext(stream, ec.nil_, ec.nil_)

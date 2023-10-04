@@ -47,7 +47,7 @@ func (ec *execContext) handleInputEventKey(state *commandLoopState, ev *proto.In
 
 	if ev.Key == proto.KeyEnter {
 		// TODO: Don't manipulate buffer contents like this
-		str := newString(ec.gl.currentBuf.contents)
+		str := newString(ec.gl.currentBuf.contents, true)
 		ec.gl.currentBuf.contents = ""
 
 		obj, err := ec.readFromString(str, ec.nil_, ec.nil_)

@@ -215,7 +215,7 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 	return ec.makeKwPlist(map[string]lispObject{
 		"value":    val,
 		"function": sym.function,
-		"name":     newString(sym.name),
+		"name":     newString(sym.name, true),
 		"special":  xEnsure(ec.bool(sym.special)),
 		"plist":    sym.plist,
 		"redirect": newInteger(lispInt(sym.redirect)),
@@ -224,14 +224,14 @@ func (ec *execContext) pimacsSymbolDebug(symbol lispObject) (lispObject, error) 
 }
 
 func (ec *execContext) pimacsDebugRepr(objs ...lispObject) (lispObject, error) {
-	return newString(debugRepr(objs...)), nil
+	return newString(debugRepr(objs...), true), nil
 }
 
 func (ec *execContext) symbolsOfPimacsTools() {
 	ec.defVarLisp(
 		&ec.v.pimacsRepo,
 		"pimacs--repo",
-		newString("https://github.com/federicotdn/pimacs"),
+		newString("https://github.com/federicotdn/pimacs", false),
 	)
 
 	ec.defSubr1(nil, "pimacs--symbol-debug", (*execContext).pimacsSymbolDebug, 1)

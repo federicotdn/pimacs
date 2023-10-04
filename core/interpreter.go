@@ -59,12 +59,12 @@ func (inp *Interpreter) RecursiveEdit() {
 }
 
 func (inp *Interpreter) LoadFile(filename string) error {
-	_, err := inp.ec.load(newString(filename), inp.ec.nil_, inp.ec.nil_, inp.ec.nil_, inp.ec.nil_)
+	_, err := inp.ec.load(newString(filename, true), inp.ec.nil_, inp.ec.nil_, inp.ec.nil_, inp.ec.nil_)
 	return err
 }
 
 func (inp *Interpreter) ReadPrin1(source string) (string, error) {
-	str := newString(source)
+	str := newString(source, true)
 	result, err := inp.ec.readFromString(str, inp.ec.nil_, inp.ec.nil_)
 	if err != nil {
 		return "", err
@@ -75,11 +75,11 @@ func (inp *Interpreter) ReadPrin1(source string) (string, error) {
 		return "", err
 	}
 
-	return xString(printed).val, nil
+	return xStringValue(printed), nil
 }
 
 func (inp *Interpreter) ReadEvalPrin1(source string) (string, error) {
-	str := newString(source)
+	str := newString(source, true)
 	obj, err := inp.ec.readFromString(str, inp.ec.nil_, inp.ec.nil_)
 	if err != nil {
 		return "", err
@@ -95,5 +95,5 @@ func (inp *Interpreter) ReadEvalPrin1(source string) (string, error) {
 		return "", err
 	}
 
-	return xString(printed).val, nil
+	return xStringValue(printed), nil
 }

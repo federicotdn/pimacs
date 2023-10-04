@@ -22,7 +22,7 @@ func (ec *execContext) readFromMinibuffer(prompt, initialContents, keymap, read,
 	source, _ := reader.ReadString('\n')
 	source = strings.TrimRight(source, "\r\n")
 
-	result, err := ec.readFromString(newString(source), ec.nil_, ec.nil_)
+	result, err := ec.readFromString(newUniOrMultibyteString(source), ec.nil_, ec.nil_)
 	if err != nil {
 		return nil, err
 	}

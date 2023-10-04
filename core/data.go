@@ -58,6 +58,10 @@ func (ec *execContext) stringp(object lispObject) (lispObject, error) {
 	return ec.bool(stringp(object))
 }
 
+func (ec *execContext) multibyteStringp(object lispObject) (lispObject, error) {
+	return ec.bool(stringp(object) && xStringMultibytep(object))
+}
+
 func (ec *execContext) numberOrMarkerp(object lispObject) (lispObject, error) {
 	return ec.bool(numberOrMarkerp(object))
 }
@@ -321,7 +325,7 @@ func (ec *execContext) symbolName(symbol lispObject) (lispObject, error) {
 		return ec.wrongTypeArgument(ec.s.symbolp, symbol)
 	}
 
-	return newString(xSymbolName(symbol)), nil
+	return newUniOrMultibyteString(xSymbolName(symbol)), nil
 }
 
 func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
@@ -537,6 +541,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr1(nil, "atom", (*execContext).atom, 1)
 	ec.defSubr1(&ec.s.symbolp, "symbolp", (*execContext).symbolp, 1)
 	ec.defSubr1(&ec.s.stringp, "stringp", (*execContext).stringp, 1)
+	ec.defSubr1(nil, "multibyte-string-p", (*execContext).multibyteStringp, 1)
 	ec.defSubr1(&ec.s.numberOrMarkerp, "number-or-marker-p", (*execContext).numberOrMarkerp, 1)
 	ec.defSubr1(&ec.s.integerOrMarkerp, "integer-or-marker-p", (*execContext).integerOrMarkerp, 1)
 	ec.defSubr1(&ec.s.charOrStringp, "char-or-string-p", (*execContext).charOrStringp, 1)

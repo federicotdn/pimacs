@@ -49,6 +49,7 @@ type lispObject interface {
 }
 
 type lispSymbol struct {
+	// TODO: Should name be a lispObject?
 	name     string
 	val      lispObject
 	function lispObject
@@ -90,10 +91,6 @@ type lispFloat struct {
 	val lispFp
 }
 
-type lispString struct {
-	val string
-}
-
 type lispVector struct {
 	val []lispObject
 }
@@ -114,7 +111,7 @@ type lispSubroutine struct {
 type lispBuffer struct {
 	contents string
 	live     bool
-	name     string
+	name     lispObject
 }
 
 type lispCharTableEntry struct {
@@ -202,10 +199,6 @@ func (li *lispInteger) getType() lispType {
 
 func (lf *lispFloat) getType() lispType {
 	return lispTypeFloat
-}
-
-func (ls *lispString) getType() lispType {
-	return lispTypeString
 }
 
 func (lv *lispVector) getType() lispType {

@@ -40,3 +40,7 @@ func charToByte8(c rune) rune {
 	}
 	return c & 0xff
 }
+
+func asciiCharp(c rune) bool {
+	return 0 <= c && c < 0x80
+}

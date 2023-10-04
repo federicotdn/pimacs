@@ -35,7 +35,7 @@ func (ec *execContext) length(obj lispObject) (lispObject, error) {
 
 	switch obj.getType() {
 	case lispTypeString:
-		num = xStringLength(obj)
+		num = xStringSize(obj)
 	case lispTypeCons:
 		var err error
 		num, err = ec.listLength(obj)
@@ -298,11 +298,14 @@ func (ec *execContext) put(symbol, propName, value lispObject) (lispObject, erro
 
 func (ec *execContext) concat(args ...lispObject) (lispObject, error) {
 	result := ""
+	multibyte := false
 
 	for _, arg := range args {
 		switch {
 		case stringp(arg):
-			result += xStringValue(arg)
+			s := xString(arg)
+			result += s.str()
+			multibyte = multibyte || s.multibyte
 		case arg == ec.nil_:
 		case consp(arg):
 			fallthrough
@@ -313,7 +316,7 @@ func (ec *execContext) concat(args ...lispObject) (lispObject, error) {
 		}
 	}
 
-	return newString(result), nil
+	return newString(result, multibyte), nil
 }
 
 func (ec *execContext) vconcat(args ...lispObject) (lispObject, error) {

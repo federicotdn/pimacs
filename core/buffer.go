@@ -15,7 +15,7 @@ func (ec *execContext) insert(args ...lispObject) (lispObject, error) {
 }
 
 func (ec *execContext) bufferString() (lispObject, error) {
-	return newString(ec.gl.currentBuf.contents), nil
+	return newString(ec.gl.currentBuf.contents, true), nil
 }
 
 func (ec *execContext) currentBuffer() (lispObject, error) {
@@ -56,13 +56,6 @@ func (ec *execContext) setBuffer(bufferOrName lispObject) (lispObject, error) {
 	return obj, nil
 }
 
-func (ec *execContext) makeBuffer(name string) *lispBuffer {
-	return &lispBuffer{
-		name: name,
-		live: true,
-	}
-}
-
 func (ec *execContext) loadOrStoreBuffer(name string, buf *lispBuffer) (*lispBuffer, bool) {
 	ec.buffersLock.Lock()
 	defer ec.buffersLock.Unlock()
@@ -95,13 +88,16 @@ func (ec *execContext) getBuffer(bufferOrName lispObject) (lispObject, error) {
 func (ec *execContext) getBufferCreate(bufferOrName, inhibitBufferHooks lispObject) (lispObject, error) {
 	if bufferp(bufferOrName) {
 		return bufferOrName, nil
+	} else if !stringp(bufferOrName) {
+		return ec.wrongTypeArgument(ec.s.stringp, bufferOrName)
 	}
+
 	if xStringEmpty(bufferOrName) {
 		return ec.signalError("Empty string for buffer name is not allowed")
 	}
 
-	buf := ec.makeBuffer(xStringValue(bufferOrName))
-	buf, _ = ec.loadOrStoreBuffer(buf.name, buf)
+	buf := newBuffer(bufferOrName)
+	buf, _ = ec.loadOrStoreBuffer(xStringValue(bufferOrName), buf)
 
 	return buf, nil
 }
@@ -118,7 +114,7 @@ func (ec *execContext) bufferName(obj lispObject) (lispObject, error) {
 		return ec.nil_, nil
 	}
 
-	return newString(buf.name), nil
+	return buf.name, nil
 }
 
 func (ec *execContext) bufferList(frame lispObject) (lispObject, error) {
@@ -147,6 +143,6 @@ func (ec *execContext) symbolsOfBuffer() {
 func (ec *execContext) initBufferGoroutineLocals() {
 	// TODO: Use another buffer in new goroutines?
 	// TODO: What to do on error?
-	buf := xEnsure(ec.getBufferCreate(newString("*scratch*"), ec.nil_))
+	buf := xEnsure(ec.getBufferCreate(newString("*scratch*", false), ec.nil_))
 	ec.gl.currentBuf = xBuffer(buf)
 }

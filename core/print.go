@@ -15,7 +15,7 @@ func (ec *execContext) printStringE(str string, printCharFn lispObject, err erro
 
 func (ec *execContext) printString(str string, printCharFn lispObject) error {
 	if printCharFn == ec.nil_ {
-		_, err := ec.insert(newString(str))
+		_, err := ec.insert(newString(str, true))
 		return err
 	}
 
@@ -28,7 +28,7 @@ func (ec *execContext) printString(str string, printCharFn lispObject) error {
 		return xErrOnly(ec.pimacsUnimplemented(ec.s.prin1, "unknown print char function"))
 	}
 
-	_, err := ec.funcall(printCharFn, newString(str))
+	_, err := ec.funcall(printCharFn, newString(str, true))
 	return err
 }
 
@@ -66,9 +66,9 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 		s = fmt.Sprint(xIntegerValue(obj))
 	case lispTypeString:
 		if escapeFlag {
-			s = "\"" + xString(obj).val + "\""
+			s = "\"" + xStringValue(obj) + "\""
 		} else {
-			s = xString(obj).val
+			s = xStringValue(obj)
 		}
 	case lispTypeCons:
 		err := ec.printString("(", printCharFn)
@@ -150,14 +150,14 @@ func (ec *execContext) printInternal(obj, printCharFn lispObject, escapeFlag boo
 func (ec *execContext) prin1ToString(obj, noEscape, overrides lispObject) (lispObject, error) {
 	// TODO: Should this buffer be created via get-buffer-create?
 	// Needs to be hidden from buffer list though
-	bufObj := ec.makeBuffer(" prin1")
+	bufObj := newBuffer(newString(" prin1", false))
 
 	_, err := ec.prin1(obj, bufObj, ec.nil_)
 	if err != nil {
 		return nil, err
 	}
 
-	return newString(bufObj.contents), nil
+	return newString(bufObj.contents, true), nil
 }
 
 func (ec *execContext) printGeneric(obj, printCharFn lispObject, escapeFlag, newlines bool) (lispObject, error) {

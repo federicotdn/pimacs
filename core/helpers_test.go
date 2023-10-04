@@ -54,8 +54,8 @@ func TestEnsureFailure(t *testing.T) {
 
 func TestObjAddr(t *testing.T) {
 	t.Parallel()
-	s1 := newString("hello")
-	s2 := newString("hello")
+	s1 := newString("hello", false)
+	s2 := newString("hello", false)
 	s3 := s1
 
 	if objAddr(s1) != objAddr(s3) {

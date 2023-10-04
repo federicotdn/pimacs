@@ -10,7 +10,7 @@ func (ec *execContext) signalN(errorSymbol lispObject, args ...lispObject) (lisp
 }
 
 func (ec *execContext) signalError(format string, v ...interface{}) (lispObject, error) {
-	message := newString(fmt.Sprintf(format, v...))
+	message := newString(fmt.Sprintf(format, v...), true)
 	return ec.signalN(ec.s.error_, message)
 }
 
@@ -23,12 +23,12 @@ func (ec *execContext) wrongNumberOfArguments(fn lispObject, count lispInt) (lis
 }
 
 func (ec *execContext) pimacsUnimplemented(fn lispObject, format string, v ...interface{}) (lispObject, error) {
-	message := newString(fmt.Sprintf(format, v...))
+	message := newString(fmt.Sprintf(format, v...), true)
 	return ec.signalN(ec.s.pimacsUnimplemented, message)
 }
 
 func (ec *execContext) invalidReadSyntax(format string, v ...interface{}) (lispObject, error) {
-	message := newString(fmt.Sprintf(format, v...))
+	message := newString(fmt.Sprintf(format, v...), true)
 	return ec.signalN(ec.s.invalidReadSyntax, message)
 }
 
@@ -36,15 +36,10 @@ func (ec *execContext) argsOutOfRange(objs ...lispObject) (lispObject, error) {
 	return ec.signalN(ec.s.argsOutOfRange, objs...)
 }
 
-// func (ec *execContext) putError(sym, tail lispObject, msg string) {
-// 	xEnsure(ec.put(sym, ec.s.errorConditions, newCons(sym, tail)))
-// 	xEnsure(ec.put(sym, ec.s.errorMessage, newString(msg)))
-// }
-
 func (ec *execContext) defError(symbol *lispObject, tail lispObject, name, msg string) {
 	ec.defSym(symbol, name)
 	xEnsure(ec.put(*symbol, ec.s.errorConditions, newCons(*symbol, tail)))
-	xEnsure(ec.put(*symbol, ec.s.errorMessage, newString(msg)))
+	xEnsure(ec.put(*symbol, ec.s.errorMessage, newString(msg, false)))
 }
 
 func (ec *execContext) symbolsOfErrors() {

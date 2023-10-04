@@ -316,7 +316,7 @@ func TestReadEvalPrintSpecificErr(t *testing.T) {
 	t.Parallel()
 	inp := newTestingInterpreter()
 	ec := inp.ec
-	sentinel := newString("sentinel")
+	sentinel := newString("sentinel", false)
 
 	// Note: all these will be run with the interpreter `inp`, not the global one
 	cases := []stringToStringTC{
