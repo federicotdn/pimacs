@@ -1,7 +1,7 @@
 {
     "stats": {
         "constants_count": 2,
-        "subroutines_count": 1603
+        "subroutines_count": 1605
     },
     "subroutines": [
         {
@@ -1956,7 +1956,7 @@
                 "range"
             ],
             "attributes": null,
-            "doc": "Return the value in CHAR-TABLE for a range of characters RANGE.\nRANGE should be nil (for the default value),\na cons of character codes (for characters in the range), or a character code.",
+            "doc": "Return the value in CHAR-TABLE for a range of characters RANGE.\nRANGE should be nil (for the default value),\na cons of character codes (for characters in the range), or a character code.\nIf RANGE is a cons (FROM . TO), the function returns the value for FROM.",
             "fnname": "Fchar_table_range",
             "intspec": "0",
             "lname": "char-table-range",
@@ -5999,14 +5999,15 @@
         {
             "args": [
                 "font",
-                "fold_wildcards"
+                "fold_wildcards",
+                "long_xlfds"
             ],
             "attributes": null,
-            "doc": "Return XLFD name of FONT.\nFONT is a font-spec, font-entity, or font-object.\nIf the name is too long for XLFD (maximum 255 chars), return nil.\nIf the 2nd optional arg FOLD-WILDCARDS is non-nil,\nthe consecutive wildcards are folded into one.",
+            "doc": "Return XLFD name of FONT.\nFONT is a font-spec, font-entity, or font-object.\n\nIf the name is too long to be represented as an XLFD (maximum 255\nchars) and LONG_XLFDS is nil, return nil.\n\nIf the 2nd optional arg FOLD-WILDCARDS is non-nil,\nthe consecutive wildcards are folded into one.",
             "fnname": "Ffont_xlfd_name",
             "intspec": "0",
             "lname": "font-xlfd-name",
-            "maxargs": 2,
+            "maxargs": 3,
             "minargs": 1,
             "path": "font.c",
             "sname": "Sfont_xlfd_name"
@@ -13967,6 +13968,21 @@
         {
             "args": [
                 "regexp",
+                "raw"
+            ],
+            "attributes": null,
+            "doc": "Return a string describing the compiled form of REGEXP.\nIf RAW is non-nil, just return the actual bytecode.",
+            "fnname": "Fre__describe_compiled",
+            "intspec": "0",
+            "lname": "re--describe-compiled",
+            "maxargs": 2,
+            "minargs": 1,
+            "path": "search.c",
+            "sname": "Sre__describe_compiled"
+        },
+        {
+            "args": [
+                "regexp",
                 "bound",
                 "noerror",
                 "count"
@@ -18493,7 +18509,7 @@
                 "depth"
             ],
             "attributes": null,
-            "doc": "Create a sparse tree of ROOT's subtree.\n\nThis takes the subtree under ROOT, and combs it so only the nodes\nthat match PREDICATE are left, like picking out grapes on the vine.\nPREDICATE is a regexp string that matches against each node's type.\n\nFor a subtree on the left that consist of both numbers and letters, if\nPREDICATE is \"is letter\", the returned tree is the one on the right.\n\n        a                 a              a\n        |                 |              |\n    +---+---+         +---+---+      +---+---+\n    |   |   |         |   |   |      |   |   |\n    b   1   2         b   |   |      b   c   d\n        |   |     =>      |   |  =>      |\n        c   +--+          c   +          e\n        |   |  |          |   |\n     +--+   d  4       +--+   d\n     |  |              |\n     e  5              e\n\nIf PROCESS-FN is non-nil, it should be a function of one argument.  In\nthat case, instead of returning the matched nodes, pass each node to\nPROCESS-FN, and use its return value instead.\n\nIf non-nil, DEPTH is the number of levels to go down the tree from\nROOT.  If DEPTH is nil or omitted, it defaults to 1000.\n\nEach node in the returned tree looks like (NODE . (CHILD ...)).  The\nroot of this tree might be nil, if ROOT doesn't match PREDICATE.\n\nIf no node matches PREDICATE, return nil.\n\nPREDICATE can also be a function that takes a node and returns\nnil/non-nil, but it is slower and more memory consuming than using\na regexp.",
+            "doc": "Create a sparse tree of ROOT's subtree.\n\nThis takes the subtree under ROOT, and combs it so only the nodes that\nmatch PREDICATE are left, like picking out grapes on the vine.\n\nPREDICATE can be a regexp string that matches against each node's\ntype, a predicate function, and more.  See `treesit-thing-settings'\nfor the possible predicates.  PREDICATE can also be a thing defined in\n`treesit-thing-settings'.  Using an undefined thing doesn't raise an\nerror.\n\nFor a subtree on the left that consist of both numbers and letters, if\nPREDICATE is \"is letter\", the returned tree is the one on the right.\n\n        a                 a              a\n        |                 |              |\n    +---+---+         +---+---+      +---+---+\n    |   |   |         |   |   |      |   |   |\n    b   1   2         b   |   |      b   c   d\n        |   |     =>      |   |  =>      |\n        c   +--+          c   +          e\n        |   |  |          |   |\n     +--+   d  4       +--+   d\n     |  |              |\n     e  5              e\n\nIf PROCESS-FN is non-nil, it should be a function of one argument.  In\nthat case, instead of returning the matched nodes, pass each node to\nPROCESS-FN, and use its return value instead.\n\nIf non-nil, DEPTH is the number of levels to go down the tree from\nROOT.  If DEPTH is nil or omitted, it defaults to 1000.\n\nEach node in the returned tree looks like (NODE . (CHILD ...)).  The\nroot of this tree might be nil, if ROOT doesn't match PREDICATE.\n\nIf no node matches PREDICATE, return nil.",
             "fnname": "Ftreesit_induce_sparse_tree",
             "intspec": "0",
             "lname": "treesit-induce-sparse-tree",
@@ -18686,14 +18702,15 @@
         {
             "args": [
                 "node",
-                "predicate"
+                "predicate",
+                "ignore_missing"
             ],
             "attributes": null,
-            "doc": "Check whether NODE matches PREDICATE.\n\nPREDICATE can be a regexp matching node type, a predicate function,\nand more, see `treesit-thing-settings' for detail.  Return non-nil\nif NODE matches PRED, nil otherwise.",
+            "doc": "Check whether NODE matches PREDICATE.\n\nPREDICATE can be a symbol representing a thing in\n`treesit-thing-settings', or a predicate, like regexp matching node\ntype, etc.  See `treesit-thing-settings' for more details.\n\nReturn non-nil if NODE matches PREDICATE, nil otherwise.\n\nSignals `treesit-invalid-predicate' if there's no definition of THING\nin `treesit-thing-settings', or if PREDICATE is malformed.  If\nIGNORE-MISSING is non-nil, don't signal an error for missing THING\ndefinition, but still signal for malformed PREDICATE.",
             "fnname": "Ftreesit_node_match_p",
             "intspec": "0",
             "lname": "treesit-node-match-p",
-            "maxargs": 2,
+            "maxargs": 3,
             "minargs": 2,
             "path": "treesit.c",
             "sname": "Streesit_node_match_p"
@@ -18845,14 +18862,15 @@
             "args": [
                 "language",
                 "buffer",
-                "no_reuse"
+                "no_reuse",
+                "tag"
             ],
             "attributes": null,
-            "doc": "Create and return a parser in BUFFER for LANGUAGE.\n\nThe parser is automatically added to BUFFER's parser list, as returned\nby `treesit-parser-list'.  LANGUAGE is a language symbol.  If BUFFER\nis nil or omitted, it defaults to the current buffer.  If BUFFER\nalready has a parser for LANGUAGE, return that parser, but if NO-REUSE\nis non-nil, always create a new parser.\n\nIf that buffer is an indirect buffer, its base buffer is used instead.\nThat is, indirect buffers use their base buffer's parsers.  Lisp\nprograms should widen as necessary should they want to use a parser in\nan indirect buffer.",
+            "doc": "Create and return a parser in BUFFER for LANGUAGE with TAG.\n\nThe parser is automatically added to BUFFER's parser list, as returned\nby `treesit-parser-list'.  LANGUAGE is a language symbol.  If BUFFER\nis nil or omitted, it defaults to the current buffer.  If BUFFER\nalready has a parser for LANGUAGE with TAG, return that parser, but if\nNO-REUSE is non-nil, always create a new parser.\n\nTAG can be any symbol except t, and defaults to nil.  Different\nparsers can have the same tag.\n\nIf that buffer is an indirect buffer, its base buffer is used instead.\nThat is, indirect buffers use their base buffer's parsers.  Lisp\nprograms should widen as necessary should they want to use a parser in\nan indirect buffer.",
             "fnname": "Ftreesit_parser_create",
             "intspec": "0",
             "lname": "treesit-parser-create",
-            "maxargs": 3,
+            "maxargs": 4,
             "minargs": 1,
             "path": "treesit.c",
             "sname": "Streesit_parser_create"
@@ -18901,14 +18919,16 @@
         },
         {
             "args": [
-                "buffer"
+                "buffer",
+                "language",
+                "tag"
             ],
             "attributes": null,
-            "doc": "Return BUFFER's parser list.\n\nBUFFER defaults to the current buffer.  If that buffer is an indirect\nbuffer, its base buffer is used instead.  That is, indirect buffers\nuse their base buffer's parsers.",
+            "doc": "Return BUFFER's parser list, filtered by LANGUAGE and TAG.\n\nBUFFER defaults to the current buffer.  If that buffer is an indirect\nbuffer, its base buffer is used instead.  That is, indirect buffers\nuse their base buffer's parsers.\n\nIf LANGUAGE is non-nil, only return parsers for that language.\n\nThe returned list only contain parsers with TAG.  TAG defaults to nil.\nIf TAG is t, include parsers in the returned list regardless of their\ntag.",
             "fnname": "Ftreesit_parser_list",
             "intspec": "0",
             "lname": "treesit-parser-list",
-            "maxargs": 1,
+            "maxargs": 3,
             "minargs": 0,
             "path": "treesit.c",
             "sname": "Streesit_parser_list"
@@ -18984,6 +19004,20 @@
             "minargs": 2,
             "path": "treesit.c",
             "sname": "Streesit_parser_set_included_ranges"
+        },
+        {
+            "args": [
+                "parser"
+            ],
+            "attributes": null,
+            "doc": "Return PARSER's tag.",
+            "fnname": "Ftreesit_parser_tag",
+            "intspec": "0",
+            "lname": "treesit-parser-tag",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "treesit.c",
+            "sname": "Streesit_parser_tag"
         },
         {
             "args": [
@@ -19083,7 +19117,7 @@
                 "all"
             ],
             "attributes": null,
-            "doc": "Search for node matching PREDICATE in the parse tree of START.\n\nStart traversing the tree from node START, and match PREDICATE with\neach node (except START itself) along the way.  PREDICATE is a regexp\nstring that matches against each node's type, or a function that takes\na node and returns non-nil if it matches.\n\nBy default, only search for named nodes, but if ALL is non-nil, search\nfor all nodes.  If BACKWARD is non-nil, search backwards.\n\nReturn the first matched node, or nil if none matches.\n\nFor a tree like below, where START is marked by S, traverse as\nnumbered from 1 to 12:\n\n                12\n                |\n       S--------3----------11\n       |        |          |\n  o--o-+--o  1--+--2    6--+-----10\n  |  |                  |        |\n  o  o                +-+-+   +--+--+\n                      |   |   |  |  |\n                      4   5   7  8  9\n\nNote that this function doesn't traverse the subtree of START, and it\nalways traverse leaf nodes first, then upwards.",
+            "doc": "Search for node matching PREDICATE in the parse tree of START.\n\nStart traversing the tree from node START, and match PREDICATE with\neach node (except START itself) along the way.\n\nPREDICATE can be a regexp string that matches against each node's\ntype, a predicate function, and more.  See `treesit-thing-settings'\nfor the possible predicates.  PREDICATE can also be a thing defined in\n`treesit-thing-settings'.  Using an undefined thing doesn't raise an\nerror.\n\nBy default, only search for named nodes, but if ALL is non-nil, search\nfor all nodes.  If BACKWARD is non-nil, search backwards.\n\nReturn the first matched node, or nil if none matches.\n\nFor a tree like below, where START is marked by S, traverse as\nnumbered from 1 to 12:\n\n                12\n                |\n       S--------3----------11\n       |        |          |\n  o--o-+--o  1--+--2    6--+-----10\n  |  |                  |        |\n  o  o                +-+-+   +--+--+\n                      |   |   |  |  |\n                      4   5   7  8  9\n\nNote that this function doesn't traverse the subtree of START, and it\nalways traverse leaf nodes first, then upwards.",
             "fnname": "Ftreesit_search_forward",
             "intspec": "0",
             "lname": "treesit-search-forward",
@@ -19101,7 +19135,7 @@
                 "depth"
             ],
             "attributes": null,
-            "doc": "Traverse the parse tree of NODE depth-first using PREDICATE.\n\nTraverse the subtree of NODE, and match PREDICATE with each node along\nthe way.  PREDICATE is a regexp string that matches against each\nnode's type, or a function that takes a node and returns nil/non-nil.\n\nBy default, only traverse named nodes, but if ALL is non-nil, traverse\nall nodes.  If BACKWARD is non-nil, traverse backwards.  If DEPTH is\nnon-nil, only traverse nodes up to that number of levels down in the\ntree.  If DEPTH is nil, default to 1000.\n\nReturn the first matched node, or nil if none matches.",
+            "doc": "Traverse the parse tree of NODE depth-first using PREDICATE.\n\nTraverse the subtree of NODE, and match PREDICATE with each node along\nthe way.\n\nPREDICATE can be a regexp string that matches against each node's\ntype, a predicate function, and more.  See `treesit-thing-settings'\nfor the possible predicates.  PREDICATE can also be a thing defined in\n`treesit-thing-settings'.  Using an undefined thing doesn't raise an\nerror.\n\nBy default, only traverse named nodes, but if ALL is non-nil, traverse\nall nodes.  If BACKWARD is non-nil, traverse backwards.  If DEPTH is\nnon-nil, only traverse nodes up to that number of levels down in the\ntree.  If DEPTH is nil, default to 1000.\n\nReturn the first matched node, or nil if none matches.",
             "fnname": "Ftreesit_search_subtree",
             "intspec": "0",
             "lname": "treesit-search-subtree",

@@ -1,5 +1,5 @@
 {
-    "emacs_commit": "76938e1789ecf447507199b6f1b7c0d4f7924ea3",
+    "emacs_commit": "511acc2ed827dd039eee1c6d70c77153825d5c67",
     "emacs_branch": "master",
     "copy_lisp_files": [
 	"emacs-lisp/debug-early.el",
