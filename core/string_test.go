@@ -2,6 +2,20 @@ package core
 
 import "testing"
 
+func TestNewString(t *testing.T) {
+	t.Parallel()
+
+	s := newString("foo", false)
+	if s.multibytep() {
+		t.Fail()
+	}
+
+	s = newString("árbol", true)
+	if !s.multibytep() {
+		t.Fail()
+	}
+}
+
 func TestUnibyteString(t *testing.T) {
 	t.Parallel()
 
@@ -15,7 +29,7 @@ func TestUnibyteString(t *testing.T) {
 	if s.str() != "hello" {
 		t.Fail()
 	}
-	if s.multibyte {
+	if s.multibytep() {
 		t.Fail()
 	}
 }
@@ -33,7 +47,7 @@ func TestMultibyteString(t *testing.T) {
 	if s.str() != "ñandú" {
 		t.Fail()
 	}
-	if !s.multibyte {
+	if !s.multibytep() {
 		t.Fail()
 	}
 }

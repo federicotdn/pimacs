@@ -305,7 +305,7 @@ func (ec *execContext) concat(args ...lispObject) (lispObject, error) {
 		case stringp(arg):
 			s := xString(arg)
 			result += s.str()
-			multibyte = multibyte || s.multibyte
+			multibyte = multibyte || s.multibytep()
 		case arg == ec.nil_:
 		case consp(arg):
 			fallthrough

@@ -161,7 +161,7 @@ func xString(obj lispObject) *lispString {
 }
 
 func xStringMultibytep(obj lispObject) bool {
-	return xString(obj).multibyte
+	return xString(obj).multibytep()
 }
 
 func xStringValue(obj lispObject) string {

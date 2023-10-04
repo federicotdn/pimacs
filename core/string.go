@@ -4,23 +4,50 @@ import (
 	"unicode/utf8"
 )
 
+// |------------+---------------------------------+-------------------------------------|
+// |            | immutable (val only)            | mutable (valMut only, != nil)       |
+// |------------+---------------------------------+-------------------------------------|
+// | size_ < 0  | Unibyte immutable string        | Unibyte mutable string              |
+// |            | Ideal for storing ASCII runes   | Good for use as a raw bytes buffer. |
+// |            | that will not be modified.      | Will copy bytes when calling str()! |
+// |------------+---------------------------------+-------------------------------------|
+// | size_ >= 0 | Multibyte immutable string      | Multibyte mutable string            |
+// |            | Ideal for storing Unicode runes | Will copy bytes when calling str()! |
+// |            | that will not be modified.      |                                     |
+// |------------+---------------------------------+-------------------------------------|
 type lispString struct {
-	valMut    []byte
-	val       string
-	multibyte bool
+	valMut []byte
+	val    string
+	size_  int
+}
+
+func newStringInternal(val string, multibyte bool, size_ int) *lispString {
+	if multibyte && size_ < 0 {
+		size_ = utf8.RuneCountInString(val)
+	}
+	return &lispString{
+		val:   val,
+		size_: size_,
+	}
 }
 
 func newString(val string, multibyte bool) *lispString {
-	return &lispString{val: val, multibyte: multibyte}
+	return newStringInternal(val, multibyte, -1)
 }
 
 func newUniOrMultibyteString(val string) *lispString {
-	for _, r := range val {
-		if !asciiCharp(r) {
-			return newString(val, true)
-		}
+	multibyte := false
+	size_ := utf8.RuneCountInString(val)
+	if size_ < len(val) {
+		multibyte = true
+	} else {
+		size_ = -1
 	}
-	return newString(val, false)
+	return newStringInternal(val, multibyte, size_)
+}
+
+func (ls *lispString) multibytep() bool {
+	return ls.size_ >= 0
 }
 
 func (ls *lispString) str() string {
@@ -32,9 +59,9 @@ func (ls *lispString) str() string {
 }
 
 func (ls *lispString) size() int {
-	if ls.multibyte {
+	if ls.multibytep() {
 		if ls.valMut == nil {
-			return utf8.RuneCountInString(ls.val)
+			return ls.size_
 		}
 		return utf8.RuneCount(ls.valMut)
 	}
