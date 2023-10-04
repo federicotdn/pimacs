@@ -186,27 +186,7 @@ func xStringAref(obj lispObject, index int) (lispInt, error) {
 }
 
 func newString(val string) *lispString {
-	return &lispString{
-		val: val,
-	}
-}
-
-// Bytes helpers //
-
-func bytesp(obj lispObject) bool {
-	return obj.getType() == lispTypeBytes
-}
-
-func xBytes(obj lispObject) *lispBytes {
-	return xCast[*lispBytes](obj, "bytes")
-}
-
-func xBytesValue(obj lispObject) []byte {
-	return xBytes(obj).val
-}
-
-func xBytesLength(obj lispObject) int {
-	return len(xBytesValue(obj))
+	return &lispString{val: val}
 }
 
 // Integer helpers //

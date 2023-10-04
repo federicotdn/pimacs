@@ -8,7 +8,7 @@
   (lt--should (= (+ 1) 1))
   (lt--should (= (+) 0))
 
-  )
+  (lt--should (= (logior 4 2 1) 7)))
 
 (lt--deftest test-arithmetic-cmp ()
   (lt--should (= 1 1))
@@ -36,3 +36,14 @@
 
   (lt--should (< 1))
   (lt--should (= 100)))
+
+(lt--deftest test-aref ()
+  (let ((v [100 200 300])
+	(s "hello"))
+    (lt--should (= (aref v 0) 100))
+    (lt--should (= (aref s 0) ?h))))
+
+(lt--deftest test-aset ()
+  (let ((v [100 200 300]))
+    (aset v 0 99)
+    (lt--should (= (aref v 0) 99))))

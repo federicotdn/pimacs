@@ -491,12 +491,6 @@ func (ec *execContext) aref(array, index lispObject) (lispObject, error) {
 			return ec.argsOutOfRange(array, index)
 		}
 		return newInteger(val), nil
-	case lispTypeBytes:
-		val := xBytesValue(array)
-		if idx >= len(val) {
-			return ec.argsOutOfRange(array, index)
-		}
-		return newInteger(lispInt(val[idx])), nil
 	case lispTypeVector:
 		val := xVectorValue(array)
 		if idx >= len(val) {

@@ -19,7 +19,6 @@ const (
 	lispTypeCharTable
 	lispTypeHashTable
 	lispTypeChannel
-	lispTypeBytes
 	lispTypeRecord
 	lispTypeMarker
 	argsMany      = -1
@@ -92,13 +91,7 @@ type lispFloat struct {
 }
 
 type lispString struct {
-	// multibyte utf-8 string
 	val string
-}
-
-type lispBytes struct {
-	// unibyte string
-	val []byte
 }
 
 type lispVector struct {
@@ -237,10 +230,6 @@ func (ht *lispHashTable) getType() lispType {
 
 func (ch *lispChannel) getType() lispType {
 	return lispTypeChannel
-}
-
-func (by *lispBytes) getType() lispType {
-	return lispTypeBytes
 }
 
 func (e *lispCharTableEntry) contains(c lispInt) bool {
