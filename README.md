@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="pimacs" src="https://github.com/federicotdn/pimacs/raw/main/extra/logo.png" width="50%">
+  <img alt="pimacs" src="https://github.com/federicotdn/pimacs/raw/main/etc/logo.png" width="50%">
   <br/>
 </p>
 
@@ -86,7 +86,7 @@ t
 ```
 
 ## Design and general notes
-In order to read about the design choices for Pimacs, how it works internally, and how it is different from Emacs' Elisp interpreter, see the [design.md](extra/design.md) document.
+In order to read about the design choices for Pimacs, how it works internally, and how it is different from Emacs' Elisp interpreter, see the [design.md](etc/design.md) document.
 
 ## Tests
 Use `make test` to run the test suite.

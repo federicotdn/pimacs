@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - '**.md'
       - 'LICENSE'
-      - 'extra/*'
+      - 'etc/*'
       - 'tools/*'
   pull_request:
     branches: ["main"]
