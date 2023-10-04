@@ -1,7 +1,6 @@
 package core
 
 import (
-	"errors"
 	"reflect"
 )
 
@@ -177,18 +176,7 @@ func xStringSize(obj lispObject) int {
 }
 
 func xStringAref(obj lispObject, index int) (lispInt, error) {
-	err := errors.New("index out of range")
-	if index < 0 {
-		return 0, err
-	}
-
-	val := xStringValue(obj)
-	for i, r := range val {
-		if i == index {
-			return runeToLispInt(r), nil
-		}
-	}
-	return 0, err
+	return xString(obj).aref(index)
 }
 
 // Integer helpers //

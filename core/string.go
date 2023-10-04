@@ -1,8 +1,11 @@
 package core
 
 import (
+	"errors"
 	"unicode/utf8"
 )
+
+var indexErr = errors.New("index out of range")
 
 // |------------+---------------------------------+-------------------------------------|
 // |            | immutable (val only)            | mutable (valMut only, != nil)       |
@@ -48,6 +51,29 @@ func newUniOrMultibyteString(val string) *lispString {
 
 func (ls *lispString) multibytep() bool {
 	return ls.size_ >= 0
+}
+
+func (ls *lispString) aref(i int) (lispInt, error) {
+	if i < 0 || i >= ls.size() {
+		return 0, indexErr
+	}
+	if ls.multibytep() {
+		if ls.valMut == nil {
+			for j, c := range ls.val {
+				if j == i {
+					return runeToLispInt(c), nil
+				}
+			}
+			return 0, indexErr
+		}
+
+		return 0, errors.New("string aref unimplemented")
+	}
+
+	if ls.valMut == nil {
+		return lispInt(ls.val[i]), nil
+	}
+	return lispInt(ls.valMut[i]), nil
 }
 
 func (ls *lispString) str() string {

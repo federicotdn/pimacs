@@ -39,9 +39,13 @@
 
 (lt--deftest test-aref ()
   (let ((v [100 200 300])
-	(s "hello"))
+	(s "hello")
+	(s2 "aaább"))
     (lt--should (= (aref v 0) 100))
-    (lt--should (= (aref s 0) ?h))))
+    (lt--should (= (aref s 0) ?h))
+    (lt--should (= (aref s 2) ?l))
+    (lt--should (= (aref s2 2) ?á))
+    (lt--should (= (aref s2 4) ?b))))
 
 (lt--deftest test-aset ()
   (let ((v [100 200 300]))
