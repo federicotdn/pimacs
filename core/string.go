@@ -7,17 +7,20 @@ import (
 
 var indexErr = errors.New("index out of range")
 
-// |------------+---------------------------------+-------------------------------------|
-// |            | immutable (val only)            | mutable (valMut only, != nil)       |
-// |------------+---------------------------------+-------------------------------------|
-// | size_ < 0  | Unibyte immutable string        | Unibyte mutable string              |
-// |            | Ideal for storing ASCII runes   | Good for use as a raw bytes buffer. |
-// |            | that will not be modified.      | Will copy bytes when calling str()! |
-// |------------+---------------------------------+-------------------------------------|
-// | size_ >= 0 | Multibyte immutable string      | Multibyte mutable string            |
-// |            | Ideal for storing Unicode runes | Will copy bytes when calling str()! |
-// |            | that will not be modified.      |                                     |
-// |------------+---------------------------------+-------------------------------------|
+// |------------+------------------------------------+-------------------------------------|
+// |            | string-backed (val)                | []byte-backed (valMut != nil)       |
+// |------------+------------------------------------+-------------------------------------|
+// | size_ < 0  | Unibyte immutable string           | Unibyte mutable string              |
+// |            | Ideal for storing ASCII runes      | Good for use as a raw bytes buffer. |
+// |            | that will not be modified.         | size_ is -1.                        |
+// |            | size_ is -1.                       |                                     |
+// |------------+------------------------------------+-------------------------------------|
+// | size_ >= 0 | Multibyte immutable string         | Multibyte mutable string            |
+// |            | Ideal for storing Unicode runes    | Will copy bytes when calling str()! |
+// |            | that will not be modified.         | Probably not very useful.           |
+// |            | size_ contains the number of runes | size_ is 0.                         |
+// |            | the string has.                    |                                     |
+// |------------+------------------------------------+-------------------------------------|
 type lispString struct {
 	valMut []byte
 	val    string
@@ -112,6 +115,10 @@ func (ls *lispString) sizeBytes() int {
 		return len(ls.val)
 	}
 	return len(ls.valMut)
+}
+
+func (ls *lispString) emptyp() bool {
+	return ls.sizeBytes() == 0
 }
 
 func (ls *lispString) getType() lispType {

@@ -5,14 +5,19 @@ import (
 )
 
 type obarrayType struct {
-	val  map[string]*lispSymbol
+	val map[string]*lispSymbol
+	// TODO: Change for RWMutex
 	lock *sync.Mutex
 }
 
-func newObarray(lock bool) obarrayType {
+func newObarray(addLock bool) obarrayType {
+	var lock *sync.Mutex
+	if addLock {
+		lock = &sync.Mutex{}
+	}
 	return obarrayType{
 		val:  make(map[string]*lispSymbol),
-		lock: &sync.Mutex{},
+		lock: lock,
 	}
 }
 

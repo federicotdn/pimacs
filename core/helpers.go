@@ -167,8 +167,8 @@ func xStringValue(obj lispObject) string {
 	return xString(obj).str()
 }
 
-func xStringEmpty(obj lispObject) bool {
-	return xStringValue(obj) == ""
+func xStringEmptyp(obj lispObject) bool {
+	return xString(obj).emptyp()
 }
 
 func xStringSize(obj lispObject) int {
