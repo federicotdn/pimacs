@@ -16,9 +16,16 @@
   (lt--should (equal #b110 6))
   (lt--should (equal #b0 0)))
 
-(lt--deftest test-read-escape-hex ()
+(lt--deftest test-read-char-escape-hex ()
   (lt--should (equal ?\x10 16))
   (lt--should (equal ?\x0 0))
   (lt--should (equal ?\xA 10))
   (lt--should (equal ?\x0A 10))
   (lt--should (equal ?\x00A 10)))
+
+(lt--deftest test-read-char-escape-mod ()
+  (lt--should (equal ?\M-a #o1000000141) "M-a")
+  (lt--should (equal ?\M-v #o1000000166) "M-v")
+  (lt--should (equal ?\C-g #o7) "C-g")
+  (lt--should (equal ?\M-\C-g #o1000000007) "M-C-g")
+  (lt--should (equal ?\C-? #o177) "C-?"))

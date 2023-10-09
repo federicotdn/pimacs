@@ -4,7 +4,9 @@ const (
 	eightBitCodeOffset rune = 0x3fff00
 	max5ByteChar       rune = 0x3fff7f
 	maxChar            rune = 0x3fffff
+)
 
+const (
 	charAlt rune = 1 << (22 + iota)
 	charSuper
 	charHyper

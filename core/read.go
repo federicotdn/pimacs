@@ -453,9 +453,12 @@ func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {
 		}
 	}
 
+	modifiers := c & charModMask
+	c &= ^modifiers
 	if charByte8(c) {
 		c = charToByte8(c)
 	}
+	c |= modifiers
 
 	next := ctx.read()
 	ctx.unread(next)
