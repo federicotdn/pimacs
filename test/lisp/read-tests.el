@@ -28,4 +28,6 @@
   (lt--should (equal ?\M-v #o1000000166) "M-v")
   (lt--should (equal ?\C-g #o7) "C-g")
   (lt--should (equal ?\M-\C-g #o1000000007) "M-C-g")
-  (lt--should (equal ?\C-? #o177) "C-?"))
+  (lt--should (equal ?\C-? #o177) "C-?")
+  ;; (lt--should (equal ?\C- -1) "C-")
+  )

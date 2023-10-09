@@ -17,7 +17,7 @@ var indexErr = errors.New("index out of range")
 // |------------+------------------------------------+-------------------------------------|
 // | size_ >= 0 | Multibyte immutable string         | Multibyte mutable string            |
 // |            | Ideal for storing Unicode runes    | Will copy bytes when calling str()! |
-// |            | that will not be modified.         | Probably not very useful.           |
+// |            | that will not be modified.         |                                     |
 // |            | size_ contains the number of runes | size_ is 0.                         |
 // |            | the string has.                    |                                     |
 // |------------+------------------------------------+-------------------------------------|
@@ -43,7 +43,20 @@ func newString(val string, multibyte bool) *lispString {
 
 func newUniOrMultibyteString(val string) *lispString {
 	multibyte := false
-	size_ := utf8.RuneCountInString(val)
+	size_ := 0
+
+	tmp := val
+	for len(tmp) > 0 {
+		r, width := utf8.DecodeRuneInString(tmp)
+		if r == utf8.RuneError {
+			size_ = len(val)
+			break
+		}
+
+		size_++
+		tmp = tmp[width:]
+	}
+
 	if size_ < len(val) {
 		multibyte = true
 	} else {
@@ -92,6 +105,10 @@ func (ls *lispString) aref(i int) (lispInt, error) {
 	return lispInt(ls.valMut[i]), nil
 }
 
+// str returns the lispString as a Go string.  if size_ is negative
+// (unibyte string), the string will simply contain the byte contents
+// the string without any specific encoding. If size_ is non-negative,
+// str will return a UTF-8 encoded string.
 func (ls *lispString) str() string {
 	if ls.valMut == nil {
 		return ls.val

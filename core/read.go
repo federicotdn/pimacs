@@ -402,7 +402,8 @@ func (ec *execContext) readInteger(ctx readContext, radix int) (lispObject, erro
 
 func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 	builder := strings.Builder{}
-	multibyte := false
+	forceMultibyte := false
+	forceUnibyte := false
 	c := ctx.read()
 
 	for ; c != eofRune && c != '"'; c = ctx.read() {
@@ -422,17 +423,61 @@ func (ec *execContext) readStringLiteral(ctx readContext) (lispObject, error) {
 					return nil, err
 				}
 			}
-		}
 
-		multibyte = multibyte || !asciiCharp(c)
-		builder.WriteRune(c)
+			modifiers := c & charModMask
+			c &= ^modifiers
+
+			if charByte8(c) {
+				forceUnibyte = true
+			} else if !asciiCharp(c) {
+				forceMultibyte = true
+			} else {
+				if modifiers == charCtrl && c == ' ' {
+					c = 0
+					modifiers = 0
+				}
+
+				if (modifiers & charShift) != 0 {
+					if c >= 'A' && c <= 'Z' {
+						modifiers &= ^charShift
+					} else if c >= 'a' && c <= 'z' {
+						c -= ('a' - 'A')
+						modifiers &= ^charShift
+					}
+				}
+
+				if (modifiers & charMeta) != 0 {
+					modifiers &= ^charMeta
+					c = byte8toChar(c | 0x80)
+					forceUnibyte = true
+				}
+			}
+
+			if modifiers != 0 {
+				return ec.invalidReadSyntax("Invalid modifier in string")
+			}
+
+			builder.WriteRune(c)
+
+		} else {
+			if charByte8(c) {
+				forceUnibyte = true
+			} else if !asciiCharp(c) {
+				forceMultibyte = true
+			}
+			builder.WriteRune(c)
+		}
 	}
 
 	if c == eofRune {
 		return ec.signalN(ec.s.endOfFile)
 	}
 
-	return newString(builder.String(), multibyte), nil
+	if forceUnibyte && forceMultibyte {
+		return ec.invalidReadSyntax("Pimacs does not support raw 8-bit bytes in multibyte strings")
+	}
+
+	return newString(builder.String(), forceMultibyte), nil
 }
 
 func (ec *execContext) readCharLiteral(ctx readContext) (lispObject, error) {

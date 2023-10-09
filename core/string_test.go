@@ -32,6 +32,26 @@ func TestUnibyteString(t *testing.T) {
 	if s.multibytep() {
 		t.Fail()
 	}
+
+	s = newUniOrMultibyteString("")
+	if s.multibytep() {
+		t.Fail()
+	}
+}
+
+func TestUnibyteStringFromNonUtf8(t *testing.T) {
+	t.Parallel()
+
+	s := newUniOrMultibyteString("\xff\xf0\xf1")
+	if s.sizeBytes() != 3 {
+		t.Fail()
+	}
+	if s.str() != "\xff\xf0\xf1" {
+		t.Fail()
+	}
+	if s.multibytep() {
+		t.Fail()
+	}
 }
 
 func TestMultibyteString(t *testing.T) {
