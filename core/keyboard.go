@@ -94,5 +94,7 @@ loop:
 }
 
 func (ec *execContext) symbolsOfKeyboard() {
+	ec.defVarLisp(&ec.v.metaPrefixChar, "meta-prefix-char", newInteger(0o33))
+
 	ec.defSubr0(&ec.s.recursiveEdit, "recursive-edit", (*execContext).recursiveEdit)
 }

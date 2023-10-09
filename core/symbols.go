@@ -108,6 +108,7 @@ type vars struct {
 	pimacsRepo     forwardLispObj
 	features       forwardLispObj
 	systemType     forwardLispObj
+	metaPrefixChar forwardLispObj
 }
 
 func (ec *execContext) initSymbols() {
