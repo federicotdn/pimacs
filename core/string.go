@@ -107,8 +107,8 @@ func (ls *lispString) aref(i int) (lispInt, error) {
 
 // str returns the lispString as a Go string.  if size_ is negative
 // (unibyte string), the string will simply contain the byte contents
-// the string without any specific encoding. If size_ is non-negative,
-// str will return a UTF-8 encoded string.
+// of the lispString in no specific encoding. If size_ is
+// non-negative, str will return a UTF-8 encoded string.
 func (ls *lispString) str() string {
 	if ls.valMut == nil {
 		return ls.val
