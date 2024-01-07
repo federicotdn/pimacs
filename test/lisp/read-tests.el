@@ -29,5 +29,9 @@
   (lt--should (equal ?\C-g #o7) "C-g")
   (lt--should (equal ?\M-\C-g #o1000000007) "M-C-g")
   (lt--should (equal ?\C-? #o177) "C-?")
-  ;; (lt--should (equal ?\C- -1) "C-")
-  )
+  ;; Reading ?\C- alone yields -1, but using it in a larger expression
+  ;; yields 67108896 (Emacs bug?).
+  (lt--should (equal (car (read-from-string "?\\C-")) -1) "C-")
+  ;; Note: at time of writing, Emacs also requires a space after the
+  ;; cdr here, otherwise it results in a parsing error (probably a bug).
+  (lt--should (equal (cons ?\C- ?\C- ) (cons 67108896 67108896))))
