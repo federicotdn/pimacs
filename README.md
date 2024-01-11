@@ -91,5 +91,8 @@ In order to read about the design choices for Pimacs, how it works internally, a
 ## Tests
 Use `make test` to run the test suite.
 
+## Similar projects
+Check out [Rune](https://github.com/CeleritasCelery/rune), a re-implementation of Emacs from scratch using Rust.
+
 ## License
 Like Emacs, Pimacs is licensed under the GNU General Public License, version 3.
