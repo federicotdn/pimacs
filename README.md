@@ -33,7 +33,7 @@ nconc provide nreverse reverse require nthcdr nth mapcar buffer-string
 insert current-buffer set-buffer get-buffer buffer-name buffer-list
 get-buffer-create read-from-minibuffer getenv-internal recursive-edit
 make-char-table char-table-range set-char-table-range
-char-table-parent set-char-table-parent multibyte-string-p
+char-table-parent set-char-table-parent multibyte-string-p %
 ```
 
 Note that some of these may be only partially implemented, or be a stub/placeholder.
