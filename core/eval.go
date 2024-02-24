@@ -347,22 +347,6 @@ func (ec *execContext) clauseHandlesConditions(clause, errConditions lispObject)
 	return false, nil
 }
 
-// remainder returns the remainder of X divided by Y. Both must be integers or TODO: markers.
-func (ec *execContext) remainder(x, y lispObject) (lispObject, error) {
-	if !integerp(x) {
-		return ec.wrongTypeArgument(ec.s.integerp, x)
-	}
-
-	if !integerp(y) {
-		return ec.wrongTypeArgument(ec.s.integerp, y)
-	}
-
-	xVal := xIntegerValue(x)
-	yVal := xIntegerValue(y)
-
-	return newInteger(xVal % yVal), nil
-}
-
 func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	variable := xCar(args)
 	bodyForm := xCar(xCdr(args))
@@ -1095,5 +1079,4 @@ func (ec *execContext) symbolsOfEval() {
 	ec.defSubrU(nil, "condition-case", (*execContext).conditionCase, 2)
 	ec.defSubr2(nil, "throw", (*execContext).throw, 2).setAttrs(true)
 	ec.defSubr2(nil, "signal", (*execContext).signal, 2).setAttrs(true)
-	ec.defSubr2(nil, "%", (*execContext).remainder, 2)
 }
