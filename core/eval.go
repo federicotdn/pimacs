@@ -441,7 +441,6 @@ func (ec *execContext) conditionCase(args lispObject) (lispObject, error) {
 	return result, nil
 }
 
-// signal signals an error. Args are ERROR-SYMBOL and associated DATA. This function does not return.
 func (ec *execContext) signal(errorSymbol, data lispObject) (lispObject, error) {
 	if !symbolp(errorSymbol) {
 		return ec.wrongTypeArgument(ec.s.symbolp, errorSymbol)
