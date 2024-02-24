@@ -48,8 +48,8 @@
     (lt--should (= (aref s2 4) ?b))))
 
 (lt--deftest test-% ()
-	(lt--should (= (% 1 -2) 1))
-	(lt--should (= (% 10 2) 0)))
+  (lt--should (= (% 1 -2) 1))
+  (lt--should (= (% 10 2) 0)))
 
 (lt--deftest test-aset ()
   (let ((v [100 200 300]))
