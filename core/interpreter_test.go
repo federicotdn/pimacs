@@ -180,6 +180,7 @@ func TestReadEvalPrint(t *testing.T) {
 		{"+", "", anyError, nil},
 		{"(+)", "0", nil, nil},
 		{"(% 10 2)", "0", nil, nil},
+		{"(% 10 (+ 10 3))", "10", nil, nil},
 		{"(% 12332132122 10)", "2", nil, nil},
 		{"(eval '(% 2 10))", "2", nil, nil},
 		{"(% 12342 -10)", "2", nil, nil},

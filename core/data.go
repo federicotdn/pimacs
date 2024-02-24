@@ -338,13 +338,13 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 	return ec.arithmeticOperate(arithmeticOpAdd, objs[0], objs[1:]...)
 }
 
-// remainder returns the remainder of X divided by Y. Both must be integers or TODO: markers.
+// remainder returns the remainder of X divided by Y. Both must be integers or markers.
 func (ec *execContext) remainder(x, y lispObject) (lispObject, error) {
-	if !integerp(x) {
+	if !integerOrMarkerp(x) {
 		return ec.wrongTypeArgument(ec.s.integerp, x)
 	}
 
-	if !integerp(y) {
+	if !integerOrMarkerp(y) {
 		return ec.wrongTypeArgument(ec.s.integerp, y)
 	}
 
