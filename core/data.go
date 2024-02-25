@@ -338,6 +338,22 @@ func (ec *execContext) plusSign(objs ...lispObject) (lispObject, error) {
 	return ec.arithmeticOperate(arithmeticOpAdd, objs[0], objs[1:]...)
 }
 
+// remainder returns the remainder of X divided by Y. Both must be integers or markers.
+func (ec *execContext) remainder(x, y lispObject) (lispObject, error) {
+	if !integerOrMarkerp(x) {
+		return ec.wrongTypeArgument(ec.s.integerp, x)
+	}
+
+	if !integerOrMarkerp(y) {
+		return ec.wrongTypeArgument(ec.s.integerp, y)
+	}
+
+	xVal := xIntegerValue(x)
+	yVal := xIntegerValue(y)
+
+	return newInteger(xVal % yVal), nil
+}
+
 func (ec *execContext) logiOr(objs ...lispObject) (lispObject, error) {
 	if len(objs) == 0 {
 		return newInteger(0), nil
@@ -574,6 +590,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr2(&ec.s.eq, "eq", (*execContext).eq, 2)
 	ec.defSubr3(nil, "defalias", (*execContext).defalias, 2)
 	ec.defSubrM(nil, "+", (*execContext).plusSign, 0)
+	ec.defSubr2(nil, "%", (*execContext).remainder, 2)
 	ec.defSubrM(nil, "logior", (*execContext).logiOr, 0)
 	ec.defSubrM(nil, "<", (*execContext).lessThanSign, 1)
 	ec.defSubrM(nil, ">", (*execContext).greaterThanSign, 1)
