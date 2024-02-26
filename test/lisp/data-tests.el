@@ -51,6 +51,14 @@
   (lt--should (= (% 1 -2) 1))
   (lt--should (= (% 10 2) 0)))
 
+(lt--deftest test-* ()
+  (lt--should (= (*) 1))
+  (lt--should (= (* 0) 0))
+  (lt--should (= (* 0 -2) 0))
+  (lt--should (= (* 1 -2) -2))
+  (lt--should (= (* -1 -2) 2))
+  (lt--should (= (* 10 2) 20)))
+
 (lt--deftest test-aset ()
   (let ((v [100 200 300]))
     (aset v 0 99)
