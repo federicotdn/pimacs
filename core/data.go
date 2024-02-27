@@ -354,6 +354,17 @@ func (ec *execContext) remainder(x, y lispObject) (lispObject, error) {
 	return newInteger(xVal % yVal), nil
 }
 
+func (ec *execContext) product(objs ...lispObject) (lispObject, error) {
+	if len(objs) == 0 {
+		return newInteger(1), nil
+	}
+	if !numberOrMarkerp(objs[0]) {
+		return ec.wrongTypeArgument(ec.s.numberOrMarkerp, objs[0])
+	}
+	return ec.arithmeticOperate(arithmeticOpMul, objs[0], objs[1:]...)
+
+}
+
 func (ec *execContext) logiOr(objs ...lispObject) (lispObject, error) {
 	if len(objs) == 0 {
 		return newInteger(0), nil
@@ -591,6 +602,7 @@ func (ec *execContext) symbolsOfData() {
 	ec.defSubr3(nil, "defalias", (*execContext).defalias, 2)
 	ec.defSubrM(nil, "+", (*execContext).plusSign, 0)
 	ec.defSubr2(nil, "%", (*execContext).remainder, 2)
+	ec.defSubrM(nil, "*", (*execContext).product, 0)
 	ec.defSubrM(nil, "logior", (*execContext).logiOr, 0)
 	ec.defSubrM(nil, "<", (*execContext).lessThanSign, 1)
 	ec.defSubrM(nil, ">", (*execContext).greaterThanSign, 1)

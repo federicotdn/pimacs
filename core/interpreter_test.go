@@ -179,6 +179,12 @@ func TestReadEvalPrint(t *testing.T) {
 		{"'(1 . 2)", "(1 . 2)", nil, nil},
 		{"+", "", anyError, nil},
 		{"(+)", "0", nil, nil},
+		{"(*)", "1", nil, nil},
+		{"(* 1 a)", "", anyError, nil},
+		{"(* 0)", "0", nil, nil},
+		{"(* 3)", "3", nil, nil},
+		{"(* -1 2 -3)", "6", nil, nil},
+		{"(* 3.14 2 -3)", "", anyError, nil}, // NOTE: this will fail once arithmetic operators are implemented for floats
 		{"(% 10 2)", "0", nil, nil},
 		{"(% 10 (+ 10 3))", "10", nil, nil},
 		{"(% 12332132122 10)", "2", nil, nil},
