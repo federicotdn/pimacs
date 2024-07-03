@@ -1,10 +1,10 @@
 {
-    "emacs_commit": "511acc2ed827dd039eee1c6d70c77153825d5c67",
-    "emacs_branch": "master",
-    "copy_lisp_files": [
-	"emacs-lisp/debug-early.el",
-	"emacs-lisp/byte-run.el",
-	"emacs-lisp/backquote.el",
-	"subr.el"
-    ]
+  "emacs_commit": "f7725d85f3132fb684032438f81defcb481892b7",
+  "emacs_branch": "master",
+  "copy_lisp_files": [
+    "emacs-lisp/debug-early.el",
+    "emacs-lisp/byte-run.el",
+    "emacs-lisp/backquote.el",
+    "subr.el"
+  ]
 }

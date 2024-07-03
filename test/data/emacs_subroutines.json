@@ -1,7 +1,7 @@
 {
     "stats": {
         "constants_count": 2,
-        "subroutines_count": 1605
+        "subroutines_count": 1623
     },
     "subroutines": [
         {
@@ -644,14 +644,15 @@
         {
             "args": [
                 "level",
-                "flag"
+                "flag",
+                "base"
             ],
             "attributes": null,
-            "doc": "Set the debug-on-exit flag of eval frame LEVEL levels down to FLAG.\nThe debugger is entered when that frame exits, if the flag is non-nil.",
+            "doc": "Set the debug-on-exit flag of eval frame LEVEL levels down to FLAG.\nLEVEL and BASE specify the activation frame to use, as in `backtrace-frame'.\nThe debugger is entered when that frame exits, if the flag is non-nil.",
             "fnname": "Fbacktrace_debug",
             "intspec": "0",
             "lname": "backtrace-debug",
-            "maxargs": 2,
+            "maxargs": 3,
             "minargs": 2,
             "path": "eval.c",
             "sname": "Sbacktrace_debug"
@@ -719,7 +720,7 @@
                 "sym"
             ],
             "attributes": null,
-            "doc": "Extract, if need be, the bare symbol from SYM, a symbol.",
+            "doc": "Extract, if need be, the bare symbol from SYM.\nSYM is either a symbol or a symbol with position.\nIgnore `symbols-with-pos-enabled'.",
             "fnname": "Fbare_symbol",
             "intspec": "0",
             "lname": "bare-symbol",
@@ -1167,6 +1168,20 @@
             "minargs": 0,
             "path": "fns.c",
             "sname": "Sbuffer_hash"
+        },
+        {
+            "args": [
+                "buffer"
+            ],
+            "attributes": null,
+            "doc": "Return last name of BUFFER, as a string.\nBUFFER defaults to the current buffer.\n\nThis is the name BUFFER had before the last time it was renamed or\nimmediately before it was killed.",
+            "fnname": "Fbuffer_last_name",
+            "intspec": "0",
+            "lname": "buffer-last-name",
+            "maxargs": 1,
+            "minargs": 0,
+            "path": "buffer.c",
+            "sname": "Sbuffer_last_name"
         },
         {
             "args": [
@@ -2123,6 +2138,20 @@
             "sname": "Scheck_coding_systems_region"
         },
         {
+            "args": [
+                "object"
+            ],
+            "attributes": null,
+            "doc": "Return a symbol representing the type of OBJECT.\nThe returned symbol names the most specific possible type of the object.\nfor example, (cl-type-of nil) returns `null'.\nThe specific type returned may change depending on Emacs versions,\nso we recommend you use `cl-typep', `cl-typecase', or other predicates\nrather than compare the return value of this function against\na fixed set of types.",
+            "fnname": "Fcl_type_of",
+            "intspec": "0",
+            "lname": "cl-type-of",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "data.c",
+            "sname": "Scl_type_of"
+        },
+        {
             "args": null,
             "attributes": null,
             "doc": "Clear any record of a recent auto-save failure in the current buffer.",
@@ -2241,6 +2270,20 @@
             "minargs": 1,
             "path": "font.c",
             "sname": "Sclose_font"
+        },
+        {
+            "args": [
+                "object"
+            ],
+            "attributes": null,
+            "doc": "Return t if OBJECT is a function of type `closure'.",
+            "fnname": "Fclosurep",
+            "intspec": "0",
+            "lname": "closurep",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "data.c",
+            "sname": "Sclosurep"
         },
         {
             "args": [
@@ -2497,13 +2540,13 @@
             ],
             "attributes": null,
             "doc": "Compile the current context as native code to file FILENAME.",
-            "fnname": "Fcomp__compile_ctxt_to_file",
+            "fnname": "Fcomp__compile_ctxt_to_file0",
             "intspec": "0",
-            "lname": "comp--compile-ctxt-to-file",
+            "lname": "comp--compile-ctxt-to-file0",
             "maxargs": 1,
             "minargs": 1,
             "path": "comp.c",
-            "sname": "Scomp__compile_ctxt_to_file"
+            "sname": "Scomp__compile_ctxt_to_file0"
         },
         {
             "args": null,
@@ -3862,7 +3905,7 @@
                 "args"
             ],
             "attributes": null,
-            "doc": "Define SYMBOL as a variable, and return SYMBOL.\nYou are not required to define a variable in order to use it, but\ndefining it lets you supply an initial value and documentation, which\ncan be referred to by the Emacs help facilities and other programming\ntools.  The `defvar' form also declares the variable as \\\"special\\\",\nso that it is always dynamically bound even if `lexical-binding' is t.\n\nIf SYMBOL's value is void and the optional argument INITVALUE is\nprovided, INITVALUE is evaluated and the result used to set SYMBOL's\nvalue.  If SYMBOL is buffer-local, its default value is what is set;\nbuffer-local values are not affected.  If INITVALUE is missing,\nSYMBOL's value is not set.\n\nIf SYMBOL is let-bound, then this form does not affect the local let\nbinding but the toplevel default binding instead, like\n`set-toplevel-default-binding`.\n(`defcustom' behaves similarly in this respect.)\n\nThe optional argument DOCSTRING is a documentation string for the\nvariable.\n\nTo define a user option, use `defcustom' instead of `defvar'.\n\nTo define a buffer-local variable, use `defvar-local'.\nusage: (defvar SYMBOL &optional INITVALUE DOCSTRING)",
+            "doc": "Define SYMBOL as a variable, and return SYMBOL.\nYou are not required to define a variable in order to use it, but\ndefining it lets you supply an initial value and documentation, which\ncan be referred to by the Emacs help facilities and other programming\ntools.\n\nIf SYMBOL's value is void and the optional argument INITVALUE is\nprovided, INITVALUE is evaluated and the result used to set SYMBOL's\nvalue.  If SYMBOL is buffer-local, its default value is what is set;\nbuffer-local values are not affected.  If INITVALUE is missing,\nSYMBOL's value is not set.\n\nIf INITVALUE is provided, the `defvar' form also declares the variable\nas \\\"special\\\", so that it is always dynamically bound even if\n`lexical-binding' is t.  If INITVALUE is missing, the form marks the\nvariable \\\"special\\\" locally (i.e., within the current\nlexical scope, or the current file, if the form is at top-level),\nand does nothing if `lexical-binding' is nil.\n\nIf SYMBOL is let-bound, then this form does not affect the local let\nbinding but the toplevel default binding instead, like\n`set-toplevel-default-binding`.\n(`defcustom' behaves similarly in this respect.)\n\nThe optional argument DOCSTRING is a documentation string for the\nvariable.\n\nTo define a user option, use `defcustom' instead of `defvar'.\n\nTo define a buffer-local variable, use `defvar-local'.\nusage: (defvar SYMBOL &optional INITVALUE DOCSTRING)",
             "fnname": "Fdefvar",
             "intspec": "0",
             "lname": "defvar",
@@ -4392,6 +4435,20 @@
         },
         {
             "args": [
+                "object"
+            ],
+            "attributes": null,
+            "doc": "Return non-nil if OBJECT is a well-formed docstring object.\nOBJECT can be either a string or a reference if it's kept externally.",
+            "fnname": "Fdocumentation_stringp",
+            "intspec": "0",
+            "lname": "documentation-stringp",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "doc.c",
+            "sname": "Sdocumentation_stringp"
+        },
+        {
+            "args": [
                 "obj"
             ],
             "attributes": null,
@@ -4682,7 +4739,7 @@
                 "destination"
             ],
             "attributes": null,
-            "doc": "Encode the current region using th specified coding system.\nInteractively, prompt for the coding system to encode the region, and\nreplace the region with the bytes that are the result of the encoding.\n\nWhat's meant by \\\"encoding\\\" is transforming textual data (characters)\ninto bytes.  If, for instance, you have a region that contains the\nsingle character ?\\\\N{COPYRIGHT SIGN}, after calling this function with\nthe utf-8 coding system, the data in the region will represent the two\nbytes #xc2 #xa9.\n\nWhen called from a program, takes four arguments:\n        START, END, CODING-SYSTEM and DESTINATION.\nSTART and END are buffer positions.\n\nOptional 4th argument DESTINATION specifies where the encoded text goes.\nIf nil, the region between START and END is replaced by the encoded text.\nIf buffer, the encoded text is inserted in that buffer after point (point\ndoes not move).\nIn those cases, the length of the encoded text is returned.\nIf DESTINATION is t, the encoded text is returned.\n\nThis function sets `last-coding-system-used' to the precise coding system\nused (which may be different from CODING-SYSTEM if CODING-SYSTEM is\nnot fully specified.)",
+            "doc": "Encode the current region using the specified coding system.\nInteractively, prompt for the coding system to encode the region, and\nreplace the region with the bytes that are the result of the encoding.\n\nWhat's meant by \\\"encoding\\\" is transforming textual data (characters)\ninto bytes.  If, for instance, you have a region that contains the\nsingle character ?\\\\N{COPYRIGHT SIGN}, after calling this function with\nthe utf-8 coding system, the data in the region will represent the two\nbytes #xc2 #xa9.\n\nWhen called from a program, takes four arguments:\n        START, END, CODING-SYSTEM and DESTINATION.\nSTART and END are buffer positions.\n\nOptional 4th argument DESTINATION specifies where the encoded text goes.\nIf nil, the region between START and END is replaced by the encoded text.\nIf buffer, the encoded text is inserted in that buffer after point (point\ndoes not move).\nIn those cases, the length of the encoded text is returned.\nIf DESTINATION is t, the encoded text is returned.\n\nThis function sets `last-coding-system-used' to the precise coding system\nused (which may be different from CODING-SYSTEM if CODING-SYSTEM is\nnot fully specified.)",
             "fnname": "Fencode_coding_region",
             "intspec": "r\nzCoding system: ",
             "lname": "encode-coding-region",
@@ -4879,7 +4936,7 @@
                 "lexical"
             ],
             "attributes": null,
-            "doc": "Evaluate FORM and return its value.\nIf LEXICAL is t, evaluate using lexical scoping.\nLEXICAL can also be an actual lexical environment, in the form of an\nalist mapping symbols to their value.",
+            "doc": "Evaluate FORM and return its value.\nIf LEXICAL is `t', evaluate using lexical binding by default.\nThis is the recommended value.\n\nIf absent or `nil', use dynamic scoping only.\n\nLEXICAL can also represent an actual lexical environment; see the Info\nnode `(elisp)Eval' for details.",
             "fnname": "Feval",
             "intspec": "0",
             "lname": "eval",
@@ -5110,20 +5167,6 @@
             "minargs": 1,
             "path": "fns.c",
             "sname": "Sfeaturep"
-        },
-        {
-            "args": [
-                "object"
-            ],
-            "attributes": null,
-            "doc": "If byte-compiled OBJECT is lazy-loaded, fetch it now.",
-            "fnname": "Ffetch_bytecode",
-            "intspec": "0",
-            "lname": "fetch-bytecode",
-            "maxargs": 1,
-            "minargs": 1,
-            "path": "eval.c",
-            "sname": "Sfetch_bytecode"
         },
         {
             "args": [
@@ -5404,7 +5447,7 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Append COMPONENTS to DIRECTORY and return the resulting string.\nEach element in COMPONENTS must be a string or nil.\nDIRECTORY or the non-final elements in COMPONENTS may or may not end\nwith a slash -- if they don't end with a slash, a slash will be\ninserted before concatenating.\nusage: (record DIRECTORY &rest COMPONENTS)",
+            "doc": "Append COMPONENTS to DIRECTORY and return the resulting string.\nEach element in COMPONENTS must be a string or nil.\nDIRECTORY or the non-final elements in COMPONENTS may or may not end\nwith a slash -- if they don't end with a slash, a slash will be\ninserted before concatenating.\nusage: (file-name-concat DIRECTORY &rest COMPONENTS)",
             "fnname": "Ffile_name_concat",
             "intspec": "0",
             "lname": "file-name-concat",
@@ -5554,6 +5597,21 @@
             "minargs": 2,
             "path": "fns.c",
             "sname": "Sfillarray"
+        },
+        {
+            "args": [
+                "variable",
+                "value"
+            ],
+            "attributes": null,
+            "doc": "Return the buffer with buffer-local VARIABLE `equal' to VALUE.\nIf there is no such live buffer, return nil.\nSee also `find-buffer-visiting'.",
+            "fnname": "Ffind_buffer",
+            "intspec": "0",
+            "lname": "find-buffer",
+            "maxargs": 2,
+            "minargs": 2,
+            "path": "buffer.c",
+            "sname": "Sfind_buffer"
         },
         {
             "args": [
@@ -7219,18 +7277,6 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Don't use this yourself.",
-            "fnname": "Fget_file_char",
-            "intspec": "0",
-            "lname": "get-file-char",
-            "maxargs": 0,
-            "minargs": 0,
-            "path": "lread.c",
-            "sname": "Sget_file_char"
-        },
-        {
-            "args": null,
-            "attributes": null,
             "doc": "Return the current run time used by Emacs.\nThe time is returned as in the style of `current-time'.\n\nOn systems that can't determine the run time, `get-internal-run-time'\ndoes the same thing as `current-time'.",
             "fnname": "Fget_internal_run_time",
             "intspec": "0",
@@ -7309,6 +7355,20 @@
             "minargs": 2,
             "path": "textprop.c",
             "sname": "Sget_text_property"
+        },
+        {
+            "args": [
+                "filename"
+            ],
+            "attributes": null,
+            "doc": "Return the buffer with `file-truename' equal to FILENAME (a string).\nIf there is no such live buffer, return nil.\nSee also `find-buffer-visiting'.",
+            "fnname": "Fget_truename_buffer",
+            "intspec": "0",
+            "lname": "get-truename-buffer",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "buffer.c",
+            "sname": "Sget_truename_buffer"
         },
         {
             "args": [
@@ -7835,6 +7895,18 @@
             "sname": "Shandle_switch_frame"
         },
         {
+            "args": null,
+            "attributes": null,
+            "doc": "Set up error handlers around execution of BODYFUN.\nBODYFUN should be a function and it is called with no arguments.\nCONDITIONS should be a list of condition names (symbols).\nWhen an error is signaled during execution of BODYFUN, if that\nerror matches one of CONDITIONS, then the associated HANDLER is\ncalled with the error as argument.\nHANDLER should either transfer the control via a non-local exit,\nor return normally.\nIf it returns normally, the search for an error handler continues\nfrom where it left off.\n\nusage: (handler-bind BODYFUN [CONDITIONS HANDLER]...)",
+            "fnname": "Fhandler_bind_1",
+            "intspec": "0",
+            "lname": "handler-bind-1",
+            "maxargs": -1,
+            "minargs": 1,
+            "path": "eval.c",
+            "sname": "Shandler_bind_1"
+        },
+        {
             "args": [
                 "table"
             ],
@@ -7867,7 +7939,7 @@
                 "table"
             ],
             "attributes": null,
-            "doc": "Return the current rehash size of TABLE.",
+            "doc": "Return the rehash size of TABLE.\nThis function is for compatibility only; it returns a nominal value\nwithout current significance.",
             "fnname": "Fhash_table_rehash_size",
             "intspec": "0",
             "lname": "hash-table-rehash-size",
@@ -7881,7 +7953,7 @@
                 "table"
             ],
             "attributes": null,
-            "doc": "Return the current rehash threshold of TABLE.",
+            "doc": "Return the rehash threshold of TABLE.\nThis function is for compatibility only; it returns a nominal value\nwithout current significance.",
             "fnname": "Fhash_table_rehash_threshold",
             "intspec": "0",
             "lname": "hash-table-rehash-threshold",
@@ -7895,7 +7967,7 @@
                 "table"
             ],
             "attributes": null,
-            "doc": "Return the size of TABLE.\nThe size can be used as an argument to `make-hash-table' to create\na hash table than can hold as many elements as TABLE holds\nwithout need for resizing.",
+            "doc": "Return the current allocation size of TABLE.\n\nThis is probably not the function that you are looking for.  To get the\nnumber of entries in a table, use `hash-table-count' instead.\n\nThe returned value is the number of entries that TABLE can currently\nhold without growing, but since hash tables grow automatically, this\nnumber is rarely of interest.",
             "fnname": "Fhash_table_size",
             "intspec": "0",
             "lname": "hash-table-size",
@@ -8478,6 +8550,48 @@
         },
         {
             "args": [
+                "hash_table"
+            ],
+            "attributes": null,
+            "doc": "(KEY . HASH) in HASH-TABLE, grouped by bucket.\nInternal use only.",
+            "fnname": "Finternal__hash_table_buckets",
+            "intspec": "0",
+            "lname": "internal--hash-table-buckets",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "fns.c",
+            "sname": "Sinternal__hash_table_buckets"
+        },
+        {
+            "args": [
+                "hash_table"
+            ],
+            "attributes": null,
+            "doc": "Bucket size histogram of HASH-TABLE.  Internal use only.",
+            "fnname": "Finternal__hash_table_histogram",
+            "intspec": "0",
+            "lname": "internal--hash-table-histogram",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "fns.c",
+            "sname": "Sinternal__hash_table_histogram"
+        },
+        {
+            "args": [
+                "hash_table"
+            ],
+            "attributes": null,
+            "doc": "Index size of HASH-TABLE.  Internal use only.",
+            "fnname": "Finternal__hash_table_index_size",
+            "intspec": "0",
+            "lname": "internal--hash-table-index-size",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "fns.c",
+            "sname": "Sinternal__hash_table_index_size"
+        },
+        {
+            "args": [
                 "start",
                 "end",
                 "label"
@@ -8505,6 +8619,20 @@
             "minargs": 1,
             "path": "editfns.c",
             "sname": "Sinternal__labeled_widen"
+        },
+        {
+            "args": [
+                "obarray"
+            ],
+            "attributes": null,
+            "doc": "Symbols in each bucket of OBARRAY.  Internal use only.",
+            "fnname": "Finternal__obarray_buckets",
+            "intspec": "0",
+            "lname": "internal--obarray-buckets",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "lread.c",
+            "sname": "Sinternal__obarray_buckets"
         },
         {
             "args": [
@@ -8995,6 +9123,20 @@
         },
         {
             "args": [
+                "object"
+            ],
+            "attributes": null,
+            "doc": "Return t if OBJECT is a function of type `interpreted-function'.",
+            "fnname": "Finterpreted_function_p",
+            "intspec": "0",
+            "lname": "interpreted-function-p",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "data.c",
+            "sname": "Sinterpreted_function_p"
+        },
+        {
+            "args": [
                 "process",
                 "current_group"
             ],
@@ -9079,19 +9221,7 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Return non-nil if libjansson is available (internal use only).",
-            "fnname": "Fjson__available_p",
-            "intspec": "NULL",
-            "lname": "json--available-p",
-            "maxargs": 0,
-            "minargs": 0,
-            "path": "json.c",
-            "sname": "Sjson__available_p"
-        },
-        {
-            "args": null,
-            "attributes": null,
-            "doc": "Insert the JSON representation of OBJECT before point.\nThis is the same as (insert (json-serialize OBJECT)), but potentially\nfaster.  See the function `json-serialize' for allowed values of\nOBJECT.\nusage: (json-insert OBJECT &rest ARGS)",
+            "doc": "Insert the JSON representation of OBJECT before point.\nThis is the same as (insert (json-serialize OBJECT ...)), but potentially\nfaster, and with the difference that Unicode characters are inserted as\nthemselves into multibyte buffers, and as UTF-8 byte sequences into\nunibyte buffers.\nSee the function `json-serialize' for allowed values of OBJECT and ARGS.\nusage: (json-insert OBJECT &rest ARGS)",
             "fnname": "Fjson_insert",
             "intspec": "NULL",
             "lname": "json-insert",
@@ -9103,7 +9233,7 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Read JSON object from current buffer starting at point.\nMove point after the end of the object if parsing was successful.\nOn error, don't move point.\n\nThe returned object will be a vector, list, hashtable, alist, or\nplist.  Its elements will be the JSON null value, the JSON false\nvalue, t, numbers, strings, or further vectors, lists, hashtables,\nalists, or plists.  If there are duplicate keys in an object, all\nbut the last one are ignored.\n\nIf the current buffer doesn't contain a valid JSON object, the\nfunction signals an error of type `json-parse-error'.\n\nThe arguments ARGS are a list of keyword/argument pairs:\n\nThe keyword argument `:object-type' specifies which Lisp type is used\nto represent objects; it can be `hash-table', `alist' or `plist'.  It\ndefaults to `hash-table'.\n\nThe keyword argument `:array-type' specifies which Lisp type is used\nto represent arrays; it can be `array' (the default) or `list'.\n\nThe keyword argument `:null-object' specifies which object to use\nto represent a JSON null value.  It defaults to `:null'.\n\nThe keyword argument `:false-object' specifies which object to use to\nrepresent a JSON false value.  It defaults to `:false'.\nusage: (json-parse-buffer &rest args)",
+            "doc": "Read a JSON value from current buffer starting at point.\nMove point after the end of the value if parsing was successful.\nOn error, don't move point.\n\nThe returned value will be a vector, list, hashtable, alist, or\nplist.  Its elements will be the JSON null value, the JSON false\nvalue, t, numbers, strings, or further vectors, lists, hashtables,\nalists, or plists.\n\nIf the current buffer doesn't contain a valid JSON value, the\nfunction signals an error of type `json-parse-error'.\n\nThe arguments ARGS are a list of keyword/argument pairs:\n\n:object-type TYPE -- use TYPE to represent JSON objects.\n  TYPE can be `hash-table' (the default), `alist' or `plist'.\n  If an object has members with the same key, `hash-table' keeps only\n  the last value of such keys, while `alist' and `plist' keep all the\n  members.\n\n:array-type TYPE -- use TYPE to represent JSON arrays.\n  TYPE can be `array' (the default) or `list'.\n\n:null-object OBJ -- use OBJ to represent a JSON null value.\n  It defaults to `:null'.\n\n:false-object OBJ -- use OBJ to represent a JSON false value.\n  It defaults to `:false'.\nusage: (json-parse-buffer &rest args)",
             "fnname": "Fjson_parse_buffer",
             "intspec": "NULL",
             "lname": "json-parse-buffer",
@@ -9115,7 +9245,7 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Parse the JSON STRING into a Lisp object.\nThis is essentially the reverse operation of `json-serialize', which\nsee.  The returned object will be the JSON null value, the JSON false\nvalue, t, a number, a string, a vector, a list, a hashtable, an alist,\nor a plist.  Its elements will be further objects of these types.  If\nthere are duplicate keys in an object, all but the last one are\nignored.  If STRING doesn't contain a valid JSON object, this function\nsignals an error of type `json-parse-error'.\n\nThe arguments ARGS are a list of keyword/argument pairs:\n\nThe keyword argument `:object-type' specifies which Lisp type is used\nto represent objects; it can be `hash-table', `alist' or `plist'.  It\ndefaults to `hash-table'.\n\nThe keyword argument `:array-type' specifies which Lisp type is used\nto represent arrays; it can be `array' (the default) or `list'.\n\nThe keyword argument `:null-object' specifies which object to use\nto represent a JSON null value.  It defaults to `:null'.\n\nThe keyword argument `:false-object' specifies which object to use to\nrepresent a JSON false value.  It defaults to `:false'.\nusage: (json-parse-string STRING &rest ARGS)",
+            "doc": "Parse the JSON STRING into a Lisp value.\nThis is essentially the reverse operation of `json-serialize', which\nsee.  The returned value will be the JSON null value, the JSON false\nvalue, t, a number, a string, a vector, a list, a hash-table, an alist,\nor a plist.  Its elements will be further values of these types.\nIf STRING doesn't contain a valid JSON value, this function\nsignals an error of type `json-parse-error'.\n\nThe arguments ARGS are a list of keyword/argument pairs:\n\n:object-type TYPE -- use TYPE to represent JSON objects.\n  TYPE can be `hash-table' (the default), `alist' or `plist'.\n  If an object has members with the same key, `hash-table' keeps only\n  the last value of such keys, while `alist' and `plist' keep all the\n  members.\n\n:array-type TYPE -- use TYPE to represent JSON arrays.\n  TYPE can be `array' (the default) or `list'.\n\n:null-object OBJ -- use OBJ to represent a JSON null value.\n  It defaults to `:null'.\n\n:false-object OBJ -- use OBJ to represent a JSON false value.\n  It defaults to `:false'.\nusage: (json-parse-string STRING &rest ARGS)",
             "fnname": "Fjson_parse_string",
             "intspec": "NULL",
             "lname": "json-parse-string",
@@ -9127,7 +9257,7 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Return the JSON representation of OBJECT as a string.\n\nOBJECT must be t, a number, string, vector, hashtable, alist, plist,\nor the Lisp equivalents to the JSON null and false values, and its\nelements must recursively consist of the same kinds of values.  t will\nbe converted to the JSON true value.  Vectors will be converted to\nJSON arrays, whereas hashtables, alists and plists are converted to\nJSON objects.  Hashtable keys must be strings without embedded null\ncharacters and must be unique within each object.  Alist and plist\nkeys must be symbols; if a key is duplicate, the first instance is\nused.\n\nThe Lisp equivalents to the JSON null and false values are\nconfigurable in the arguments ARGS, a list of keyword/argument pairs:\n\nThe keyword argument `:null-object' specifies which object to use\nto represent a JSON null value.  It defaults to `:null'.\n\nThe keyword argument `:false-object' specifies which object to use to\nrepresent a JSON false value.  It defaults to `:false'.\n\nIn you specify the same value for `:null-object' and `:false-object',\na potentially ambiguous situation, the JSON output will not contain\nany JSON false values.\nusage: (json-serialize OBJECT &rest ARGS)",
+            "doc": "Return the JSON representation of OBJECT as a string.\n\nOBJECT is translated as follows:\n\n`t'        -- the JSON `true' value.\nnumber     -- a JSON number.\nstring     -- a JSON string.\nvector     -- a JSON array.\nhash-table -- a JSON object.  Keys must be strings.\nalist      -- a JSON object.  Keys must be symbols.\nplist      -- a JSON object.  Keys must be symbols.\n              A leading colon in plist key names is elided.\n\nFor duplicate object keys, the first value is used.\n\nThe Lisp equivalents to the JSON null and false values are\nconfigurable in the arguments ARGS, a list of keyword/argument pairs:\n\n:null-object OBJ -- use OBJ to represent a JSON null value.\n  It defaults to `:null'.\n\n:false-object OBJ -- use OBJ to represent a JSON false value.\n  It defaults to `:false'.\n\nIn you specify the same value for `:null-object' and `:false-object',\na potentially ambiguous situation, the JSON output will not contain\nany JSON false values.\nusage: (json-serialize OBJECT &rest ARGS)",
             "fnname": "Fjson_serialize",
             "intspec": "NULL",
             "lname": "json-serialize",
@@ -9287,7 +9417,7 @@
                 "restart"
             ],
             "attributes": "noreturn",
-            "doc": "Exit the Emacs job and kill it.\nIf ARG is an integer, return ARG as the exit program code.\nIf ARG is a string, stuff it as keyboard input.\nAny other value of ARG, or ARG omitted, means return an\nexit code that indicates successful program termination.\n\nIf RESTART is non-nil, instead of just exiting at the end, start a new\nEmacs process, using the same command line arguments as the currently\nrunning Emacs process.\n\nThis function is called upon receipt of the signals SIGTERM\nor SIGHUP, and upon SIGINT in batch mode.\n\nThe value of `kill-emacs-hook', if not void, is a list of functions\n(of no args), all of which are called before Emacs is actually\nkilled.",
+            "doc": "Exit the Emacs job and kill it.\nIf ARG is an integer, return ARG as the exit program code.\nIf ARG is a string, stuff it as keyboard input.\nAny other value of ARG, or ARG omitted, means return an\nexit code that indicates successful program termination.\n\nIf RESTART is non-nil, instead of just exiting at the end, start a new\nEmacs process, using the same command line arguments as the currently\nrunning Emacs process.\n\nThis function is called upon receipt of the signals SIGTERM\nor SIGHUP, and upon SIGINT in batch mode.  (Other fatal signals\nshut down Emacs without calling this function.)\n\nThe value of `kill-emacs-hook', if not void, is a list of functions\n(of no args), all of which are called before Emacs is actually\nkilled.",
             "fnname": "Fkill_emacs",
             "intspec": "P",
             "lname": "kill-emacs",
@@ -9346,7 +9476,7 @@
                 "callback"
             ],
             "attributes": null,
-            "doc": "Add a watch for filesystem events pertaining to FILE.\n\nThis arranges for filesystem events pertaining to FILE to be reported\nto Emacs.  Use `kqueue-rm-watch' to cancel the watch.\n\nReturned value is a descriptor for the added watch.  If the file cannot be\nwatched for some reason, this function signals a `file-notify-error' error.\n\nFLAGS is a list of events to be watched for.  It can include the\nfollowing symbols:\n\n  `create' -- FILE was created\n  `delete' -- FILE was deleted\n  `write'  -- FILE has changed\n  `extend' -- FILE was extended\n  `attrib' -- a FILE attribute was changed\n  `link'   -- a FILE's link count was changed\n  `rename' -- FILE was moved to FILE1\n\nWhen any event happens, Emacs will call the CALLBACK function passing\nit a single argument EVENT, which is of the form\n\n  (DESCRIPTOR ACTIONS FILE [FILE1])\n\nDESCRIPTOR is the same object as the one returned by this function.\nACTIONS is a list of events.\n\nFILE is the name of the file whose event is being reported.  FILE1\nwill be reported only in case of the `rename' event.  This is possible\nonly when the upper directory of the renamed file is watched.",
+            "doc": "Add a watch for filesystem events pertaining to FILE.\n\nThis arranges for filesystem events pertaining to FILE to be reported\nto Emacs.  Use `kqueue-rm-watch' to cancel the watch.\n\nReturned value is a descriptor for the added watch.  If the file cannot be\nwatched for some reason, this function signals a `file-notify-error' error.\n\nFLAGS is a list of events to be watched for.  It can include the\nfollowing symbols:\n\n  `create' -- FILE was created\n  `delete' -- FILE was deleted\n  `write'  -- FILE has changed\n  `extend' -- FILE was extended\n  `attrib' -- a FILE attribute was changed\n  `link'   -- a FILE's link count was changed\n  `rename' -- FILE was moved to FILE1\n  `revoke' -- FILE was unmounted\n\nWhen any event happens, Emacs will call the CALLBACK function passing\nit a single argument EVENT, which is of the form\n\n  (DESCRIPTOR ACTIONS FILE [FILE1])\n\nDESCRIPTOR is the same object as the one returned by this function.\nACTIONS is a list of events.\n\nFILE is the name of the file whose event is being reported.  FILE1\nwill be reported only in case of the `rename' event.  This is possible\nonly when the upper directory of the renamed file is watched.",
             "fnname": "Fkqueue_add_watch",
             "intspec": "0",
             "lname": "kqueue-add-watch",
@@ -9673,7 +9803,7 @@
                 "n"
             ],
             "attributes": null,
-            "doc": "Return the position of the first character in the current line/field.\nThis function is like `pos-bol' (which see), but respects fields.\n\nThis function constrains the returned position to the current field\nunless that position would be on a different line from the original,\nunconstrained result.  If N is nil or 1, and a front-sticky field\nstarts at point, the scan stops as soon as it starts.  To ignore field\nboundaries, bind `inhibit-field-text-motion' to t.\n\nThis function does not move point.",
+            "doc": "Return the position of the first character in the current line/field.\nWith optional argument N non-nil, move forward N - 1 lines first.\nThis function is like `pos-bol' (which see), but respects fields.\n\nThis function constrains the returned position to the current field\nunless that position would be on a different line from the original,\nunconstrained result.  If N is nil or 1, and a front-sticky field\nstarts at point, the scan stops as soon as it starts.  To ignore field\nboundaries, bind `inhibit-field-text-motion' to t.\n\nThis function does not move point.",
             "fnname": "Fline_beginning_position",
             "intspec": "0",
             "lname": "line-beginning-position",
@@ -9904,7 +10034,7 @@
                 "file"
             ],
             "attributes": null,
-            "doc": "Lock FILE.\nIf the option `create-lockfiles' is nil, this does nothing.",
+            "doc": "Check whether FILE was modified since it was visited, and lock it.\nIf user option `create-lockfiles' is nil, this does not create\na lock file for FILE, but it still checks whether FILE was modified\noutside of the current Emacs session, and if so, asks the user\nwhether to modify FILE.",
             "fnname": "Flock_file",
             "intspec": "0",
             "lname": "lock-file",
@@ -10311,7 +10441,7 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Create and return a new hash table.\n\nArguments are specified as keyword/argument pairs.  The following\narguments are defined:\n\n:test TEST -- TEST must be a symbol that specifies how to compare\nkeys.  Default is `eql'.  Predefined are the tests `eq', `eql', and\n`equal'.  User-supplied test and hash functions can be specified via\n`define-hash-table-test'.\n\n:size SIZE -- A hint as to how many elements will be put in the table.\nDefault is 65.\n\n:rehash-size REHASH-SIZE - Indicates how to expand the table when it\nfills up.  If REHASH-SIZE is an integer, increase the size by that\namount.  If it is a float, it must be > 1.0, and the new size is the\nold size multiplied by that factor.  Default is 1.5.\n\n:rehash-threshold THRESHOLD -- THRESHOLD must a float > 0, and <= 1.0.\nResize the hash table when the ratio (table entries / table size)\nexceeds an approximation to THRESHOLD.  Default is 0.8125.\n\n:weakness WEAK -- WEAK must be one of nil, t, `key', `value',\n`key-or-value', or `key-and-value'.  If WEAK is not nil, the table\nreturned is a weak table.  Key/value pairs are removed from a weak\nhash table when there are no non-weak references pointing to their\nkey, value, one of key or value, or both key and value, depending on\nWEAK.  WEAK t is equivalent to `key-and-value'.  Default value of WEAK\nis nil.\n\n:purecopy PURECOPY -- If PURECOPY is non-nil, the table can be copied\nto pure storage when Emacs is being dumped, making the contents of the\ntable read only. Any further changes to purified tables will result\nin an error.\n\nusage: (make-hash-table &rest KEYWORD-ARGS)",
+            "doc": "Create and return a new hash table.\n\nArguments are specified as keyword/argument pairs.  The following\narguments are defined:\n\n:test TEST -- TEST must be a symbol that specifies how to compare\nkeys.  Default is `eql'.  Predefined are the tests `eq', `eql', and\n`equal'.  User-supplied test and hash functions can be specified via\n`define-hash-table-test'.\n\n:size SIZE -- A hint as to how many elements will be put in the table.\nThe table will always grow as needed; this argument may help performance\nslightly if the size is known in advance but is never required.\n\n:weakness WEAK -- WEAK must be one of nil, t, `key', `value',\n`key-or-value', or `key-and-value'.  If WEAK is not nil, the table\nreturned is a weak table.  Key/value pairs are removed from a weak\nhash table when there are no non-weak references pointing to their\nkey, value, one of key or value, or both key and value, depending on\nWEAK.  WEAK t is equivalent to `key-and-value'.  Default value of WEAK\nis nil.\n\n:purecopy PURECOPY -- If PURECOPY is non-nil, the table can be copied\nto pure storage when Emacs is being dumped, making the contents of the\ntable read only. Any further changes to purified tables will result\nin an error.\n\nThe keywords arguments :rehash-threshold and :rehash-size are obsolete\nand ignored.\n\nusage: (make-hash-table &rest KEYWORD-ARGS)",
             "fnname": "Fmake_hash_table",
             "intspec": "0",
             "lname": "make-hash-table",
@@ -10328,7 +10458,7 @@
                 "inhibit_buffer_hooks"
             ],
             "attributes": null,
-            "doc": "Create and return an indirect buffer for buffer BASE-BUFFER, named NAME.\nBASE-BUFFER should be a live buffer, or the name of an existing buffer.\n\nNAME should be a string which is not the name of an existing buffer.\nOptional argument CLONE non-nil means preserve BASE-BUFFER's state,\nsuch as major and minor modes, in the indirect buffer.\n\nCLONE nil means the indirect buffer's state is reset to default values.\n\nIf optional argument INHIBIT-BUFFER-HOOKS is non-nil, the new buffer\ndoes not run the hooks `kill-buffer-hook',\n`kill-buffer-query-functions', and `buffer-list-update-hook'.",
+            "doc": "Create and return an indirect buffer for buffer BASE-BUFFER, named NAME.\nBASE-BUFFER should be a live buffer, or the name of an existing buffer.\n\nNAME should be a string which is not the name of an existing buffer.\n\nInteractively, prompt for BASE-BUFFER (offering the current buffer as\nthe default), and for NAME (offering as default the name of a recently\nused buffer).\n\nOptional argument CLONE non-nil means preserve BASE-BUFFER's state,\nsuch as major and minor modes, in the indirect buffer.\nCLONE nil means the indirect buffer's state is reset to default values.\n\nIf optional argument INHIBIT-BUFFER-HOOKS is non-nil, the new buffer\ndoes not run the hooks `kill-buffer-hook',\n`kill-buffer-query-functions', and `buffer-list-update-hook'.\n\nInteractively, CLONE and INHIBIT-BUFFER-HOOKS are nil.",
             "fnname": "Fmake_indirect_buffer",
             "intspec": "bMake indirect buffer (to buffer): \nBName of indirect buffer: ",
             "lname": "make-indirect-buffer",
@@ -10336,6 +10466,24 @@
             "minargs": 2,
             "path": "buffer.c",
             "sname": "Smake_indirect_buffer"
+        },
+        {
+            "args": [
+                "args",
+                "body",
+                "env",
+                "docstring",
+                "iform"
+            ],
+            "attributes": null,
+            "doc": "Make an interpreted closure.\nARGS should be the list of formal arguments.\nBODY should be a non-empty list of forms.\nENV should be a lexical environment, like the second argument of `eval'.\nIFORM if non-nil should be of the form (interactive ...).",
+            "fnname": "Fmake_interpreted_closure",
+            "intspec": "0",
+            "lname": "make-interpreted-closure",
+            "maxargs": 5,
+            "minargs": 3,
+            "path": "eval.c",
+            "sname": "Smake_interpreted_closure"
         },
         {
             "args": [
@@ -10858,7 +11006,7 @@
                 "table"
             ],
             "attributes": null,
-            "doc": "Call FUNCTION for all entries in hash table TABLE.\nFUNCTION is called with two arguments, KEY and VALUE.\n`maphash' always returns nil.",
+            "doc": "Call FUNCTION for all entries in hash table TABLE.\nFUNCTION is called with two arguments, KEY and VALUE.\nIt should not alter TABLE in any way other than using `puthash' to\nset a new value for KEY, or `remhash' to remove KEY.\n`maphash' always returns nil.",
             "fnname": "Fmaphash",
             "intspec": "0",
             "lname": "maphash",
@@ -10912,6 +11060,20 @@
                 "marker"
             ],
             "attributes": null,
+            "doc": "Return last position of MARKER in its buffer.\nThis is like `marker-position' with one exception:  If the buffer of\nMARKER is dead, it returns the last position of MARKER in that buffer\nbefore it was killed.",
+            "fnname": "Fmarker_last_position",
+            "intspec": "0",
+            "lname": "marker-last-position",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "marker.c",
+            "sname": "Smarker_last_position"
+        },
+        {
+            "args": [
+                "marker"
+            ],
+            "attributes": null,
             "doc": "Return the position of MARKER, or nil if it points nowhere.",
             "fnname": "Fmarker_position",
             "intspec": "0",
@@ -10940,7 +11102,7 @@
                 "subexp"
             ],
             "attributes": null,
-            "doc": "Return position of start of text matched by last search.\nSUBEXP, a number, specifies which parenthesized expression in the last\n  regexp.\nValue is nil if SUBEXPth pair didn't match, or there were less than\n  SUBEXP pairs.\nZero means the entire text matched by the whole regexp or whole string.\n\nReturn value is undefined if the last search failed.",
+            "doc": "Return position of start of text matched by last search.\nSUBEXP, a number, specifies the parenthesized subexpression in the last\n  regexp for which to return the start position.\nValue is nil if SUBEXPth subexpression didn't match, or there were fewer\n  than SUBEXP subexpressions.\nSUBEXP zero means the entire text matched by the whole regexp or whole\n  string.\n\nReturn value is undefined if the last search failed.",
             "fnname": "Fmatch_beginning",
             "intspec": "0",
             "lname": "match-beginning",
@@ -10984,7 +11146,7 @@
                 "subexp"
             ],
             "attributes": null,
-            "doc": "Return position of end of text matched by last search.\nSUBEXP, a number, specifies which parenthesized expression in the last\n  regexp.\nValue is nil if SUBEXPth pair didn't match, or there were less than\n  SUBEXP pairs.\nZero means the entire text matched by the whole regexp or whole string.\n\nReturn value is undefined if the last search failed.",
+            "doc": "Return position of end of text matched by last search.\nSUBEXP, a number, specifies the parenthesized subexpression in the last\n  regexp for which to return the start position.\nValue is nil if SUBEXPth subexpression didn't match, or there were fewer\n  than SUBEXP subexpressions.\nSUBEXP zero means the entire text matched by the whole regexp or whole\n  string.\n\nReturn value is undefined if the last search failed.",
             "fnname": "Fmatch_end",
             "intspec": "0",
             "lname": "match-end",
@@ -11630,6 +11792,20 @@
         },
         {
             "args": [
+                "object"
+            ],
+            "attributes": null,
+            "doc": "Return t if the object is native compiled Lisp function, nil otherwise.",
+            "fnname": "Fnative_comp_function_p",
+            "intspec": "0",
+            "lname": "native-comp-function-p",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "data.c",
+            "sname": "Snative_comp_function_p"
+        },
+        {
+            "args": [
                 "comp_unit"
             ],
             "attributes": null,
@@ -12055,6 +12231,48 @@
         },
         {
             "args": [
+                "obarray"
+            ],
+            "attributes": null,
+            "doc": "Remove all symbols from OBARRAY.",
+            "fnname": "Fobarray_clear",
+            "intspec": "0",
+            "lname": "obarray-clear",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "lread.c",
+            "sname": "Sobarray_clear"
+        },
+        {
+            "args": [
+                "size"
+            ],
+            "attributes": null,
+            "doc": "Return a new obarray of size SIZE.\nThe obarray will grow to accommodate any number of symbols; the size, if\ngiven, is only a hint for the expected number.",
+            "fnname": "Fobarray_make",
+            "intspec": "0",
+            "lname": "obarray-make",
+            "maxargs": 1,
+            "minargs": 0,
+            "path": "lread.c",
+            "sname": "Sobarray_make"
+        },
+        {
+            "args": [
+                "object"
+            ],
+            "attributes": null,
+            "doc": "Return t iff OBJECT is an obarray.",
+            "fnname": "Fobarrayp",
+            "intspec": "0",
+            "lname": "obarrayp",
+            "maxargs": 1,
+            "minargs": 1,
+            "path": "lread.c",
+            "sname": "Sobarrayp"
+        },
+        {
+            "args": [
                 "object"
             ],
             "attributes": null,
@@ -12183,7 +12401,7 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Return the other window for \\\"other window scroll\\\" commands.\nIf in the minibuffer, `minibuffer-scroll-window' if non-nil\nspecifies the window.\nOtherwise, if `other-window-scroll-buffer' is non-nil, a window\nshowing that buffer is used, popping the buffer up if necessary.\nFinally, look for a neighboring window on the selected frame,\nfollowed by all visible frames on the current terminal.",
+            "doc": "Return \\\"the other\\\" window for \\\"other window scroll\\\" commands.\nIf in the minibuffer, and `minibuffer-scroll-window' is non-nil,\nit specifies the window to use.\nOtherwise, if `other-window-scroll-buffer' is a buffer, a window\nshowing that buffer is the window to use, popping it up if necessary.\nOtherwise, if `other-window-scroll-default' is a function, call it,\nand the window it returns is the window to use.\nFinally, the function looks for a neighboring window on the selected\nframe, followed by windows on all the visible frames on the current\nterminal.",
             "fnname": "Fother_window_for_scrolling",
             "intspec": "0",
             "lname": "other-window-for-scrolling",
@@ -12915,7 +13133,7 @@
                 "pos"
             ],
             "attributes": null,
-            "doc": "Create a new symbol with position.\nSYM is a symbol, with or without position, the symbol to position.\nPOS, the position, is either a fixnum or a symbol with position from which\nthe position will be taken.",
+            "doc": "Make a new symbol with position.\nSYM is a symbol, with or without position, the symbol to position.\nPOS, the position, is either a nonnegative fixnum,\nor a symbol with position from which the position will be taken.\nIgnore `symbols-with-pos-enabled'.",
             "fnname": "Fposition_symbol",
             "intspec": "0",
             "lname": "position-symbol",
@@ -14134,7 +14352,7 @@
                 "inherit_input_method"
             ],
             "attributes": null,
-            "doc": "Read a string from the minibuffer, prompting with string PROMPT.\nThe optional second arg INITIAL-CONTENTS is an obsolete alternative to\n  DEFAULT-VALUE.  It normally should be nil in new code, except when\n  HIST is a cons.  It is discussed in more detail below.\n\nThird arg KEYMAP is a keymap to use whilst reading;\n  if omitted or nil, the default is `minibuffer-local-map'.\n\nIf fourth arg READ is non-nil, interpret the result as a Lisp object\n  and return that object:\n  in other words, do `(car (read-from-string INPUT-STRING))'\n\nFifth arg HIST, if non-nil, specifies a history list and optionally\n  the initial position in the list.  It can be a symbol, which is the\n  history list variable to use, or a cons cell (HISTVAR . HISTPOS).\n  In that case, HISTVAR is the history list variable to use, and\n  HISTPOS is the initial position for use by the minibuffer history\n  commands.  For consistency, you should also specify that element of\n  the history as the value of INITIAL-CONTENTS.  Positions are counted\n  starting from 1 at the beginning of the list.  If HIST is nil, the\n  default history list `minibuffer-history' is used.  If HIST is t,\n  history is not recorded.\n\n  If `history-add-new-input' is non-nil (the default), the result will\n  be added to the history list using `add-to-history'.\n\nSixth arg DEFAULT-VALUE, if non-nil, should be a string, which is used\n  as the default to `read' if READ is non-nil and the user enters\n  empty input.  But if READ is nil, this function does _not_ return\n  DEFAULT-VALUE for empty input!  Instead, it returns the empty string.\n\n  Whatever the value of READ, DEFAULT-VALUE is made available via the\n  minibuffer history commands.  DEFAULT-VALUE can also be a list of\n  strings, in which case all the strings are available in the history,\n  and the first string is the default to `read' if READ is non-nil.\n\nSeventh arg INHERIT-INPUT-METHOD, if non-nil, means the minibuffer inherits\n the current input method and the setting of `enable-multibyte-characters'.\n\nIf the variable `minibuffer-allow-text-properties' is non-nil,\n then the string which is returned includes whatever text properties\n were present in the minibuffer.  Otherwise the value has no text properties.\n\nIf `inhibit-interaction' is non-nil, this function will signal an\n  `inhibited-interaction' error.\n\nThe remainder of this documentation string describes the\nINITIAL-CONTENTS argument in more detail.  It is only relevant when\nstudying existing code, or when HIST is a cons.  If non-nil,\nINITIAL-CONTENTS is a string to be inserted into the minibuffer before\nreading input.  Normally, point is put at the end of that string.\nHowever, if INITIAL-CONTENTS is (STRING . POSITION), the initial\ninput is STRING, but point is placed at _one-indexed_ position\nPOSITION in the minibuffer.  Any integer value less than or equal to\none puts point at the beginning of the string.  *Note* that this\nbehavior differs from the way such arguments are used in `completing-read'\nand some related functions, which use zero-indexing for POSITION.",
+            "doc": "Read a string from the minibuffer, prompting with string PROMPT.\nThe optional second arg INITIAL-CONTENTS is an obsolete alternative to\n  DEFAULT-VALUE.  It normally should be nil in new code, except when\n  HIST is a cons.  It is discussed in more detail below.\n\nThird arg KEYMAP is a keymap to use whilst reading;\n  if omitted or nil, the default is `minibuffer-local-map'.\n\nIf fourth arg READ is non-nil, interpret the result as a Lisp object\n  and return that object:\n  in other words, do `(car (read-from-string INPUT-STRING))'\n\nFifth arg HIST, if non-nil, specifies a history list and optionally\n  the initial position in the list.  It can be a symbol, which is the\n  history list variable to use, or a cons cell (HISTVAR . HISTPOS).\n  In that case, HISTVAR is the history list variable to use, and\n  HISTPOS is the initial position for use by the minibuffer history\n  commands.  For consistency, you should also specify that element of\n  the history as the value of INITIAL-CONTENTS.  Positions are counted\n  starting from 1 at the beginning of the list.  If HIST is nil, the\n  default history list `minibuffer-history' is used.  If HIST is t,\n  history is not recorded.\n\n  If `history-add-new-input' is non-nil (the default), the result will\n  be added to the history list using `add-to-history'.\n\nSixth arg DEFAULT-VALUE, if non-nil, should be a string, which is used\n  as the default to `read' if READ is non-nil and the user enters\n  empty input.  But if READ is nil, this function does _not_ return\n  DEFAULT-VALUE for empty input!  Instead, it returns the empty string.\n\n  Whatever the value of READ, DEFAULT-VALUE is made available via the\n  minibuffer history commands.  DEFAULT-VALUE can also be a list of\n  strings, in which case all the strings are available in the history,\n  and the first string is the default to `read' if READ is non-nil.\n\nSeventh arg INHERIT-INPUT-METHOD, if non-nil, means the minibuffer inherits\n the current input method and the setting of `enable-multibyte-characters'.\n\nIf the variable `minibuffer-allow-text-properties' is non-nil\n (either let-bound or buffer-local in the minibuffer),\n then the string which is returned includes whatever text properties\n were present in the minibuffer.  Otherwise the value has no text properties.\n\nIf `inhibit-interaction' is non-nil, this function will signal an\n  `inhibited-interaction' error.\n\nThe remainder of this documentation string describes the\nINITIAL-CONTENTS argument in more detail.  It is only relevant when\nstudying existing code, or when HIST is a cons.  If non-nil,\nINITIAL-CONTENTS is a string to be inserted into the minibuffer before\nreading input.  Normally, point is put at the end of that string.\nHowever, if INITIAL-CONTENTS is (STRING . POSITION), the initial\ninput is STRING, but point is placed at _one-indexed_ position\nPOSITION in the minibuffer.  Any integer value less than or equal to\none puts point at the beginning of the string.  *Note* that this\nbehavior differs from the way such arguments are used in `completing-read'\nand some related functions, which use zero-indexing for POSITION.",
             "fnname": "Fread_from_minibuffer",
             "intspec": "0",
             "lname": "read-from-minibuffer",
@@ -14552,7 +14770,7 @@
                 "arg"
             ],
             "attributes": null,
-            "doc": "If ARG is a symbol with position, return it without the position.\nOtherwise, return ARG unchanged.  Compare with `bare-symbol'.",
+            "doc": "If ARG is a symbol with position, return it without the position.\nOtherwise, return ARG unchanged.  Ignore `symbols-with-pos-enabled'.\nCompare with `bare-symbol'.",
             "fnname": "Fremove_pos_from_symbol",
             "intspec": "0",
             "lname": "remove-pos-from-symbol",
@@ -14649,7 +14867,7 @@
                 "subexp"
             ],
             "attributes": null,
-            "doc": "Replace text matched by last search with NEWTEXT.\nLeave point at the end of the replacement text.\n\nIf optional second arg FIXEDCASE is non-nil, do not alter the case of\nthe replacement text.  Otherwise, maybe capitalize the whole text, or\nmaybe just word initials, based on the replaced text.  If the replaced\ntext has only capital letters and has at least one multiletter word,\nconvert NEWTEXT to all caps.  Otherwise if all words are capitalized\nin the replaced text, capitalize each word in NEWTEXT.  Note that\nwhat exactly is a word is determined by the syntax tables in effect\nin the current buffer.\n\nIf optional third arg LITERAL is non-nil, insert NEWTEXT literally.\nOtherwise treat `\\\\' as special:\n  `\\\\&' in NEWTEXT means substitute original matched text.\n  `\\\\N' means substitute what matched the Nth `\\\\(...\\\\)'.\n       If Nth parens didn't match, substitute nothing.\n  `\\\\\\\\' means insert one `\\\\'.\n  `\\\\?' is treated literally\n       (for compatibility with `query-replace-regexp').\n  Any other character following `\\\\' signals an error.\nCase conversion does not apply to these substitutions.\n\nIf optional fourth argument STRING is non-nil, it should be a string\nto act on; this should be the string on which the previous match was\ndone via `string-match'.  In this case, `replace-match' creates and\nreturns a new string, made by copying STRING and replacing the part of\nSTRING that was matched (the original STRING itself is not altered).\n\nThe optional fifth argument SUBEXP specifies a subexpression;\nit says to replace just that subexpression with NEWTEXT,\nrather than replacing the entire matched text.\nThis is, in a vague sense, the inverse of using `\\\\N' in NEWTEXT;\n`\\\\N' copies subexp N into NEWTEXT, but using N as SUBEXP puts\nNEWTEXT in place of subexp N.\nThis is useful only after a regular expression search or match,\nsince only regular expressions have distinguished subexpressions.",
+            "doc": "Replace text matched by last search with NEWTEXT.\nLeave point at the end of the replacement text.\n\nIf optional second arg FIXEDCASE is non-nil, do not alter the case of\nthe replacement text.  Otherwise, maybe capitalize the whole text, or\nmaybe just word initials, based on the replaced text.  If the replaced\ntext has only capital letters and has at least one multiletter word,\nconvert NEWTEXT to all caps.  Otherwise if all words are capitalized\nin the replaced text, capitalize each word in NEWTEXT.  Note that\nwhat exactly is a word is determined by the syntax tables in effect\nin the current buffer, and the variable `case-symbols-as-words'.\n\nIf optional third arg LITERAL is non-nil, insert NEWTEXT literally.\nOtherwise treat `\\\\' as special:\n  `\\\\&' in NEWTEXT means substitute original matched text.\n  `\\\\N' means substitute what matched the Nth `\\\\(...\\\\)'.\n       If Nth parens didn't match, substitute nothing.\n  `\\\\\\\\' means insert one `\\\\'.\n  `\\\\?' is treated literally\n       (for compatibility with `query-replace-regexp').\n  Any other character following `\\\\' signals an error.\nCase conversion does not apply to these substitutions.\n\nIf optional fourth argument STRING is non-nil, it should be a string\nto act on; this should be the string on which the previous match was\ndone via `string-match'.  In this case, `replace-match' creates and\nreturns a new string, made by copying STRING and replacing the part of\nSTRING that was matched (the original STRING itself is not altered).\n\nThe optional fifth argument SUBEXP specifies a subexpression;\nit says to replace just that subexpression with NEWTEXT,\nrather than replacing the entire matched text.\nThis is, in a vague sense, the inverse of using `\\\\N' in NEWTEXT;\n`\\\\N' copies subexp N into NEWTEXT, but using N as SUBEXP puts\nNEWTEXT in place of subexp N.\nThis is useful only after a regular expression search or match,\nsince only regular expressions have distinguished subexpressions.",
             "fnname": "Freplace_match",
             "intspec": "0",
             "lname": "replace-match",
@@ -15524,7 +15742,7 @@
                 "add"
             ],
             "attributes": null,
-            "doc": "Modify FONTSET to use font specification in FONT-SPEC for displaying CHARACTERS.\n\nFONTSET should be a fontset name (a string); or nil, meaning the\nfontset of FRAME; or t, meaning the default fontset.\n\nCHARACTERS may be a single character to use FONT-SPEC for.\n\nCHARACTERS may be a cons (FROM . TO), where FROM and TO are characters.\nIn that case, use FONT-SPEC for all the characters in the range\nbetween FROM and TO (inclusive).\n\nCHARACTERS may be a script symbol.  In that case, use FONT-SPEC for\nall the characters that belong to the script.  See the variable\n`script-representative-chars' for the list of known scripts, and\nsee the variable `char-script-table' for the script of any specific\ncharacter.\n\nCHARACTERS may be a charset symbol.  In that case, use FONT-SPEC for\nall the characters in the charset.  See `list-character-sets' and\n`list-charset-chars' for the list of character sets and their\ncharacters.\n\nCHARACTERS may be nil.  In that case, use FONT-SPEC for any\ncharacter for which no font-spec is specified in FONTSET.\n\nFONT-SPEC may one of these:\n * A font-spec object made by the function `font-spec' (which see).\n * A cons (FAMILY . REGISTRY), where FAMILY is a font family name and\n   REGISTRY is a font registry name.  FAMILY may contain foundry\n   name, and REGISTRY may contain encoding name.\n * A font name string.\n * nil, which explicitly specifies that there's no font for CHARACTERS.\n\nOptional 4th argument FRAME is a frame whose fontset should be modified;\nit is used if FONTSET is nil.  If FONTSET is nil and FRAME is omitted\nor nil, that stands for the fontset of the selected frame.\n\nOptional 5th argument ADD, if non-nil, specifies how to add FONT-SPEC\nto the previously set font specifications for CHARACTERS.  If it is\n`prepend', FONT-SPEC is prepended to the existing font specifications.\nIf it is `append', FONT-SPEC is appended.  By default, FONT-SPEC\noverwrites the previous settings.",
+            "doc": "Modify FONTSET to use font specification in FONT-SPEC for displaying CHARACTERS.\n\nFONTSET should be a fontset name (a string); or nil, meaning the\nfontset of FRAME; or t, meaning the default fontset.\n\nCHARACTERS may be a single character to use FONT-SPEC for.\n\nCHARACTERS may be a cons (FROM . TO), where FROM and TO are characters.\nIn that case, use FONT-SPEC for all the characters in the range\nbetween FROM and TO (inclusive).\n\nCHARACTERS may be a script symbol.  In that case, use FONT-SPEC for\nall the characters that belong to the script.  See the variable\n`script-representative-chars' for the list of known scripts, and\nsee the variable `char-script-table' for the script of any specific\ncharacter.  Note: for the `symbol' script only, whether the FONTSET\nis actually used depends on the value of `use-default-font-for-symbols'.\n\nCHARACTERS may be a charset symbol.  In that case, use FONT-SPEC for\nall the characters in the charset.  See `list-character-sets' and\n`list-charset-chars' for the list of character sets and their\ncharacters.\n\nCHARACTERS may be nil.  In that case, use FONT-SPEC for any\ncharacter for which no font-spec is specified in FONTSET.\n\nFONT-SPEC may one of these:\n * A font-spec object made by the function `font-spec' (which see).\n * A cons (FAMILY . REGISTRY), where FAMILY is a font family name and\n   REGISTRY is a font registry name.  FAMILY may contain foundry\n   name, and REGISTRY may contain encoding name.\n * A font name string.\n * nil, which explicitly specifies that there's no font for CHARACTERS.\n\nOptional 4th argument FRAME is a frame whose fontset should be modified;\nit is used if FONTSET is nil.  If FONTSET is nil and FRAME is omitted\nor nil, that stands for the fontset of the selected frame.\n\nOptional 5th argument ADD, if non-nil, specifies how to add FONT-SPEC\nto the previously set font specifications for CHARACTERS.  If it is\n`prepend', FONT-SPEC is prepended to the existing font specifications.\nIf it is `append', FONT-SPEC is appended.  By default, FONT-SPEC\noverwrites the previous settings.\n\nFor reliable results, this function should be called before any\nof CHARACTERS were displayed in the current Emacs session.  In\nparticular, if some of CHARACTERS are displayed using character\ncompositions, those compositions will be cached after they are first\nproduced, and the cached values include the font used for displaying\nthe composed characters -- calling this function will not affect the\nfont recorded in the cache of compositions, thus they will continue\nto be shown using the fonts from before the call.",
             "fnname": "Fset_fontset_font",
             "intspec": "0",
             "lname": "set-fontset-font",
@@ -16212,7 +16430,7 @@
                 "dont_set_miniwindow"
             ],
             "attributes": null,
-            "doc": "Set the configuration of windows and buffers as specified by CONFIGURATION.\nCONFIGURATION must be a value previously returned\nby `current-window-configuration' (which see).\n\nNormally, this function selects the frame of the CONFIGURATION, but if\nDONT-SET-FRAME is non-nil, it leaves selected the frame which was\ncurrent at the start of the function.  If DONT-SET-MINIWINDOW is non-nil,\nthe mini-window of the frame doesn't get set to the corresponding element\nof CONFIGURATION.\n\nIf CONFIGURATION was made from a frame that is now deleted,\nonly frame-independent values can be restored.  In this case,\nthe return value is nil.  Otherwise the value is t.",
+            "doc": "Set the configuration of windows and buffers as specified by CONFIGURATION.\nCONFIGURATION must be a value previously returned\nby `current-window-configuration' (which see).\n\nNormally, this function selects the frame of the CONFIGURATION, but if\nDONT-SET-FRAME is non-nil, it leaves selected the frame which was\ncurrent at the start of the function.  If DONT-SET-MINIWINDOW is non-nil,\nthe mini-window of the frame doesn't get set to the corresponding element\nof CONFIGURATION.\n\nThis function consults the variable `window-restore-killed-buffer-windows'\nwhen restoring a window whose buffer was killed after CONFIGURATION was\nrecorded.\n\nIf CONFIGURATION was made from a frame that is now deleted,\nonly frame-independent values can be restored.  In this case,\nthe return value is nil.  Otherwise the value is t.",
             "fnname": "Fset_window_configuration",
             "intspec": "0",
             "lname": "set-window-configuration",
@@ -16220,6 +16438,21 @@
             "minargs": 1,
             "path": "window.c",
             "sname": "Sset_window_configuration"
+        },
+        {
+            "args": [
+                "window",
+                "type"
+            ],
+            "attributes": null,
+            "doc": "Set the `cursor-type' of WINDOW to TYPE.\n\nThis setting takes precedence over the variable `cursor-type', and TYPE\nhas the same format as the value of that variable.  The initial value\nfor new windows is t, which says to respect the buffer-local value of\n`cursor-type'.\n\nWINDOW nil means use the selected window.  This setting persists across\nbuffers shown in WINDOW, so `set-window-buffer' does not reset it.",
+            "fnname": "Fset_window_cursor_type",
+            "intspec": "0",
+            "lname": "set-window-cursor-type",
+            "maxargs": 2,
+            "minargs": 2,
+            "path": "window.c",
+            "sname": "Sset_window_cursor_type"
         },
         {
             "args": [
@@ -16291,7 +16524,7 @@
                 "right_width"
             ],
             "attributes": null,
-            "doc": "Set width of marginal areas of window WINDOW.\nWINDOW must be a live window and defaults to the selected one.\n\nSecond arg LEFT-WIDTH specifies the number of character cells to\nreserve for the left marginal area.  Optional third arg RIGHT-WIDTH\ndoes the same for the right marginal area.  A nil width parameter\nmeans no margin.\n\nLeave margins unchanged if WINDOW is not large enough to accommodate\nmargins of the desired width.  Return t if any margin was actually\nchanged and nil otherwise.",
+            "doc": "Set width of marginal areas of window WINDOW.\nWINDOW must be a live window and defaults to the selected one.\n\nSecond arg LEFT-WIDTH specifies the number of character cells to\nreserve for the left marginal area.  Optional third arg RIGHT-WIDTH\ndoes the same for the right marginal area.  A nil width parameter\nmeans no margin.\n\nLeave margins unchanged if WINDOW is not large enough to accommodate\nmargins of the desired width.  Return t if any margin was actually\nchanged and nil otherwise.\n\nThe margins specified by calling this function may be later overridden\nby invoking `set-window-buffer' for the same WINDOW, with its\nKEEP-MARGINS argument nil or omitted.",
             "fnname": "Fset_window_margins",
             "intspec": "0",
             "lname": "set-window-margins",
@@ -16582,7 +16815,7 @@
                 "data"
             ],
             "attributes": "noreturn",
-            "doc": "Signal an error.  Args are ERROR-SYMBOL and associated DATA.\nThis function does not return.\n\nAn error symbol is a symbol with an `error-conditions' property\nthat is a list of condition names.  The symbol should be non-nil.\nA handler for any of those names will get to handle this signal.\nThe symbol `error' should normally be one of them.\n\nDATA should be a list.  Its elements are printed as part of the error message.\nSee Info anchor `(elisp)Definition of signal' for some details on how this\nerror message is constructed.\nIf the signal is handled, DATA is made available to the handler.\nSee also the function `condition-case'.",
+            "doc": "Signal an error.  Args are ERROR-SYMBOL and associated DATA.\nThis function does not return.\n\nWhen `noninteractive' is non-nil (in particular, in batch mode), an\nunhandled error calls `kill-emacs', which terminates the Emacs\nsession with a non-zero exit code.\n\nAn error symbol is a symbol with an `error-conditions' property\nthat is a list of condition names.  The symbol should be non-nil.\nA handler for any of those names will get to handle this signal.\nThe symbol `error' should normally be one of them.\n\nDATA should be a list.  Its elements are printed as part of the error message.\nSee Info anchor `(elisp)Definition of signal' for some details on how this\nerror message is constructed.\nIf the signal is handled, DATA is made available to the handler.\nSee also the function `condition-case'.",
             "fnname": "Fsignal",
             "intspec": "0",
             "lname": "signal",
@@ -16610,7 +16843,7 @@
                 "remote"
             ],
             "attributes": null,
-            "doc": "Send PROCESS the signal with code SIGCODE.\nPROCESS may also be a number specifying the process id of the\nprocess to signal; in this case, the process need not be a child of\nthis Emacs.\nIf PROCESS is a process object which contains the property\n`remote-pid', or PROCESS is a number and REMOTE is a remote file name,\nPROCESS is interpreted as process on the respective remote host, which\nwill be the process to signal.\nSIGCODE may be an integer, or a symbol whose name is a signal name.",
+            "doc": "Send PROCESS the signal with code SIGCODE.\nPROCESS may also be a number specifying the process id of the\nprocess to signal; in this case, the process need not be a child of\nthis Emacs.\nIf PROCESS is a process object which contains the property\n`remote-pid', or PROCESS is a number and REMOTE is a remote file name,\nPROCESS is interpreted as process on the respective remote host, which\nwill be the process to signal.\nIf PROCESS is a string, it is interpreted as process object with the\nrespective process name, or as a number.\nSIGCODE may be an integer, or a symbol whose name is a signal name.",
             "fnname": "Fsignal_process",
             "intspec": "(list (read-string \"Process (name or number): \") (read-signal-name))",
             "lname": "signal-process",
@@ -16714,7 +16947,7 @@
                 "milliseconds"
             ],
             "attributes": null,
-            "doc": "Pause, without updating display, for SECONDS seconds.\nSECONDS may be a floating-point value, meaning that you can wait for a\nfraction of a second.  Optional second arg MILLISECONDS specifies an\nadditional wait period, in milliseconds; this is for backwards compatibility.\n\\(Not all operating systems support waiting for a fraction of a second.)",
+            "doc": "Pause, without updating display, for SECONDS seconds.\nSECONDS may be a floating-point value, meaning that you can wait for a\nfraction of a second.\nAn optional second arg MILLISECONDS can be provided but is deprecated:\nit specifies an additional wait period, in milliseconds.",
             "fnname": "Fsleep_for",
             "intspec": "0",
             "lname": "sleep-for",
@@ -16724,17 +16957,14 @@
             "sname": "Ssleep_for"
         },
         {
-            "args": [
-                "seq",
-                "predicate"
-            ],
+            "args": null,
             "attributes": null,
-            "doc": "Sort SEQ, stably, comparing elements using PREDICATE.\nReturns the sorted sequence.  SEQ should be a list or vector.  SEQ is\nmodified by side effects.  PREDICATE is called with two elements of\nSEQ, and should return non-nil if the first element should sort before\nthe second.",
+            "doc": "Sort SEQ, stably, and return the sorted sequence.\nSEQ should be a list or vector.\nOptional arguments are specified as keyword/argument pairs.  The following\narguments are defined:\n\n:key FUNC -- FUNC is a function that takes a single element from SEQ and\n  returns the key value to be used in comparison.  If absent or nil,\n  `identity' is used.\n\n:lessp FUNC -- FUNC is a function that takes two arguments and returns\n  non-nil if the first element should come before the second.\n  If absent or nil, `value<' is used.\n\n:reverse BOOL -- if BOOL is non-nil, the sorting order implied by FUNC is\n  reversed.  This does not affect stability: equal elements still retain\n  their order in the input sequence.\n\n:in-place BOOL -- if BOOL is non-nil, SEQ is sorted in-place and returned.\n  Otherwise, a sorted copy of SEQ is returned and SEQ remains unmodified;\n  this is the default.\n\nFor compatibility, the calling convention (sort SEQ LESSP) can also be used;\nin this case, sorting is always done in-place.\n\nusage: (sort SEQ &key KEY LESSP REVERSE IN-PLACE)",
             "fnname": "Fsort",
             "intspec": "0",
             "lname": "sort",
-            "maxargs": 2,
-            "minargs": 2,
+            "maxargs": -1,
+            "minargs": 1,
             "path": "fns.c",
             "sname": "Ssort"
         },
@@ -16866,6 +17096,21 @@
             "minargs": 2,
             "path": "sqlite.c",
             "sname": "Ssqlite_execute"
+        },
+        {
+            "args": [
+                "db",
+                "statements"
+            ],
+            "attributes": null,
+            "doc": "Execute multiple SQL STATEMENTS in DB.\nSTATEMENTS is a string containing 0 or more SQL statements.",
+            "fnname": "Fsqlite_execute_batch",
+            "intspec": "0",
+            "lname": "sqlite-execute-batch",
+            "maxargs": 2,
+            "minargs": 2,
+            "path": "sqlite.c",
+            "sname": "Ssqlite_execute_batch"
         },
         {
             "args": [
@@ -17473,20 +17718,6 @@
         },
         {
             "args": [
-                "object"
-            ],
-            "attributes": null,
-            "doc": "Return t if the object is native compiled lisp\nfunction, nil otherwise.",
-            "fnname": "Fsubr_native_elisp_p",
-            "intspec": "0",
-            "lname": "subr-native-elisp-p",
-            "maxargs": 1,
-            "minargs": 1,
-            "path": "data.c",
-            "sname": "Ssubr_native_elisp_p"
-        },
-        {
-            "args": [
                 "subr"
             ],
             "attributes": null,
@@ -17624,20 +17855,6 @@
                 "obj"
             ],
             "attributes": null,
-            "doc": "Return OBJ, maybe marking it for extra scrutiny.\nIf Emacs is compiled with suspicious object checking, capture\na stack trace when OBJ is freed in order to help track down\ngarbage collection bugs.  Otherwise, do nothing and return OBJ.",
-            "fnname": "Fsuspicious_object",
-            "intspec": "0",
-            "lname": "suspicious-object",
-            "maxargs": 1,
-            "minargs": 1,
-            "path": "alloc.c",
-            "sname": "Ssuspicious_object"
-        },
-        {
-            "args": [
-                "obj"
-            ],
-            "attributes": null,
             "doc": "Return an integer hash code for OBJ suitable for `eq'.\nIf (eq A B), then (= (sxhash-eq A) (sxhash-eq B)).\n\nHash codes are not guaranteed to be preserved across Emacs sessions.",
             "fnname": "Fsxhash_eq",
             "intspec": "0",
@@ -17750,7 +17967,7 @@
                 "object"
             ],
             "attributes": "const",
-            "doc": "Return t if OBJECT is a symbol together with position.",
+            "doc": "Return t if OBJECT is a symbol together with position.\nIgnore `symbols-with-pos-enabled'.",
             "fnname": "Fsymbol_with_pos_p",
             "intspec": "0",
             "lname": "symbol-with-pos-p",
@@ -17761,10 +17978,10 @@
         },
         {
             "args": [
-                "ls"
+                "sympos"
             ],
             "attributes": null,
-            "doc": "Extract the position from a symbol with position.",
+            "doc": "Extract the position from the symbol with position SYMPOS.\nIgnore `symbols-with-pos-enabled'.",
             "fnname": "Fsymbol_with_pos_pos",
             "intspec": "0",
             "lname": "symbol-with-pos-pos",
@@ -19042,7 +19259,7 @@
                 "node_only"
             ],
             "attributes": null,
-            "doc": "Query NODE with patterns in QUERY.\n\nReturn a list of (CAPTURE_NAME . NODE).  CAPTURE_NAME is the name\nassigned to the node in PATTERN.  NODE is the captured node.\n\nQUERY is either a string query, a sexp query, or a compiled query.\nSee Info node `(elisp)Pattern Matching' for how to write a query in\neither string or sexp form.  When using repeatedly, a compiled query\nis much faster than a string or sexp one, so it is recommend to\ncompile your query if it will be used repeatedly.\n\nBEG and END, if both non-nil, specify the region of buffer positions\nin which the query is executed.  Any matching node whose span overlaps\nwith the region between BEG and END are captured, it doesn't have to\nbe completely in the region.\n\nIf NODE-ONLY is non-nil, return a list of nodes.\n\nBesides a node, NODE can also be a parser, in which case the root node\nof that parser is used.\nNODE can also be a language symbol, in which case the root node of a\nparser for that language is used.  If such a parser doesn't exist, it\nis created.\n\nSignal `treesit-query-error' if QUERY is malformed or something else\ngoes wrong.  You can use `treesit-query-validate' to validate and debug\nthe query.",
+            "doc": "Query NODE with patterns in QUERY.\n\nReturn a list of (CAPTURE_NAME . NODE).  CAPTURE_NAME is the name\nassigned to the node in PATTERN.  NODE is the captured node.\n\nQUERY is either a string query, a sexp query, or a compiled query.\nSee Info node `(elisp)Pattern Matching' for how to write a query in\neither string or sexp form.  When using repeatedly, a compiled query\nis much faster than a string or sexp one, so it is recommend to\ncompile your query if it will be used repeatedly.\n\nBEG and END, if both non-nil, specify the region of buffer positions\nin which the query is executed.  Any matching node whose span overlaps\nwith the region between BEG and END are captured, it doesn't have to\nbe completely in the region.\n\nIf NODE-ONLY is non-nil, return a list of nodes.\n\nBesides a node, NODE can be a parser, in which case the root node of\nthat parser is used.  NODE can also be a language symbol, in which case\nthe root node of a parser for that language is used.  If such a parser\ndoesn't exist, it is created.\n\nSignal `treesit-query-error' if QUERY is malformed or something else\ngoes wrong.  You can use `treesit-query-validate' to validate and debug\nthe query.",
             "fnname": "Ftreesit_query_capture",
             "intspec": "0",
             "lname": "treesit-query-capture",
@@ -19307,7 +19524,7 @@
                 "object"
             ],
             "attributes": null,
-            "doc": "Return a symbol representing the type of OBJECT.\nThe symbol returned names the object's basic type;\nfor example, (type-of 1) returns `integer'.",
+            "doc": "Return a symbol representing the type of OBJECT.\nThe symbol returned names the object's basic type;\nfor example, (type-of 1) returns `integer'.\nContrary to `cl-type-of', the returned type is not always the most\nprecise type possible, because instead this function tries to preserve\ncompatibility with the return value of previous Emacs versions.",
             "fnname": "Ftype_of",
             "intspec": "0",
             "lname": "type-of",
@@ -19662,6 +19879,21 @@
             "minargs": 0,
             "path": "editfns.c",
             "sname": "Suser_uid"
+        },
+        {
+            "args": [
+                "a",
+                "b"
+            ],
+            "attributes": null,
+            "doc": "Return non-nil if A precedes B in standard value order.\nA and B must have the same basic type.\nNumbers are compared with `<'.\nStrings and symbols are compared with `string-lessp'.\nLists, vectors, bool-vectors and records are compared lexicographically.\nMarkers are compared lexicographically by buffer and position.\nBuffers and processes are compared by name.\nOther types are considered unordered and the return value will be `nil'.",
+            "fnname": "Fvaluelt",
+            "intspec": "0",
+            "lname": "value<",
+            "maxargs": 2,
+            "minargs": 2,
+            "path": "fns.c",
+            "sname": "Svaluelt"
         },
         {
             "args": [
@@ -20165,7 +20397,7 @@
         {
             "args": null,
             "attributes": null,
-            "doc": "Display an MS-Windows tray notification as specified by PARAMS.\n\nValue is the integer unique ID of the notification that can be used\nto remove the notification using `w32-notification-close', which see.\nIf the function fails, the return value is nil.\n\nTray notifications, a.k.a. \\\"taskbar messages\\\", are messages that\ninform the user about events unrelated to the current user activity,\nsuch as a significant system event, by briefly displaying informative\ntext in a balloon from an icon in the notification area of the taskbar.\n\nParameters in PARAMS are specified as keyword/value pairs.  All the\nparameters are optional, but if no parameters are specified, the\nfunction will do nothing and return nil.\n\nThe following parameters are supported:\n\n:icon ICON       -- Display ICON in the system tray.  If ICON is a string,\n                    it should specify a file name from which to load the\n                    icon; the specified file should be a .ico Windows icon\n                    file.  If ICON is not a string, or if this parameter\n                    is not specified, the standard Emacs icon will be used.\n\n:tip TIP         -- Use TIP as the tooltip for the notification.  If TIP\n                    is a string, this is the text of a tooltip that will\n                    be shown when the mouse pointer hovers over the tray\n                    icon added by the notification.  If TIP is not a\n                    string, or if this parameter is not specified, the\n                    default tooltip text is \\\"Emacs notification\\\".  The\n                    tooltip text can be up to 127 characters long (63\n                    on Windows versions before W2K).  Longer strings\n                    will be truncated.\n\n:level LEVEL     -- Notification severity level, one of `info',\n                    `warning', or `error'.  If given, the value\n                    determines the icon displayed to the left of the\n                    notification title, but only if the `:title'\n                    parameter (see below) is also specified and is a\n                    string.\n\n:title TITLE     -- The title of the notification.  If TITLE is a string,\n                    it is displayed in a larger font immediately above\n                    the body text.  The title text can be up to 63\n                    characters long; longer text will be truncated.\n\n:body BODY       -- The body of the notification.  If BODY is a string,\n                    it specifies the text of the notification message.\n                    Use embedded newlines to control how the text is\n                    broken into lines.  The body text can be up to 255\n                    characters long, and will be truncated if it's longer.\n\nNote that versions of Windows before W2K support only `:icon' and `:tip'.\nYou can pass the other parameters, but they will be ignored on those\nold systems.\n\nThere can be at most one active notification at any given time.  An\nactive notification must be removed by calling `w32-notification-close'\nbefore a new one can be shown.\n\nusage: (w32-notification-notify &rest PARAMS)",
+            "doc": "Display an MS-Windows tray notification as specified by PARAMS.\n\nValue is the integer unique ID of the notification that can be used\nto remove the notification using `w32-notification-close', which see.\nIf the function fails, the return value is nil.\n\nTray notifications, a.k.a. \\\"taskbar messages\\\", are messages that\ninform the user about events unrelated to the current user activity,\nsuch as a significant system event, by briefly displaying informative\ntext in a balloon from an icon in the notification area of the taskbar.\n\nParameters in PARAMS are specified as keyword/value pairs.  All the\nparameters are optional, but if no parameters are specified, the\nfunction will do nothing and return nil.\n\nThe following parameters are supported:\n\n:icon ICON       -- Display ICON in the system tray.  If ICON is a string,\n                    it should specify a file name from which to load the\n                    icon; the specified file should be a .ico Windows icon\n                    file.  If ICON is not a string, or if this parameter\n                    is not specified, the standard Emacs icon will be used.\n\n:tip TIP         -- Use TIP as the tooltip for the notification.  If TIP\n                    is a string, this is the text of a tooltip that will\n                    be shown when the mouse pointer hovers over the tray\n                    icon added by the notification.  If TIP is not a\n                    string, or if this parameter is not specified, the\n                    default tooltip text is \\\"Emacs notification\\\".  The\n                    tooltip text can be up to 127 characters long (63\n                    on Windows versions before W2K).  Longer strings\n                    will be truncated.\n\n:level LEVEL     -- Notification severity level, one of `info',\n                    `warning', or `error'.  If given, the value\n                    determines the icon displayed to the left of the\n                    notification title, but only if the `:title'\n                    parameter (see below) is also specified and is a\n                    string.\n\n:title TITLE     -- The title of the notification.  If TITLE is a string,\n                    it is displayed in a larger font immediately above\n                    the body text.  The title text can be up to 63\n                    characters long; longer text will be truncated.\n\n:body BODY       -- The body of the notification.  If BODY is a string,\n                    it specifies the text of the notification message.\n                    Use embedded newlines to control how the text is\n                    broken into lines.  The body text can be up to 255\n                    characters long, and will be truncated if it's longer.\n\nNote that versions of Windows before W2K support only `:icon' and `:tip'.\nYou can pass the other parameters, but they will be ignored on\nthose old systems.\n\nThere can be at most one active notification at any given time.  An\nactive notification must be removed by calling `w32-notification-close'\nbefore a new one can be shown.\n\nusage: (w32-notification-notify &rest PARAMS)",
             "fnname": "Fw32_notification_notify",
             "intspec": "0",
             "lname": "w32-notification-notify",
@@ -20493,6 +20725,24 @@
         },
         {
             "args": [
+                "input_file",
+                "thumb_file",
+                "type",
+                "height",
+                "width"
+            ],
+            "attributes": null,
+            "doc": "Create a HEIGHT by WIDTH thumbnail file THUMB-FILE for image INPUT-FILE.\nTYPE is the image type to use for the thumbnail file, a string.  It is\nusually identical to the file-name extension of THUMB-FILE, but without\nthe leading period, and both \"jpeg\" and \"jpg\" can be used for JPEG.\nTYPE is matched case-insensitively against supported types.  Currently,\nthe supported TYPEs are BMP, JPEG, GIF, TIFF, and PNG; any other type\nwill cause the function to fail.\nReturn non-nil if thumbnail creation succeeds, nil otherwise.",
+            "fnname": "Fw32image_create_thumbnail",
+            "intspec": "0",
+            "lname": "w32image-create-thumbnail",
+            "maxargs": 5,
+            "minargs": 5,
+            "path": "w32image.c",
+            "sname": "Sw32image_create_thumbnail"
+        },
+        {
+            "args": [
                 "file",
                 "filter",
                 "callback"
@@ -20778,6 +21028,20 @@
             "minargs": 1,
             "path": "window.c",
             "sname": "Swindow_configuration_p"
+        },
+        {
+            "args": [
+                "window"
+            ],
+            "attributes": null,
+            "doc": "Return the `cursor-type' of WINDOW.\nWINDOW must be a live window and defaults to the selected one.",
+            "fnname": "Fwindow_cursor_type",
+            "intspec": "0",
+            "lname": "window-cursor-type",
+            "maxargs": 1,
+            "minargs": 0,
+            "path": "window.c",
+            "sname": "Swindow_cursor_type"
         },
         {
             "args": [
@@ -21415,7 +21679,7 @@
                 "window"
             ],
             "attributes": null,
-            "doc": "Get width and type of scroll bars of window WINDOW.\nWINDOW must be a live window and defaults to the selected one.\n\nValue is a list of the form (WIDTH COLUMNS VERTICAL-TYPE HEIGHT LINES\nHORIZONTAL-TYPE PERSISTENT), see `set-window-scroll-bars'.  If WIDTH\nor HEIGHT is nil or VERTICAL-TYPE or HORIZONTAL-TYPE is t, WINDOW is\nusing the frame's corresponding value.",
+            "doc": "Get width and type of scroll bars of window WINDOW.\nWINDOW must be a live window and defaults to the selected one.\n\nValue is a list of the form (WIDTH COLUMNS VERTICAL-TYPE HEIGHT LINES\nHORIZONTAL-TYPE PERSISTENT).  WIDTH reports the pixel width of the\nvertical scroll bar; COLUMNS is the equivalent number of columns.\nSimilarly, HEIGHT and LINES are the height of the horizontal scroll\nbar in pixels and the equivalent number of lines.  VERTICAL-TYPE\nreports the type of the vertical scroll bar, either left, right, nil,\nor t.  HORIZONTAL-TYPE reports the type of the horizontal scroll bar,\neither bottom, nil or t.  PERSISTENT reports the value specified by\nthe last successful call to `set-window-scroll-bars', or nil if there\nwas none.\n\nIf WIDTH or HEIGHT is nil or VERTICAL-TYPE or HORIZONTAL-TYPE is t,\nWINDOW is using the corresponding value specified for the frame.",
             "fnname": "Fwindow_scroll_bars",
             "intspec": "0",
             "lname": "window-scroll-bars",
